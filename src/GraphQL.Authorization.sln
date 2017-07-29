@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.16
+MinimumVisualStudioVersion = 15.0.26124.0
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQL.Authorization", "GraphQL.Authorization\GraphQL.Authorization.csproj", "{21771B0C-0FCE-41DA-BF0B-67D70368BB00}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQL.Authorization.Tests", "GraphQL.Authorization.Tests\GraphQL.Authorization.Tests.csproj", "{C482F1AF-6E9D-4D1C-96D7-3C0206312B66}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{21771B0C-0FCE-41DA-BF0B-67D70368BB00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21771B0C-0FCE-41DA-BF0B-67D70368BB00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21771B0C-0FCE-41DA-BF0B-67D70368BB00}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21771B0C-0FCE-41DA-BF0B-67D70368BB00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C482F1AF-6E9D-4D1C-96D7-3C0206312B66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C482F1AF-6E9D-4D1C-96D7-3C0206312B66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C482F1AF-6E9D-4D1C-96D7-3C0206312B66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C482F1AF-6E9D-4D1C-96D7-3C0206312B66}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
