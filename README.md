@@ -1,3 +1,3 @@
 # GraphQL Authorization
 
-This provides some helper methods to deal with authorizing access to graph types.
+A toolset for authorizing access to graph types for [GraphQL .NET](https://github.com/graphql-dotnet/graphql-dotnet).
