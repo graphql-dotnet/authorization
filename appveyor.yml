@@ -15,6 +15,7 @@ install:
   - ps: Install-Product node LTS
   - node --version
   - dotnet --version
+  - yarn
 build_script:
   - cmd: yarn build-ci
 artifacts:
