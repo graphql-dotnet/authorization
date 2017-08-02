@@ -8,10 +8,10 @@ export default function compile() {
   let versionSuffix = ''
 
   if(settings.versionSuffix.length > 0) {
-    versionSuffix = `--version-suffix ${settings.versionSuffix}${settings.revision}`;
+    versionSuffix = `${settings.versionSuffix}${settings.revision}`;
   }
 
-  const cmd = `dotnet pack src/GraphQL.Authorization -o ${settings.artifacts} -c ${settings.target} /p:PackageVersion=${settings.version} ${versionSuffix}`
+  const cmd = `dotnet pack src/GraphQL.Authorization -o ${settings.artifacts} -c ${settings.target} /p:PackageVersion=${settings.version}${versionSuffix}`
   console.log(cmd);
 
   exec(cmd, (code, stdout, stderr)=> {
