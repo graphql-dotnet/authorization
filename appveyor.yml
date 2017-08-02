@@ -3,8 +3,6 @@ skip_tags: true
 pull_requests:
   do_not_increment_build_number: true
 nuget:
-  account_feed: true
-  project_feed: true
   disable_publish_on_pr: true
 branches:
   only:
