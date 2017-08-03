@@ -4,6 +4,6 @@ namespace GraphQL.Authorization
 {
     public interface IProvideClaimsPrincipal
     {
-        ClaimsPrincipal Principal { get; }
+        ClaimsPrincipal User { get; }
     }
 }

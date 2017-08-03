@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GraphQL" Version="0.17.2" />
+    <PackageReference Include="GraphQL" Version="0.18.0-alpha-753" />
     <PackageReference Include="GraphQL-Parser" Version="2.0.0" />
   </ItemGroup>
 

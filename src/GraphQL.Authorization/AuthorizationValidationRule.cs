@@ -29,7 +29,7 @@ namespace GraphQL.Authorization
                     if (!fieldDef.RequiresAuthorization()) return;
 
                     var result = fieldDef
-                        .Authorize(userContext?.Principal, context.UserContext, _evaluator)
+                        .Authorize(userContext?.User, context.UserContext, _evaluator)
                         .GetAwaiter()
                         .GetResult();
 

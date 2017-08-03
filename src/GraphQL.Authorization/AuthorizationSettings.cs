@@ -18,7 +18,7 @@ namespace GraphQL.Authorization
         {
             var found = new List<IAuthorizationPolicy>();
 
-            policies.Apply(name =>
+            policies?.Apply(name =>
             {
                 if (_policies.ContainsKey(name))
                 {
