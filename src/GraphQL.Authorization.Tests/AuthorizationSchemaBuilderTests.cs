@@ -16,7 +16,7 @@ namespace GraphQL.Authorization.Tests
                 }
             ";
 
-            var schema = AuthorizationSchema.For(defs, _ =>
+            var schema = Schema.For(defs, _ =>
             {
                 _.Types.Include<QueryWithAttributes>();
             });
@@ -32,7 +32,7 @@ namespace GraphQL.Authorization.Tests
             field.GetPolicies().Single().ShouldBe("FieldPolicy");
         }
 
-        [GraphQLName("Query")]
+        [GraphQLMetadata("Query")]
         [GraphQLAuthorize(Policy = "ClassPolicy")]
         public class QueryWithAttributes
         {

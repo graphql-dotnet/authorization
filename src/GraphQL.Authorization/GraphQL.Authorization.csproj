@@ -11,7 +11,7 @@
     <PackageTags>GraphQL;json;api</PackageTags>
     <PackageProjectUrl>https://github.com/graphql-dotnet/authorization</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/graphql-dotnet/authorization/blob/master/LICENSE.md</PackageLicenseUrl>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.1' ">1.6.0</NetStandardImplicitPackageVersion>
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">1.6.0</NetStandardImplicitPackageVersion>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GraphQL" Version="0.18.0-alpha-753" />
+    <PackageReference Include="GraphQL" Version="0.18.0-alpha-754" />
     <PackageReference Include="GraphQL-Parser" Version="2.0.0" />
   </ItemGroup>
 
