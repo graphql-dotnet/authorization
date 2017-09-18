@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace GraphQL.Authorization
 {
@@ -24,9 +25,16 @@ namespace GraphQL.Authorization
             return this;
         }
 
-        public AuthorizationPolicyBuilder RequireClaim(string claimType, params string[] requiredValues)
+        public AuthorizationPolicyBuilder RequireClaim(string claimType, params string[] allowedValues)
         {
-            var requirement = new ClaimAuthorizationRequirement(claimType, requiredValues);
+            var requirement = new ClaimAuthorizationRequirement(claimType, allowedValues);
+            _requirements.Add(requirement);
+            return this;
+        }
+
+        public AuthorizationPolicyBuilder RequireClaim(string claimType, IEnumerable<string> allowedValues, IEnumerable<string> displayValues)
+        {
+            var requirement = new ClaimAuthorizationRequirement(claimType, allowedValues, displayValues);
             _requirements.Add(requirement);
             return this;
         }

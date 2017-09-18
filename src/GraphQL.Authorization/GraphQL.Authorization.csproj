@@ -26,8 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GraphQL" Version="0.18.0-alpha-754" />
-    <PackageReference Include="GraphQL-Parser" Version="2.0.0" />
+    <PackageReference Include="GraphQL" Version="2.0.0-alpha-783" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
