@@ -19,9 +19,11 @@ A toolset for authorizing access to graph types for [GraphQL .NET](https://githu
 # Examples
 
 ```csharp
-public static void AddGraphQL(this IServiceCollection services)
+public static void AddGraphQLAuth(this IServiceCollection services)
 {
+    services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
     services.TryAddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
+    services.AddTransient<IValidationRule, AuthorizationValidationRule>();
 
     services.TryAddSingleton(s =>
     {
@@ -31,25 +33,21 @@ public static void AddGraphQL(this IServiceCollection services)
 
         return authSettings;
     });
-
-    services.AddTransient<IValidationRule>(s => new AuthorizationValidationRule(s.GetRequiredService<IAuthorizationEvaluator>()));
 }
 
 
-public static void AddGraphQL(this IApplicationBuilder app)
+public static void AddGraphQLAuth(this IApplicationBuilder app)
 {
     var settings = new GraphQLSettings
     {
-        BuildUserContext = async ctx =>
+        BuildUserContext = ctx =>
         {
-            var principalProvider = app.ApplicationServices.GetService<IPrincipalProvider>();
-            var principal = await principalProvider.Principal();
-
             var userContext = new GraphQLUserContext
             {
-                User = principal
+                User = ctx.User
             };
-            return userContext;
+
+            return Task.FromResult(userContext);
         }
     };
 
