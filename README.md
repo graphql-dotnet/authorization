@@ -36,7 +36,7 @@ public static void AddGraphQLAuth(this IServiceCollection services)
 }
 
 
-public static void AddGraphQLAuth(this IApplicationBuilder app)
+public static void UseGraphQLWithAuth(this IApplicationBuilder app)
 {
     var settings = new GraphQLSettings
     {
