@@ -66,7 +66,7 @@ public class GraphQLSettings
 {
     public Func<HttpContext, Task<object>> BuildUserContext { get; set; }
     public object Root { get; set; }
-    public IList<IValidationRule> ValidationRules { get; } = new List<IValidationRule>();
+    public List<IValidationRule> ValidationRules { get; } = new List<IValidationRule>();
 }
 ```
 
