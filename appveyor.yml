@@ -8,9 +8,8 @@ branches:
   only:
     - master
 install:
-  - npm install -g npm
-  - npm --version
   - ps: Install-Product node LTS
+  - npm --version
   - node --version
   - dotnet --version
   - yarn
