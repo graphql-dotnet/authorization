@@ -47,7 +47,7 @@ public static void UseGraphQLWithAuth(this IApplicationBuilder app)
                 User = ctx.User
             };
 
-            return Task.FromResult(userContext);
+            return userContext;
         }
     };
 
