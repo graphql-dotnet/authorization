@@ -5,13 +5,11 @@
     <VersionPrefix>1.0</VersionPrefix>
     <Authors>Joe McBride</Authors>
     <TargetFrameworks>netstandard1.3;net46</TargetFrameworks>
-    <PackageTargetFallback>dnxcore50</PackageTargetFallback>
     <AssemblyName>GraphQL.Authorization</AssemblyName>
     <PackageId>GraphQL.Authorization</PackageId>
     <PackageTags>GraphQL;json;api</PackageTags>
     <PackageProjectUrl>https://github.com/graphql-dotnet/authorization</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/graphql-dotnet/authorization/blob/master/LICENSE.md</PackageLicenseUrl>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">1.6.0</NetStandardImplicitPackageVersion>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
@@ -26,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GraphQL" Version="2.0.0-alpha-783" />
+    <PackageReference Include="GraphQL" Version="2.0.0-alpha-912" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">

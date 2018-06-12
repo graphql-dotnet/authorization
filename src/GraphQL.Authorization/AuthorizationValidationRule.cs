@@ -37,7 +37,10 @@ namespace GraphQL.Authorization
                 _.Match<Field>(fieldAst =>
                 {
                     var fieldDef = context.TypeInfo.GetFieldDef();
+                    // check target field
                     CheckAuth(fieldAst, fieldDef, userContext, context, operationType);
+                    // check returned graph type
+                    CheckAuth(fieldAst, fieldDef.ResolvedType, userContext, context, operationType);
                 });
             });
         }
@@ -52,7 +55,7 @@ namespace GraphQL.Authorization
             if (type == null || !type.RequiresAuthorization()) return;
 
             var result = type
-                .Authorize(userContext?.User, context.UserContext, _evaluator)
+                .Authorize(userContext?.User, context.UserContext, context.Inputs, _evaluator)
                 .GetAwaiter()
                 .GetResult();
 

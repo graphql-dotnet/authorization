@@ -28,6 +28,7 @@ namespace GraphQL.Authorization.Tests
             var result = await _evaluator.Evaluate(
                 null,
                 null,
+                null,
                 new[] {"MyPolicy"}
             );
 
@@ -44,6 +45,7 @@ namespace GraphQL.Authorization.Tests
 
             var result = await _evaluator.Evaluate(
                 CreatePrincipal(),
+                null,
                 null,
                 new[] {"MyPolicy"}
             );
@@ -65,6 +67,7 @@ namespace GraphQL.Authorization.Tests
                     {"Admin", "true"}
                 }),
                 null,
+                null,
                 new[] {"MyPolicy"}
             );
 
@@ -84,6 +87,7 @@ namespace GraphQL.Authorization.Tests
                 {
                     {"Admin", "true"}
                 }),
+                null,
                 null,
                 new[] {"MyPolicy"}
             );
@@ -105,6 +109,7 @@ namespace GraphQL.Authorization.Tests
                     {"Admin", "true"}
                 }),
                 null,
+                null,
                 null
             );
 
@@ -115,6 +120,7 @@ namespace GraphQL.Authorization.Tests
         public async Task succeeds_when_null_principal()
         {
             var result = await _evaluator.Evaluate(
+                null,
                 null,
                 null,
                 null

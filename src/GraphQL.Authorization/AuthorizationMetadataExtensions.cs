@@ -16,13 +16,15 @@ namespace GraphQL.Authorization
             return GetPolicies(type).Any();
         }
 
-        public static Task<AuthorizationResult> Authorize(this IProvideMetadata type,
+        public static Task<AuthorizationResult> Authorize(
+            this IProvideMetadata type,
             ClaimsPrincipal principal,
             object userContext,
+            Dictionary<string, object> arguments,
             IAuthorizationEvaluator evaluator)
         {
             var list = GetPolicies(type);
-            return evaluator.Evaluate(principal, userContext, list);
+            return evaluator.Evaluate(principal, userContext, arguments, list);
         }
 
         public static void AuthorizeWith(this IProvideMetadata type, string policy)

@@ -12,6 +12,8 @@ namespace GraphQL.Authorization
 
         public object UserContext { get; set; }
 
+        public Dictionary<string, object> Arguments { get; set; }
+
         public IEnumerable<string> Errors => _errors;
 
         public bool HasErrors => _errors.Any<string>();
