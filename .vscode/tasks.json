@@ -2,7 +2,17 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build",
+            "label": "build-harness",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/Harness/Harness.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build-tests",
             "command": "dotnet",
             "type": "process",
             "args": [

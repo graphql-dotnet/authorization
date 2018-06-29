@@ -1,0 +1,84 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
+using GraphQL;
+using GraphQL.Authorization;
+using GraphQL.Types;
+using GraphQL.Server.Transports.AspNetCore;
+using GraphQL.Server.Ui.GraphiQL;
+using GraphQL.Validation;
+
+namespace Harness
+{
+    public class Startup
+    {
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.TryAddSingleton<ISchema>(s =>
+            {
+                var definitions = @"
+                  type User {
+                    id: ID
+                    name: String
+                  }
+
+                  type Query {
+                    viewer: User
+                  }
+                ";
+                return Schema.For(
+                    definitions,
+                    _ =>
+                    {
+                        _.Types.Include<Query>();
+                    });
+            });
+
+            // extension method defined in this project
+            services.AddGraphQLAuth(_ =>
+            {
+                _.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"));
+            });
+
+            services.AddGraphQLHttp();
+
+            services.AddMvc();
+        }
+
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+
+            var validationRules = app.ApplicationServices.GetServices<IValidationRule>();
+
+            var options = new GraphQLHttpOptions();
+
+            validationRules.Concat(DocumentValidator.CoreRules()).Apply(options.ValidationRules.Add);
+            options.BuildUserContext = httpContext => new GraphQLUserContext { User = httpContext.User };
+
+            app.UseGraphQLHttp<ISchema>(options);
+            app.UseGraphiQLServer(new GraphiQLOptions());
+
+            app.UseMvc();
+        }
+    }
+}
