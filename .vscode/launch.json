@@ -22,7 +22,8 @@
                     "args": "/C start ${auto-detect-url}"
                 },
                 "osx": {
-                    "command": "open"
+                    "command": "open",
+                    "args": "http://localhost:3000/graphiql"
                 },
                 "linux": {
                     "command": "xdg-open"
