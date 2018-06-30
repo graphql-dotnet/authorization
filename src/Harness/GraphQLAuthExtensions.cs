@@ -18,11 +18,7 @@ namespace Harness
             services.TryAddSingleton(s =>
             {
                 var authSettings = new AuthorizationSettings();
-
                 configure(authSettings);
-
-                authSettings.AddPolicy("AdminPolicy", _ => _.RequireClaim("role", "Admin"));
-
                 return authSettings;
             });
         }
