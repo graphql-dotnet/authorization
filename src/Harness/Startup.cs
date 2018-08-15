@@ -16,6 +16,7 @@ using GraphQL.Types;
 using GraphQL.Server.Transports.AspNetCore;
 using GraphQL.Server.Ui.GraphiQL;
 using GraphQL.Validation;
+using GraphQL.Server;
 
 namespace Harness
 {
@@ -56,26 +57,21 @@ namespace Harness
                 _.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"));
             });
 
-            services.AddGraphQLHttp();
+            services.AddGraphQL(options =>
+            {
+                options.ExposeExceptions = true;
+            }).AddUserContextBuilder(context => new GraphQLUserContext { User = context.User });
 
             services.AddMvc();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            app.UseDeveloperExceptionPage();
 
             var validationRules = app.ApplicationServices.GetServices<IValidationRule>();
 
-            var options = new GraphQLHttpOptions();
-
-            validationRules.Concat(DocumentValidator.CoreRules()).Apply(options.ValidationRules.Add);
-            options.BuildUserContext = httpContext => new GraphQLUserContext { User = httpContext.User };
-
-            app.UseGraphQLHttp<ISchema>(options);
+            app.UseGraphQL<ISchema>("/graphql");
             app.UseGraphiQLServer(new GraphiQLOptions());
 
             app.UseMvc();
