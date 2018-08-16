@@ -1,4 +1,4 @@
-#if (!NETCOREAPP2_0)
+#if (NET46)
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;

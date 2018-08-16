@@ -1,4 +1,4 @@
-#if (!NETCOREAPP2_0)
+#if (NET46)
 using System.Linq;
 using GraphQL.Types;
 using Shouldly;

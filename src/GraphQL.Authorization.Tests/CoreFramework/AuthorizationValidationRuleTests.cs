@@ -1,4 +1,4 @@
-#if (NET46)
+#if (!NET46)
 using System.Collections.Generic;
 using GraphQL;
 using GraphQL.Types;
@@ -11,15 +11,16 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void class_policy_success()
         {
-            Settings.AddPolicy("ClassPolicy", _ =>
-            {
-                _.RequireClaim("admin");
-            });
+            ConfigureAuthorizationOptions(
+                options =>
+                {
+                    options.AddPolicy("ClassPolicy", x => x.RequireClaim("admin"));
+                });
 
-            ShouldPassRule(_=>
+            ShouldPassRule(_ =>
             {
                 _.Query = @"query { post }";
-                _.Schema = BasicSchema();
+                _.Schema = BasicSchema<BasicQueryWithAttributesAndClassPolicy>();
                 _.User = CreatePrincipal(claims: new Dictionary<string, string>
                     {
                         {"Admin", "true"}
@@ -30,30 +31,32 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void class_policy_fail()
         {
-            Settings.AddPolicy("ClassPolicy", _ =>
-            {
-                _.RequireClaim("admin");
-            });
+            ConfigureAuthorizationOptions(
+                options =>
+                {
+                    options.AddPolicy("ClassPolicy", x => x.RequireClaim("admin"));
+                });
 
-            ShouldFailRule(_=>
+            ShouldFailRule(_ =>
             {
                 _.Query = @"query { post }";
-                _.Schema = BasicSchema();
+                _.Schema = BasicSchema<BasicQueryWithAttributesAndClassPolicy>();
             });
         }
 
         [Fact]
         public void field_policy_success()
         {
-            Settings.AddPolicy("FieldPolicy", _ =>
-            {
-                _.RequireClaim("admin");
-            });
+            ConfigureAuthorizationOptions(
+                options =>
+                {
+                    options.AddPolicy("FieldPolicy", x => x.RequireClaim("admin"));
+                });
 
-            ShouldPassRule(_=>
+            ShouldPassRule(_ =>
             {
                 _.Query = @"query { post }";
-                _.Schema = BasicSchema();
+                _.Schema = BasicSchema<BasicQueryWithAttributesAndFieldPolicy>();
                 _.User = CreatePrincipal(claims: new Dictionary<string, string>
                     {
                         {"Admin", "true"}
@@ -64,27 +67,29 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void field_policy_fail()
         {
-            Settings.AddPolicy("FieldPolicy", _ =>
-            {
-                _.RequireClaim("admin");
-            });
+            ConfigureAuthorizationOptions(
+                options =>
+                {
+                    options.AddPolicy("FieldPolicy", x => x.RequireClaim("admin"));
+                });
 
-            ShouldFailRule(_=>
+            ShouldFailRule(_ =>
             {
                 _.Query = @"query { post }";
-                _.Schema = BasicSchema();
+                _.Schema = BasicSchema<BasicQueryWithAttributesAndFieldPolicy>();
             });
         }
 
         [Fact]
         public void nested_type_policy_success()
         {
-            Settings.AddPolicy("PostPolicy", _ =>
-            {
-                _.RequireClaim("admin");
-            });
+            ConfigureAuthorizationOptions(
+                options =>
+                {
+                    options.AddPolicy("PostPolicy", x => x.RequireClaim("admin"));
+                });
 
-            ShouldPassRule(_=>
+            ShouldPassRule(_ =>
             {
                 _.Query = @"query { post }";
                 _.Schema = NestedSchema();
@@ -98,21 +103,22 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void nested_type_policy_fail()
         {
-            Settings.AddPolicy("PostPolicy", _ =>
-            {
-                _.RequireClaim("admin");
-            });
+            ConfigureAuthorizationOptions(
+                options =>
+                {
+                    options.AddPolicy("PostPolicy", x => x.RequireClaim("admin"));
+                });
 
-            ShouldFailRule(_=>
+            ShouldFailRule(_ =>
             {
                 _.Query = @"query { post }";
                 _.Schema = NestedSchema();
             });
         }
 
-        private ISchema BasicSchema()
+        private ISchema BasicSchema<T>()
         {
-            var defs = @"
+            string defs = @"
                 type Query {
                     post(id: ID!): String
                 }
@@ -120,13 +126,22 @@ namespace GraphQL.Authorization.Tests
 
             return Schema.For(defs, _ =>
             {
-                _.Types.Include<BasicQueryWithAttributes>();
+                _.Types.Include<T>();
             });
         }
 
         [GraphQLMetadata("Query")]
         [GraphQLAuthorize(Policy = "ClassPolicy")]
-        public class BasicQueryWithAttributes
+        public class BasicQueryWithAttributesAndClassPolicy
+        {
+            public string Post(string id)
+            {
+                return "";
+            }
+        }
+
+        [GraphQLMetadata("Query")]
+        public class BasicQueryWithAttributesAndFieldPolicy
         {
             [GraphQLAuthorize(Policy = "FieldPolicy")]
             public string Post(string id)
@@ -137,7 +152,7 @@ namespace GraphQL.Authorization.Tests
 
         private ISchema NestedSchema()
         {
-            var defs = @"
+            string defs = @"
                 type Query {
                     post(id: ID!): Post
                 }
@@ -171,7 +186,7 @@ namespace GraphQL.Authorization.Tests
 
         public class Author
         {
-            public string Name { get; set;}
+            public string Name { get; set; }
         }
     }
 }

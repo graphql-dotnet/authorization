@@ -1,4 +1,4 @@
-#if (NET46)
+#if (!NET46)
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +8,9 @@ using GraphQL.Execution;
 using GraphQL.Http;
 using GraphQL.Types;
 using GraphQL.Validation;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Shouldly;
 using Xunit;
 
@@ -39,14 +42,13 @@ namespace GraphQL.Authorization.Tests
         private IDocumentExecuter _executor = new DocumentExecuter();
         private IDocumentWriter _writer = new DocumentWriter(indent: true);
 
-        public ValidationTestBase()
-        {
-            Settings = new AuthorizationSettings();
-            Rule = new AuthorizationValidationRule(new AuthorizationEvaluator(Settings));
-        }
+        protected AuthorizationValidationRule Rule { get; private set; }
 
-        protected AuthorizationValidationRule Rule { get; }
-        protected AuthorizationSettings Settings { get; }
+        protected void ConfigureAuthorizationOptions(Action<AuthorizationOptions> setupOptions)
+        {
+            var authorizationService = BuildAuthorizationService(setupOptions);
+            Rule = new AuthorizationValidationRule(authorizationService);
+        }
 
         protected void ShouldPassRule(Action<ValidationTestConfig> configure)
         {
@@ -81,6 +83,15 @@ namespace GraphQL.Authorization.Tests
             var result = Validate(config);
 
             result.IsValid.ShouldBeFalse("Expected validation errors though there were none.");
+        }
+
+        private IAuthorizationService BuildAuthorizationService(Action<AuthorizationOptions> setupOptions)
+        {
+            var services = new ServiceCollection();
+            services.AddAuthorization(setupOptions);
+            services.AddLogging();
+            services.AddOptions();
+            return services.BuildServiceProvider().GetRequiredService<IAuthorizationService>();
         }
 
         private IValidationResult Validate(ValidationTestConfig config)
