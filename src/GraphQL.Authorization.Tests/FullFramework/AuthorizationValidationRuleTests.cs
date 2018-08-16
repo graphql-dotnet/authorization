@@ -1,3 +1,4 @@
+#if (!NETCOREAPP2_0)
 using System.Collections.Generic;
 using GraphQL;
 using GraphQL.Types;
@@ -174,3 +175,4 @@ namespace GraphQL.Authorization.Tests
         }
     }
 }
+#endif

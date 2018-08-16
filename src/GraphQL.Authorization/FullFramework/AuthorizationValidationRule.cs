@@ -1,4 +1,5 @@
-﻿using GraphQL.Language.AST;
+#if (!NETSTANDARD2_0)
+using GraphQL.Language.AST;
 using GraphQL.Types;
 using GraphQL.Validation;
 
@@ -71,3 +72,4 @@ namespace GraphQL.Authorization
         }
     }
 }
+#endif

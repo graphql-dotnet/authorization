@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+#if (!NETCOREAPP2_0)
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Shouldly;
@@ -142,3 +143,4 @@ namespace GraphQL.Authorization.Tests
         }
     }
 }
+#endif
