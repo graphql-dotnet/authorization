@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+#if (!NETSTANDARD2_0)
+using System.Collections.Generic;
 using System.Linq;
 
 namespace GraphQL.Authorization
@@ -46,3 +47,4 @@ namespace GraphQL.Authorization
         }
     }
 }
+#endif

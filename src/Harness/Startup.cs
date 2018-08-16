@@ -1,22 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using GraphQL.Authorization;
+using GraphQL.Server;
+using GraphQL.Server.Ui.GraphiQL;
+using GraphQL.Types;
+using GraphQL.Validation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-
-using GraphQL;
-using GraphQL.Authorization;
-using GraphQL.Types;
-using GraphQL.Server.Transports.AspNetCore;
-using GraphQL.Server.Ui.GraphiQL;
-using GraphQL.Validation;
-using GraphQL.Server;
 
 namespace Harness
 {
@@ -51,11 +42,13 @@ namespace Harness
                     });
             });
 
-            // extension method defined in this project
-            services.AddGraphQLAuth(_ =>
-            {
-                _.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"));
-            });
+            // Extension method defined in this project
+            services.AddTransient<IValidationRule, AuthorizationValidationRule>();
+            services.AddAuthorization(
+                options =>
+                {
+                    options.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"));
+                });
 
             services.AddGraphQL(options =>
             {

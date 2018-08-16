@@ -1,10 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>A toolset for authorizing access to graph types for GraphQL .NET</Description>
     <VersionPrefix>1.0</VersionPrefix>
     <Authors>Joe McBride</Authors>
-    <TargetFrameworks>netstandard1.3;net46</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard1.3;net46</TargetFrameworks>
     <AssemblyName>GraphQL.Authorization</AssemblyName>
     <PackageId>GraphQL.Authorization</PackageId>
     <PackageTags>GraphQL;json;api</PackageTags>
@@ -29,6 +29,10 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
     <PackageReference Include="System.Security.Claims" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="2.1.0" />
   </ItemGroup>
 
 </Project>

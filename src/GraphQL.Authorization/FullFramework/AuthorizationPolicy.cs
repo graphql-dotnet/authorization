@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+#if (!NETSTANDARD2_0)
+using System.Collections.Generic;
 
 namespace GraphQL.Authorization
 {
@@ -20,3 +21,4 @@ namespace GraphQL.Authorization
         public IEnumerable<IAuthorizationRequirement> Requirements => _requirements;
     }
 }
+#endif

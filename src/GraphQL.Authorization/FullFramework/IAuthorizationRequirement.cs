@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+#if (!NETSTANDARD2_0)
+using System.Threading.Tasks;
 
 namespace GraphQL.Authorization
 {
@@ -7,3 +8,4 @@ namespace GraphQL.Authorization
         Task Authorize(AuthorizationContext context);
     }
 }
+#endif

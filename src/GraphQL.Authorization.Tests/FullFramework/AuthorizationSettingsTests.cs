@@ -1,4 +1,5 @@
-﻿using System.Linq;
+#if (NET46)
+using System.Linq;
 using Shouldly;
 using Xunit;
 
@@ -28,3 +29,4 @@ namespace GraphQL.Authorization.Tests
         }
     }
 }
+#endif
