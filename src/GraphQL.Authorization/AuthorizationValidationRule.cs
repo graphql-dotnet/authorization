@@ -37,6 +37,9 @@ namespace GraphQL.Authorization
                 _.Match<Field>(fieldAst =>
                 {
                     var fieldDef = context.TypeInfo.GetFieldDef();
+
+                    if (fieldDef == null) return;
+
                     // check target field
                     CheckAuth(fieldAst, fieldDef, userContext, context, operationType);
                     // check returned graph type
