@@ -42,7 +42,7 @@ namespace GraphQL.Authorization
                         return;
 
                     var fieldType = argumentType.Fields.First(p => p.Name == objectFieldAst.Name);
-                    CheckAuth(objectFieldAst, fieldType, userContext, context, OperationType.Mutation);
+                    CheckAuth(objectFieldAst, fieldType, userContext, context, operationType);
                 });
 
                 _.Match<Field>(fieldAst =>
