@@ -1,4 +1,5 @@
-﻿using GraphQL.Language.AST;
+﻿using System.Linq;
+using GraphQL.Language.AST;
 using GraphQL.Types;
 using GraphQL.Validation;
 
@@ -32,6 +33,16 @@ namespace GraphQL.Authorization
 
                     var type = context.TypeInfo.GetLastType();
                     CheckAuth(astType, type, userContext, context, operationType);
+                });
+
+                _.Match<ObjectField>(objectFieldAst =>
+                {
+                    var argumentType = context.TypeInfo.GetArgument().ResolvedType.GetNamedType() as IComplexGraphType;
+                    if (argumentType == null)
+                        return;
+
+                    var fieldType = argumentType.Fields.First(p => p.Name == objectFieldAst.Name);
+                    CheckAuth(objectFieldAst, fieldType, userContext, context, OperationType.Mutation);
                 });
 
                 _.Match<Field>(fieldAst =>
