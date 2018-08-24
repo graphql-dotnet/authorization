@@ -70,7 +70,7 @@ public class GraphQLSettings
 }
 ```
 
-Type syntax - use `AuthorizeWith`.
+GraphType first syntax - use `AuthorizeWith`.
 
 ```csharp
 public class MyType : ObjectGraphType
@@ -83,7 +83,7 @@ public class MyType : ObjectGraphType
 }
 ```
 
-Schema + Handler syntax - use `GraphQLAuthorize` attribute.
+Schema first syntax - use `GraphQLAuthorize` attribute.
 
 ```csharp
 [GraphQLAuthorize(Policy = "MyPolicy")]
@@ -96,3 +96,7 @@ public class MutationType
     }
 }
 ```
+
+# Known Issues
+
+* It is currently not possible to add a policy to Input objects using Schema first approach.
