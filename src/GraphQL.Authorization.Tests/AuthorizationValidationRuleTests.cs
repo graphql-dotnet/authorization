@@ -109,6 +109,40 @@ namespace GraphQL.Authorization.Tests
             });
         }
 
+        [Fact]
+        public void passes_with_claim_on_input_type()
+        {
+            Settings.AddPolicy("FieldPolicy", _ =>
+            {
+                _.RequireClaim("admin");
+            });
+
+            ShouldPassRule(_=>
+            {
+                _.Query = @"query { author(input: { name: ""Quinn"" }) }";
+                _.Schema = TypedSchema();
+                _.User = CreatePrincipal(claims: new Dictionary<string, string>
+                    {
+                        {"Admin", "true"}
+                    });
+            });
+        }
+
+        [Fact]
+        public void fails_on_missing_claim_on_input_type()
+        {
+            Settings.AddPolicy("FieldPolicy", _ =>
+            {
+                _.RequireClaim("admin");
+            });
+
+            ShouldFailRule(_=>
+            {
+                _.Query = @"query { author(input: { name: ""Quinn"" }) }";
+                _.Schema = TypedSchema();
+            });
+        }
+
         private ISchema BasicSchema()
         {
             var defs = @"
@@ -171,6 +205,25 @@ namespace GraphQL.Authorization.Tests
         public class Author
         {
             public string Name { get; set;}
+        }
+
+        private ISchema TypedSchema()
+        {
+            var query = new ObjectGraphType();
+            query.Field<StringGraphType>(
+                "author",
+                arguments: new QueryArguments(new QueryArgument<AuthorInputType> { Name = "input" }),
+                resolve: context => "testing"
+            );
+            return new Schema { Query = query };
+        }
+
+        public class AuthorInputType : InputObjectGraphType<Author>
+        {
+            public AuthorInputType()
+            {
+                Field(x => x.Name).AuthorizeWith("FieldPolicy");
+            }
         }
     }
 }

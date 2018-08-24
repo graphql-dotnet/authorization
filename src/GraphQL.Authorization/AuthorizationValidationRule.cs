@@ -41,7 +41,7 @@ namespace GraphQL.Authorization
                     if (argumentType == null)
                         return;
 
-                    var fieldType = argumentType.Fields.First(p => p.Name == objectFieldAst.Name);
+                    var fieldType = argumentType.GetField(objectFieldAst.Name);
                     CheckAuth(objectFieldAst, fieldType, userContext, context, operationType);
                 });
 
