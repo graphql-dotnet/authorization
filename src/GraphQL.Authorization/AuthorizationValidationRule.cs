@@ -1,4 +1,5 @@
-﻿using System.Linq;
+using System.Linq;
+using System.Security.Claims;
 using GraphQL.Language.AST;
 using GraphQL.Types;
 using GraphQL.Validation;
@@ -8,15 +9,16 @@ namespace GraphQL.Authorization
     public class AuthorizationValidationRule : IValidationRule
     {
         private readonly IAuthorizationEvaluator _evaluator;
+        private readonly IUserContextAccessor _userContextAccessor;
 
-        public AuthorizationValidationRule(IAuthorizationEvaluator evaluator)
-        {
+        public AuthorizationValidationRule(IAuthorizationEvaluator evaluator, IUserContextAccessor userContextAccessor) {
             _evaluator = evaluator;
+            _userContextAccessor = userContextAccessor;
         }
 
         public INodeVisitor Validate(ValidationContext context)
         {
-            var userContext = context.UserContext as IProvideClaimsPrincipal;
+            var claimsPrincipal = _userContextAccessor.Get(context);
 
             return new EnterLeaveListener(_ =>
             {
@@ -32,17 +34,16 @@ namespace GraphQL.Authorization
                     operationType = astType.OperationType;
 
                     var type = context.TypeInfo.GetLastType();
-                    CheckAuth(astType, type, userContext, context, operationType);
+                    CheckAuth(astType, type, claimsPrincipal, context, operationType);
                 });
 
                 _.Match<ObjectField>(objectFieldAst =>
                 {
-                    var argumentType = context.TypeInfo.GetArgument().ResolvedType.GetNamedType() as IComplexGraphType;
-                    if (argumentType == null)
+                    if (!(context.TypeInfo.GetArgument().ResolvedType.GetNamedType() is IComplexGraphType argumentType))
                         return;
 
                     var fieldType = argumentType.GetField(objectFieldAst.Name);
-                    CheckAuth(objectFieldAst, fieldType, userContext, context, operationType);
+                    CheckAuth(objectFieldAst, fieldType, claimsPrincipal, context, operationType);
                 });
 
                 _.Match<Field>(fieldAst =>
@@ -52,9 +53,9 @@ namespace GraphQL.Authorization
                     if (fieldDef == null) return;
 
                     // check target field
-                    CheckAuth(fieldAst, fieldDef, userContext, context, operationType);
+                    CheckAuth(fieldAst, fieldDef, claimsPrincipal, context, operationType);
                     // check returned graph type
-                    CheckAuth(fieldAst, fieldDef.ResolvedType, userContext, context, operationType);
+                    CheckAuth(fieldAst, fieldDef.ResolvedType, claimsPrincipal, context, operationType);
                 });
             });
         }
@@ -62,14 +63,14 @@ namespace GraphQL.Authorization
         private void CheckAuth(
             INode node,
             IProvideMetadata type,
-            IProvideClaimsPrincipal userContext,
+            ClaimsPrincipal claimsPrincipal,
             ValidationContext context,
             OperationType operationType)
         {
             if (type == null || !type.RequiresAuthorization()) return;
 
             var result = type
-                .Authorize(userContext?.User, context.UserContext, context.Inputs, _evaluator)
+                .Authorize(claimsPrincipal, context.UserContext, context.Inputs, _evaluator)
                 .GetAwaiter()
                 .GetResult();
 

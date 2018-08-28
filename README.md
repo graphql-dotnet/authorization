@@ -97,6 +97,43 @@ public class MutationType
 }
 ```
 
+For use with subscription and [Server project](https://github.com/graphql-dotnet/server)
+
+```csharp
+public static void AddGraphQLAuth(this IServiceCollection services)
+{
+    services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+    services.TryAddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
+    services.TryAddSingleton<IUserContextAccessor, AuthorizationEvaluator>();
+    services.AddTransient<IValidationRule, AuthorizationValidationRule>();
+
+    services.TryAddSingleton(s =>
+    {
+        var authSettings = new AuthorizationSettings();
+
+        authSettings.AddPolicy("AdminPolicy", _ => _.RequireClaim("role", "Admin"));
+
+        return authSettings;
+    });
+}
+
+public class UserContextAccessor : IUserContextAccessor
+{
+    public ClaimsPrincipal Get(ValidationContext context)
+    {
+        switch (context.UserContext)
+        {
+            case IProvideClaimsPrincipal principal:
+                return principal.User;
+            case MessageHandlingContext messageHandlingContext:
+                return messageHandlingContext.Get<ClaimsPrincipal>(MessageHandlingContextUserListener.USER_PROPERTY);
+            default:
+                return null;
+        }
+    }
+}
+```
+
 # Known Issues
 
-* It is currently not possible to add a policy to Input objects using Schema first approach.
+- It is currently not possible to add a policy to Input objects using Schema first approach.

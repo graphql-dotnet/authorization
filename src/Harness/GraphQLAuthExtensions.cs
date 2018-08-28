@@ -14,6 +14,7 @@ namespace Harness
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.TryAddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
             services.AddTransient<IValidationRule, AuthorizationValidationRule>();
+            services.AddTransient<IUserContextAccessor, DefaultContextAccessor>();
 
             services.TryAddSingleton(s =>
             {
