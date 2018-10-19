@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>A toolset for authorizing access to graph types for GraphQL .NET</Description>
-    <VersionPrefix>1.1</VersionPrefix>
+    <VersionPrefix>2.0</VersionPrefix>
     <Authors>Joe McBride</Authors>
     <TargetFrameworks>netstandard1.3;net46</TargetFrameworks>
     <AssemblyName>GraphQL.Authorization</AssemblyName>
@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GraphQL" Version="2.0.0" />
+    <PackageReference Include="GraphQL" Version="2.3.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
