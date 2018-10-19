@@ -30,7 +30,10 @@ namespace GraphQL.Authorization
         public static void AuthorizeWith(this IProvideMetadata type, string policy)
         {
             var list = GetPolicies(type);
-            list.Fill(policy);
+            if(!list.Contains(policy))
+            {
+                list.Add(policy);
+            }
             type.Metadata[PolicyKey] = list;
         }
 
