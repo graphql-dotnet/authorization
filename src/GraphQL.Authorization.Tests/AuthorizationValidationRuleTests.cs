@@ -206,6 +206,66 @@ namespace GraphQL.Authorization.Tests
             });
         }
 
+        [Fact]
+        public void passes_when_field_is_not_included()
+        {
+            Settings.AddPolicy("FieldPolicy", _ =>
+            {
+                _.RequireClaim("admin");
+            });
+
+            ShouldPassRule(_ =>
+            {
+                _.Query = @"query { post @include(if: false) }";
+                _.Schema = BasicSchema();
+            });
+        }
+
+        [Fact]
+        public void fails_when_field_is_included()
+        {
+            Settings.AddPolicy("FieldPolicy", _ =>
+            {
+                _.RequireClaim("admin");
+            });
+
+            ShouldFailRule(_ =>
+            {
+                _.Query = @"query { post @include(if: true) }";
+                _.Schema = BasicSchema();
+            });
+        }
+
+        [Fact]
+        public void passes_when_field_is_skipped()
+        {
+            Settings.AddPolicy("FieldPolicy", _ =>
+            {
+                _.RequireClaim("admin");
+            });
+
+            ShouldPassRule(_ =>
+            {
+                _.Query = @"query { post @skip(if: true) }";
+                _.Schema = BasicSchema();
+            });
+        }
+
+        [Fact]
+        public void fails_when_field_is_not_skipped()
+        {
+            Settings.AddPolicy("FieldPolicy", _ =>
+            {
+                _.RequireClaim("admin");
+            });
+
+            ShouldFailRule(_ =>
+            {
+                _.Query = @"query { post @skip(if: false) }";
+                _.Schema = BasicSchema();
+            });
+        }
+
         private ISchema BasicSchema()
         {
             string defs = @"

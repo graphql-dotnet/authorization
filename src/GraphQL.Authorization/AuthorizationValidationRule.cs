@@ -64,28 +64,31 @@ namespace GraphQL.Authorization
 
         private bool SkipAuthCheck(Field fieldAst, ValidationContext context)
         {
-            if (fieldAst.Directives == null || !fieldAst.Directives.Any()) return true;
+            if (fieldAst.Directives == null || !fieldAst.Directives.Any()) return false;
 
-            var includeField = GetDirectiveValue(context, fieldAst.Directives, DirectiveGraphType.Include.Name);
+            var includeField = GetDirectiveValue(context, fieldAst.Directives, DirectiveGraphType.Include);
             if (includeField.HasValue) return !includeField.Value;
 
-            var skipField = GetDirectiveValue(context, fieldAst.Directives, DirectiveGraphType.Skip.Name);
+            var skipField = GetDirectiveValue(context, fieldAst.Directives, DirectiveGraphType.Skip);
             if (skipField.HasValue) return skipField.Value;
 
             return false;
         }
 
-        private static bool? GetDirectiveValue(ValidationContext context, Directives directives, string directiveName)
+        private static bool? GetDirectiveValue(ValidationContext context, Directives directives, DirectiveGraphType directiveType)
         {
-            var directive = directives.Find(directiveName);
+            var directive = directives.Find(directiveType.Name);
             if (directive == null) return null;
 
-            var operation = !string.IsNullOrWhiteSpace(context.OperationName)
-                ? context.Document.Operations.WithName(context.OperationName)
-                : context.Document.Operations.FirstOrDefault();
+            var operationName = context.OperationName;
+            var documentOperations = context.Document.Operations;
+            var operation = !string.IsNullOrWhiteSpace(operationName)
+                ? documentOperations.WithName(operationName)
+                : documentOperations.FirstOrDefault();
+
             var values = ExecutionHelper.GetArgumentValues(
                 context.Schema,
-                DirectiveGraphType.Include.Arguments,
+                directiveType.Arguments,
                 directive.Arguments,
                 ExecutionHelper.GetVariableValues(context.Document, context.Schema, operation?.Variables, context.Inputs));
 
