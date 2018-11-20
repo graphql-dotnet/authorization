@@ -13,7 +13,7 @@ namespace GraphQL.Authorization.Tests
             Settings.AddPolicy("ClassPolicy", builder => builder.RequireClaim("admin"));
             Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldPassRule(_ =>
+            ShouldPassRule(_=>
             {
                 _.Query = @"query { post }";
                 _.Schema = BasicSchema();
@@ -29,7 +29,7 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("ClassPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldFailRule(_ =>
+            ShouldFailRule(_=>
             {
                 _.Query = @"query { post }";
                 _.Schema = BasicSchema();
@@ -42,7 +42,7 @@ namespace GraphQL.Authorization.Tests
             Settings.AddPolicy("ClassPolicy", builder => builder.RequireClaim("admin"));
             Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldPassRule(_ =>
+            ShouldPassRule(_=>
             {
                 _.Query = @"query { post }";
                 _.Schema = BasicSchema();
@@ -58,7 +58,7 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldFailRule(_ =>
+            ShouldFailRule(_=>
             {
                 _.Query = @"query { post }";
                 _.Schema = BasicSchema();
@@ -70,7 +70,7 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldPassRule(_ =>
+            ShouldPassRule(_=>
             {
                 _.Query = @"query { post }";
                 _.Schema = NestedSchema();
@@ -98,7 +98,7 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldFailRule(_ =>
+            ShouldFailRule(_=>
             {
                 _.Query = @"query { posts }";
                 _.Schema = NestedSchema();
@@ -122,7 +122,7 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldPassRule(_ =>
+            ShouldPassRule(_=>
             {
                 _.Query = @"query { author(input: { name: ""Quinn"" }) }";
                 _.Schema = TypedSchema();
@@ -209,12 +209,12 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void passes_when_field_is_not_included()
         {
-            Settings.AddPolicy("FieldPolicy", _ =>
+            Settings.AddPolicy("FieldPolicy", _=>
             {
                 _.RequireClaim("admin");
             });
 
-            ShouldPassRule(_ =>
+            ShouldPassRule(_=>
             {
                 _.Query = @"query { post @include(if: false) }";
                 _.Schema = BasicSchema();
@@ -224,12 +224,12 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void fails_when_field_is_included()
         {
-            Settings.AddPolicy("FieldPolicy", _ =>
+            Settings.AddPolicy("FieldPolicy", _=>
             {
                 _.RequireClaim("admin");
             });
 
-            ShouldFailRule(_ =>
+            ShouldFailRule(_=>
             {
                 _.Query = @"query { post @include(if: true) }";
                 _.Schema = BasicSchema();
@@ -239,12 +239,12 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void passes_when_field_is_skipped()
         {
-            Settings.AddPolicy("FieldPolicy", _ =>
+            Settings.AddPolicy("FieldPolicy", _=>
             {
                 _.RequireClaim("admin");
             });
 
-            ShouldPassRule(_ =>
+            ShouldPassRule(_=>
             {
                 _.Query = @"query { post @skip(if: true) }";
                 _.Schema = BasicSchema();
@@ -254,12 +254,12 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void fails_when_field_is_not_skipped()
         {
-            Settings.AddPolicy("FieldPolicy", _ =>
+            Settings.AddPolicy("FieldPolicy", _=>
             {
                 _.RequireClaim("admin");
             });
 
-            ShouldFailRule(_ =>
+            ShouldFailRule(_=>
             {
                 _.Query = @"query { post @skip(if: false) }";
                 _.Schema = BasicSchema();
