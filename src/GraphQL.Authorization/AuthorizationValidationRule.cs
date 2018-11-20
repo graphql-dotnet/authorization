@@ -1,4 +1,6 @@
+using System.Linq;
 using System.Threading.Tasks;
+using GraphQL.Execution;
 using GraphQL.Language.AST;
 using GraphQL.Types;
 using GraphQL.Validation;
@@ -49,7 +51,7 @@ namespace GraphQL.Authorization
                 {
                     var fieldDef = context.TypeInfo.GetFieldDef();
 
-                    if (fieldDef == null)
+                    if (fieldDef == null || SkipAuthCheck(fieldAst, context)) 
                         return;
 
                     // check target field
@@ -58,6 +60,37 @@ namespace GraphQL.Authorization
                     CheckAuth(fieldAst, fieldDef.ResolvedType.GetNamedType(), userContext, context, operationType);
                 });
             }));
+        }
+
+        private bool SkipAuthCheck(Field fieldAst, ValidationContext context)
+        {
+            if (fieldAst.Directives == null || !fieldAst.Directives.Any()) return true;
+
+            var includeField = GetDirectiveValue(context, fieldAst.Directives, DirectiveGraphType.Include.Name);
+            if (includeField.HasValue) return !includeField.Value;
+
+            var skipField = GetDirectiveValue(context, fieldAst.Directives, DirectiveGraphType.Skip.Name);
+            if (skipField.HasValue) return skipField.Value;
+
+            return false;
+        }
+
+        private static bool? GetDirectiveValue(ValidationContext context, Directives directives, string directiveName)
+        {
+            var directive = directives.Find(directiveName);
+            if (directive == null) return null;
+
+            var operation = !string.IsNullOrWhiteSpace(context.OperationName)
+                ? context.Document.Operations.WithName(context.OperationName)
+                : context.Document.Operations.FirstOrDefault();
+            var values = ExecutionHelper.GetArgumentValues(
+                context.Schema,
+                DirectiveGraphType.Include.Arguments,
+                directive.Arguments,
+                ExecutionHelper.GetVariableValues(context.Document, context.Schema, operation?.Variables, context.Inputs));
+
+            values.TryGetValue("if", out object ifObj);
+            return bool.TryParse(ifObj?.ToString() ?? string.Empty, out bool ifVal) && ifVal;
         }
 
         private void CheckAuth(
