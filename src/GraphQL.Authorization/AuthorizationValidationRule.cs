@@ -62,37 +62,39 @@ namespace GraphQL.Authorization
             }));
         }
 
-        private bool SkipAuthCheck(Field fieldAst, ValidationContext context)
+        private bool SkipAuthCheck(Field field, ValidationContext context)
         {
-            if (fieldAst.Directives == null || !fieldAst.Directives.Any()) return false;
-
-            var includeField = GetDirectiveValue(context, fieldAst.Directives, DirectiveGraphType.Include);
-            if (includeField.HasValue) return !includeField.Value;
-
-            var skipField = GetDirectiveValue(context, fieldAst.Directives, DirectiveGraphType.Skip);
-            if (skipField.HasValue) return skipField.Value;
-
-            return false;
-        }
-
-        private static bool? GetDirectiveValue(ValidationContext context, Directives directives, DirectiveGraphType directiveType)
-        {
-            var directive = directives.Find(directiveType.Name);
-            if (directive == null) return null;
+            if (field.Directives == null || !field.Directives.Any()) return false;
 
             var operationName = context.OperationName;
             var documentOperations = context.Document.Operations;
             var operation = !string.IsNullOrWhiteSpace(operationName)
                 ? documentOperations.WithName(operationName)
                 : documentOperations.FirstOrDefault();
+            var variables = ExecutionHelper.GetVariableValues(context.Document, context.Schema,
+                operation?.Variables, context.Inputs);
 
-            var values = ExecutionHelper.GetArgumentValues(
+            var includeField = GetDirectiveValue(context, field.Directives, DirectiveGraphType.Include, variables);
+            if (includeField.HasValue) return !includeField.Value;
+
+            var skipField = GetDirectiveValue(context, field.Directives, DirectiveGraphType.Skip, variables);
+            if (skipField.HasValue) return skipField.Value;
+
+            return false;
+        }
+
+        private static bool? GetDirectiveValue(ValidationContext context, Directives directives, DirectiveGraphType directiveType, Variables variables)
+        {
+            var directive = directives.Find(directiveType.Name);
+            if (directive == null) return null;
+
+            var argumentValues = ExecutionHelper.GetArgumentValues(
                 context.Schema,
                 directiveType.Arguments,
                 directive.Arguments,
-                ExecutionHelper.GetVariableValues(context.Document, context.Schema, operation?.Variables, context.Inputs));
+                variables);
 
-            values.TryGetValue("if", out object ifObj);
+            argumentValues.TryGetValue("if", out object ifObj);
             return bool.TryParse(ifObj?.ToString() ?? string.Empty, out bool ifVal) && ifVal;
         }
 
