@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using GraphQL.Authorization;
 
@@ -11,10 +12,15 @@ namespace Harness
 
     public class Query
     {
-        [GraphQLAuthorize(Policy = "AdminPolicy")]
+        // [GraphQLAuthorize(Policy = "AdminPolicy")]
         public User Viewer()
         {
             return new User { Id = Guid.NewGuid().ToString(), Name = "Quinn" };
+        }
+
+        public List<User> Users()
+        {
+            return new List<User> { new User { Id = Guid.NewGuid().ToString(), Name = "Quinn" } };
         }
     }
 

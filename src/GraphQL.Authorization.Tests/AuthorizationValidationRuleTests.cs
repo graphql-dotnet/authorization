@@ -110,6 +110,36 @@ namespace GraphQL.Authorization.Tests
         }
 
         [Fact]
+        public void nested_type_list_policy_fail()
+        {
+            Settings.AddPolicy("PostPolicy", _ =>
+            {
+                _.RequireClaim("admin");
+            });
+
+            ShouldFailRule(_=>
+            {
+                _.Query = @"query { posts }";
+                _.Schema = NestedSchema();
+            });
+        }
+
+        [Fact]
+        public void nested_type_list_non_null_policy_fail()
+        {
+            Settings.AddPolicy("PostPolicy", _ =>
+            {
+                _.RequireClaim("admin");
+            });
+
+            ShouldFailRule(_=>
+            {
+                _.Query = @"query { postsNonNull }";
+                _.Schema = NestedSchema();
+            });
+        }
+
+        [Fact]
         public void passes_with_claim_on_input_type()
         {
             Settings.AddPolicy("FieldPolicy", _ =>
@@ -173,6 +203,8 @@ namespace GraphQL.Authorization.Tests
             var defs = @"
                 type Query {
                     post(id: ID!): Post
+                    posts: [Post]
+                    postsNonNull: [Post!]!
                 }
 
                 type Post {
@@ -191,6 +223,16 @@ namespace GraphQL.Authorization.Tests
         public class NestedQueryWithAttributes
         {
             public Post Post(string id)
+            {
+                return null;
+            }
+
+            public IEnumerable<Post> Posts()
+            {
+                return null;
+            }
+
+            public IEnumerable<Post> PostsNonNull()
             {
                 return null;
             }

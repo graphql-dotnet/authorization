@@ -54,7 +54,7 @@ namespace GraphQL.Authorization
                     // check target field
                     CheckAuth(fieldAst, fieldDef, userContext, context, operationType);
                     // check returned graph type
-                    CheckAuth(fieldAst, fieldDef.ResolvedType, userContext, context, operationType);
+                    CheckAuth(fieldAst, fieldDef.ResolvedType.GetNamedType(), userContext, context, operationType);
                 });
             });
         }
