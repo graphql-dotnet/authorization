@@ -41,14 +41,17 @@ namespace Harness
 
                   type Query {
                     viewer: User
+                    users: [User]
                   }
                 ";
-                return Schema.For(
+                var schema = Schema.For(
                     definitions,
                     _ =>
                     {
                         _.Types.Include<Query>();
                     });
+                schema.FindType("User").AuthorizeWith("AdminPolicy");
+                return schema;
             });
 
             // extension method defined in this project
