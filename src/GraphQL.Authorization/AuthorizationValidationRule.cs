@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using GraphQL.Language.AST;
 using GraphQL.Types;
 using GraphQL.Validation;
@@ -55,6 +55,26 @@ namespace GraphQL.Authorization
                     CheckAuth(fieldAst, fieldDef, userContext, context, operationType);
                     // check returned graph type
                     CheckAuth(fieldAst, fieldDef.ResolvedType.GetNamedType(), userContext, context, operationType);
+                });
+
+                _.Match<VariableReference>(variable =>
+                {
+                    var variableType = context.TypeInfo.GetArgument().ResolvedType.GetNamedType() as IComplexGraphType;
+                    if (variableType == null)
+                        return;
+
+                    CheckAuth(variable, variableType, userContext, context, operationType);
+
+                    var variableData = variable.AsDictionary();
+
+                    // check authorization for each existing field in the Variable
+                    foreach (var field in variableType.Fields)
+                    {
+                        if (variableData.ContainsKey(field.Name))
+                        {
+                            CheckAuth(variable, field, userContext, context, operationType);
+                        }
+                    }
                 });
             });
         }
