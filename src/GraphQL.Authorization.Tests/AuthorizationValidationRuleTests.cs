@@ -173,6 +173,54 @@ namespace GraphQL.Authorization.Tests
             });
         }
 
+        [Fact]
+        public void passes_with_claim_on_variable_type()
+        {
+            Settings.AddPolicy("FieldPolicy", _ =>
+            {
+                _.RequireClaim("admin");
+            });
+
+            ShouldPassRule(_ =>
+            {
+                _.Query = @"query Author($input:AuthorInputType!){ author(input: $input) }";
+                _.Schema = TypedSchema();
+                _.Inputs = new Inputs(new Dictionary<string, object>()
+                {
+                    {
+                      "input",
+                      new Dictionary<string,object>{ {"name","Quinn" } }
+                    }
+                });
+                _.User = CreatePrincipal(claims: new Dictionary<string, string>
+                    {
+                        {"Admin", "true"}
+                    });
+            });
+        }
+
+        [Fact]
+        public void fails_on_missing_claim_on_variable_type()
+        {
+            Settings.AddPolicy("FieldPolicy", _ =>
+            {
+                _.RequireClaim("admin");
+            });
+
+            ShouldFailRule(_ =>
+            {
+                _.Query = @"query Author($input:AuthorInputType!){ author(input: $input) }";
+                _.Schema = TypedSchema();
+                _.Inputs = new Inputs(new Dictionary<string, object>()
+                {
+                    {
+                      "input",
+                      new Dictionary<string,object>{ {"name","Quinn" } }
+                    }
+                });
+            });
+        }
+
         private ISchema BasicSchema()
         {
             var defs = @"

@@ -1,4 +1,4 @@
-using System.Linq;
+using System.Collections.Generic;
 using GraphQL.Language.AST;
 using GraphQL.Types;
 using GraphQL.Validation;
@@ -65,14 +65,16 @@ namespace GraphQL.Authorization
 
                     CheckAuth(variable, variableType, userContext, context, operationType);
 
-                    var variableData = variable.AsDictionary();
-
                     // check authorization for each existing field in the Variable
-                    foreach (var field in variableType.Fields)
+                    if (context.Inputs.TryGetValue(variable.Name, out var fields) &&
+                            fields is Dictionary<string, object> fieldsValues)
                     {
-                        if (variableData.ContainsKey(field.Name))
+                        foreach (var field in variableType.Fields)
                         {
-                            CheckAuth(variable, field, userContext, context, operationType);
+                            if (fieldsValues.ContainsKey(field.Name))
+                            {
+                                CheckAuth(variable, field, userContext, context, operationType);
+                            }
                         }
                     }
                 });
