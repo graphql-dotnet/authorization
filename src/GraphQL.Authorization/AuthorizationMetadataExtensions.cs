@@ -27,12 +27,15 @@ namespace GraphQL.Authorization
             return evaluator.Evaluate(principal, userContext, arguments, list);
         }
 
-        public static void AuthorizeWith(this IProvideMetadata type, string policy)
+        public static void AuthorizeWith(this IProvideMetadata type, params string[] policies)
         {
             var list = GetPolicies(type);
-            if(!list.Contains(policy))
+            foreach (string policy in policies)
             {
-                list.Add(policy);
+                if (!list.Contains(policy))
+                {
+                    list.Add(policy);
+                }
             }
             type.Metadata[PolicyKey] = list;
         }
