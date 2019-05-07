@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -10,10 +10,16 @@ namespace GraphQL.Authorization
     public static class AuthorizationMetadataExtensions
     {
         public static readonly string PolicyKey = "Authorization__Policies";
+        public static readonly string PolicyPublicKey = "Authorization__Public";
 
         public static bool RequiresAuthorization(this IProvideMetadata type)
         {
             return GetPolicies(type).Any();
+        }
+
+        public static bool PublicAuthorization(this IProvideMetadata type)
+        {
+            return type.Metadata.ContainsKey(PolicyPublicKey);
         }
 
         public static Task<AuthorizationResult> Authorize(
@@ -38,6 +44,11 @@ namespace GraphQL.Authorization
                 }
             }
             type.Metadata[PolicyKey] = list;
+        }
+
+        public static void AuthorizePublic(this IProvideMetadata type)
+        {
+            type.Metadata[PolicyPublicKey] = null;
         }
 
         public static FieldBuilder<TSourceType, TReturnType> AuthorizeWith<TSourceType, TReturnType>(

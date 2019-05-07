@@ -187,6 +187,32 @@ namespace GraphQL.Authorization.Tests
             });
         }
 
+        [Fact]
+        public void passes_public_authorization()
+        {
+            Settings.AddPolicy("SessionPolicy", _ => _.RequireClaim("admin"));
+
+            ShouldPassRule(_ =>
+            {
+                _.Query = @"query { login(username: ""Quinn"", password: ""password"") }";
+                _.Schema = ProtectedQuerySchema();
+                _.User = CreatePrincipal();
+            });
+        }
+
+        [Fact]
+        public void fails_public_authorization()
+        {
+            Settings.AddPolicy("SessionPolicy", _ => _.RequireClaim("admin"));
+
+            ShouldFailRule(_ =>
+            {
+                _.Query = @"query { author(input: { name: ""Quinn"" }) }";
+                _.Schema = ProtectedQuerySchema();
+                _.User = CreatePrincipal();
+            });
+        }
+
         private ISchema BasicSchema()
         {
             var defs = @"
@@ -277,6 +303,29 @@ namespace GraphQL.Authorization.Tests
                 arguments: new QueryArguments(new QueryArgument<AuthorInputType> { Name = "input" }),
                 resolve: context => "testing"
             ).AuthorizeWith("AdminPolicy", "ConfidentialPolicy");
+
+            return new Schema { Query = query };
+        }
+
+        private ISchema ProtectedQuerySchema()
+        {
+            var query = new ObjectGraphType();
+            query.AuthorizeWith("SessionPolicy");
+
+            query.Field<StringGraphType>(
+                "login",
+                arguments: new QueryArguments(
+                    new QueryArgument<StringGraphType> {Name = "username"},
+                    new QueryArgument<StringGraphType> { Name = "password" }
+                ),
+                resolve: context => "testing"
+            ).AuthorizePublic();
+
+            query.Field<StringGraphType>(
+                "author",
+                arguments: new QueryArguments(new QueryArgument<AuthorInputType> { Name = "input" }),
+                resolve: context => "testing"
+            );
 
             return new Schema { Query = query };
         }
