@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -34,18 +34,25 @@ namespace GraphQL.Authorization
             context.UserContext = userContext;
             context.Arguments = arguments;
 
-            var authPolicies = _settings.GetPolicies(requiredPolicies).ToList();
-
             var tasks = new List<Task>();
 
-            authPolicies.Apply(p =>
-            {
-                p.Requirements.Apply(r =>
+            requiredPolicies?.ToList()
+                .Apply(requiredPolicy =>
                 {
-                    var task = r.Authorize(context);
-                    tasks.Add(task);
+                    var authorizationPolicy = _settings.GetPolicy(requiredPolicy);
+                    if (authorizationPolicy == null)
+                    {
+                        context.ReportError($"Required policy '{requiredPolicy}' is not present.");
+                    }
+                    else
+                    {
+                        authorizationPolicy.Requirements.Apply(r =>
+                        {
+                            var task = r.Authorize(context);
+                            tasks.Add(task);
+                        });
+                    }
                 });
-            });
 
             await Task.WhenAll(tasks.ToArray());
 

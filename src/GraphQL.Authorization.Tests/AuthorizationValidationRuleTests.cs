@@ -10,10 +10,8 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void class_policy_success()
         {
-            Settings.AddPolicy("ClassPolicy", _ =>
-            {
-                _.RequireClaim("admin");
-            });
+            Settings.AddPolicy("ClassPolicy", _ => _.RequireClaim("admin"));
+            Settings.AddPolicy("FieldPolicy", _ => _.RequireClaim("admin"));
 
             ShouldPassRule(_=>
             {
@@ -44,10 +42,8 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void field_policy_success()
         {
-            Settings.AddPolicy("FieldPolicy", _ =>
-            {
-                _.RequireClaim("admin");
-            });
+            Settings.AddPolicy("ClassPolicy", _ => _.RequireClaim("admin"));
+            Settings.AddPolicy("FieldPolicy", _ => _.RequireClaim("admin"));
 
             ShouldPassRule(_=>
             {
