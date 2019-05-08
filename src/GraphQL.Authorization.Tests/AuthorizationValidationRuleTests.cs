@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using GraphQL;
 using GraphQL.Types;
 using Xunit;
@@ -173,6 +173,24 @@ namespace GraphQL.Authorization.Tests
             });
         }
 
+        [Fact]
+        public void passes_with_multiple_policies_on_field_and_single_on_input_type()
+        {
+            Settings.AddPolicy("FieldPolicy", _ => _.RequireClaim("admin"));
+            Settings.AddPolicy("AdminPolicy", _ => _.RequireClaim("admin"));
+            Settings.AddPolicy("ConfidentialPolicy", _ => _.RequireClaim("admin"));
+
+            ShouldPassRule(_ =>
+            {
+                _.Query = @"query { author(input: { name: ""Quinn"" }) project(input: { name: ""TEST"" }) }";
+                _.Schema = TypedSchema();
+                _.User = CreatePrincipal(claims: new Dictionary<string, string>
+                {
+                    {"Admin", "true"}
+                });
+            });
+        }
+
         private ISchema BasicSchema()
         {
             var defs = @"
@@ -257,6 +275,13 @@ namespace GraphQL.Authorization.Tests
                 arguments: new QueryArguments(new QueryArgument<AuthorInputType> { Name = "input" }),
                 resolve: context => "testing"
             );
+
+            query.Field<StringGraphType>(
+                "project",
+                arguments: new QueryArguments(new QueryArgument<AuthorInputType> { Name = "input" }),
+                resolve: context => "testing"
+            ).AuthorizeWith("AdminPolicy", "ConfidentialPolicy");
+
             return new Schema { Query = query };
         }
 
