@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Shouldly;
@@ -48,6 +48,27 @@ namespace GraphQL.Authorization.Tests
                 null,
                 null,
                 new[] {"MyPolicy"}
+            );
+
+            result.Succeeded.ShouldBeFalse();
+        }
+
+        [Fact]
+        public async Task fails_when_missing_policy()
+        {
+            _settings.AddPolicy("MyPolicy", _ =>
+            {
+                _.RequireClaim("Admin");
+            });
+
+            var result = await _evaluator.Evaluate(
+                CreatePrincipal(claims: new Dictionary<string, string>
+                {
+                    {"Admin", "true"}
+                }),
+                null,
+                null,
+                new[] { "PolicyDoesNotExist" }
             );
 
             result.Succeeded.ShouldBeFalse();
