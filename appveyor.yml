@@ -1,9 +1,11 @@
-version: 2.1.{build}
+version: 3.0.{build}
 skip_tags: true
-skip_branch_with_pr: true
+skip_branch_with_pr: false
 test: off
 pull_requests:
   do_not_increment_build_number: true
+
+os: Visual Studio 2017
 
 environment:
   CI: true
@@ -17,6 +19,7 @@ branches:
 
 install:
   - ps: Install-Product node LTS
+  - ps: choco install dotnetcore-sdk --no-progress --confirm --version 2.2.104
   - node --version
   - npm --version
   - dotnet --version
@@ -36,4 +39,6 @@ deploy:
     secure: +l1vfBMajn1WfmXkQ2LdILKxK4fQ5AHSnnU1kf11Bn1xRGUOTCdPhLwHx232piEn
   skip_symbols: true
   on:
-    branch: master
+    branch:
+      - master
+      - next

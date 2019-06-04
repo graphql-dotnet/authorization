@@ -1,5 +1,6 @@
-import { exec } from 'shelljs';
+import { exec } from 'shelljs'
 
 export default function nugetRestore() {
-  return exec('dotnet restore src');
+  exec('dotnet restore src')
+  return Promise.resolve()
 }

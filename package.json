@@ -1,6 +1,6 @@
 {
   "name": "graphql-authorization",
-  "version": "2.1",
+  "version": "3.0",
   "main": "index.js",
   "repository": "git@github.com:graphql-dotnet/authorization.git",
   "author": "Joe McBride <joe@uicraftsman.com>",
@@ -27,6 +27,6 @@
     "cross-env": "^5.0.2",
     "moment": "^2.18.1",
     "shelljs": "^0.7.8",
-    "simple-make": "^1.0.0"
+    "simple-make": "^2.1.0"
   }
 }

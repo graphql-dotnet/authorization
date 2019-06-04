@@ -6,7 +6,7 @@ export default function testDotnet() {
   const deferred = new Deferred();
 
   const platform = process.platform === 'darwin'
-    ? '-f netcoreapp2.0'
+    ? '-f netcoreapp2.2'
     : '';
   const test = `dotnet test ${platform} -c ${settings.target}`;
 
