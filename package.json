@@ -27,6 +27,6 @@
     "cross-env": "^5.0.2",
     "moment": "^2.18.1",
     "shelljs": "^0.7.8",
-    "simple-make": "^1.0.0"
+    "simple-make": "^2.1.0"
   }
 }

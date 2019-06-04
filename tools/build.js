@@ -1,5 +1,6 @@
 import make from 'simple-make/lib/make'
 import config from 'simple-make/lib/config'
+import settings from './tasks/settings'
 import {
   compile,
   clean,
@@ -28,4 +29,4 @@ const tasks = {
   ci: 'version default artifacts'
 }
 
-make({ tasks })
+make({ tasks, settings })

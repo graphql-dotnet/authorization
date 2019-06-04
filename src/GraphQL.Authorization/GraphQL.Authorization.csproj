@@ -4,7 +4,7 @@
     <Description>A toolset for authorizing access to graph types for GraphQL .NET</Description>
     <VersionPrefix>2.1</VersionPrefix>
     <Authors>Joe McBride</Authors>
-    <TargetFrameworks>netstandard1.3;net46</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>GraphQL.Authorization</AssemblyName>
     <PackageId>GraphQL.Authorization</PackageId>
     <PackageTags>GraphQL;json;api</PackageTags>

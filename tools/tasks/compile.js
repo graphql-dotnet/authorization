@@ -6,7 +6,7 @@ export default function compile() {
   const deferred = new Deferred();
 
   const platform = process.platform === 'darwin'
-    ? '-f netcoreapp2.0'
+    ? '-f netcoreapp2.2'
     : ''
   const build = `dotnet build ${platform} -c ${settings.target}`
 
