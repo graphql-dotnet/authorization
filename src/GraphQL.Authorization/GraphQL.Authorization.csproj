@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>A toolset for authorizing access to graph types for GraphQL .NET</Description>
-    <VersionPrefix>2.1</VersionPrefix>
+    <VersionPrefix>3.0</VersionPrefix>
     <Authors>Joe McBride</Authors>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>GraphQL.Authorization</AssemblyName>
