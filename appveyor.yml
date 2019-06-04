@@ -1,6 +1,6 @@
 version: 3.0.{build}
 skip_tags: true
-skip_branch_with_pr: true
+skip_branch_with_pr: false
 test: off
 pull_requests:
   do_not_increment_build_number: true
