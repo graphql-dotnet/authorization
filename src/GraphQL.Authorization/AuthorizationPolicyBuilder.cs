@@ -39,6 +39,12 @@ namespace GraphQL.Authorization
             return this;
         }
 
+        public AuthorizationPolicyBuilder RequireAuthenticatedUser()
+        {
+            _requirements.Add(new AuthenticatedUserRequirement());
+            return this;
+        }
+
         public AuthorizationPolicyBuilder AddRequirement(IAuthorizationRequirement requirement)
         {
             _requirements.Add(requirement);

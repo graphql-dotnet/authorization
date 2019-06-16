@@ -55,7 +55,7 @@ namespace Harness
             });
 
             // extension method defined in this project
-            services.AddGraphQLAuth(_ =>
+            services.AddGraphQLAuth((_, s) =>
             {
                 _.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"));
             });

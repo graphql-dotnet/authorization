@@ -20,11 +20,11 @@ namespace GraphQL.Authorization
             this IProvideMetadata type,
             ClaimsPrincipal principal,
             object userContext,
-            Dictionary<string, object> arguments,
+            Dictionary<string, object> inputVariables,
             IAuthorizationEvaluator evaluator)
         {
             var list = GetPolicies(type);
-            return evaluator.Evaluate(principal, userContext, arguments, list);
+            return evaluator.Evaluate(principal, userContext, inputVariables, list);
         }
 
         public static void AuthorizeWith(this IProvideMetadata type, params string[] policies)
