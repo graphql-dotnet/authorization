@@ -28,7 +28,7 @@ namespace GraphQL.Authorization.Tests
         }
     }
 
-    public class GraphQLUserContext : IProvideClaimsPrincipal
+    public class GraphQLUserContext : Dictionary<string, object>, IProvideClaimsPrincipal
     {
         public ClaimsPrincipal User { get; set;}
     }
