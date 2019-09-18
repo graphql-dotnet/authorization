@@ -5,7 +5,7 @@ using GraphQL.Authorization;
 
 namespace Harness
 {
-    public class GraphQLUserContext : IProvideClaimsPrincipal
+    public class GraphQLUserContext : Dictionary<string, object>, IProvideClaimsPrincipal
     {
         public ClaimsPrincipal User { get; set; }
     }
