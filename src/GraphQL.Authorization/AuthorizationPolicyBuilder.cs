@@ -1,41 +1,32 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+using System;
+using System.Collections.Generic;
 
 namespace GraphQL.Authorization
 {
+    /// <summary>
+    /// Builder assembles policy from various authorization requirements.
+    /// </summary>
     public class AuthorizationPolicyBuilder
     {
-        private readonly List<IAuthorizationRequirement> _requirements;
+        private readonly List<IAuthorizationRequirement> _requirements = new List<IAuthorizationRequirement>();
 
-        public AuthorizationPolicyBuilder()
-        {
-            _requirements = new List<IAuthorizationRequirement>();
-        }
-
-        public AuthorizationPolicy Build()
-        {
-            var policy = new AuthorizationPolicy(_requirements);
-            return policy;
-        }
+        public AuthorizationPolicy Build() => new AuthorizationPolicy(_requirements);
 
         public AuthorizationPolicyBuilder RequireClaim(string claimType)
         {
-            var requirement = new ClaimAuthorizationRequirement(claimType);
-            _requirements.Add(requirement);
+            _requirements.Add(new ClaimAuthorizationRequirement(claimType));
             return this;
         }
 
         public AuthorizationPolicyBuilder RequireClaim(string claimType, params string[] allowedValues)
         {
-            var requirement = new ClaimAuthorizationRequirement(claimType, allowedValues);
-            _requirements.Add(requirement);
+            _requirements.Add(new ClaimAuthorizationRequirement(claimType, allowedValues));
             return this;
         }
 
         public AuthorizationPolicyBuilder RequireClaim(string claimType, IEnumerable<string> allowedValues, IEnumerable<string> displayValues)
         {
-            var requirement = new ClaimAuthorizationRequirement(claimType, allowedValues, displayValues);
-            _requirements.Add(requirement);
+            _requirements.Add(new ClaimAuthorizationRequirement(claimType, allowedValues, displayValues));
             return this;
         }
 
@@ -47,7 +38,7 @@ namespace GraphQL.Authorization
 
         public AuthorizationPolicyBuilder AddRequirement(IAuthorizationRequirement requirement)
         {
-            _requirements.Add(requirement);
+            _requirements.Add(requirement ?? throw new ArgumentNullException(nameof(requirement)));
             return this;
         }
     }

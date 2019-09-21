@@ -11,66 +11,80 @@ A toolset for authorizing access to graph types for [GraphQL .NET](https://githu
 * Register the authorization classes in your container (`IAuthorizationEvaluator`, `AuthorizationSettings`, and the `AuthorizationValidationRule`).
 * Provide a `UserContext` class that implements `IProvideClaimsPrincipal`.
 * Add policies to the `AuthorizationSettings`.
-* Apply a policy to a GraphType or Field (which implement `IProvideMetadata`) using `AuthorizeWith(string policy)`.
+* Apply a policy to a GraphType or Field (both implement `IProvideMetadata`):
+  - using `AuthorizeWith(string policy)` extension method
+  - or with `GraphQLAuthorize` attribute if using Schema + Handler syntax.
 * The `AuthorizationValidationRule` will run and verify the policies based on the registered policies.
 * You can write your own `IAuthorizationRequirement`.
-* Use `GraphQLAuthorize` attribute if using Schema + Handler syntax.
 
 # Examples
 
+Register the authorization classes in your container:
+
 ```csharp
-public static void AddGraphQLAuth(this IServiceCollection services)
+public static IServiceCollection AddGraphQLAuth(this IServiceCollection services, Action<AuthorizationSettings, IServiceProvider> configure)
 {
-    services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+    if (configure == null)
+        throw new ArgumentNullException(nameof(configure));
+
+    services.AddHttpContextAccessor();
     services.TryAddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
     services.AddTransient<IValidationRule, AuthorizationValidationRule>();
 
-    services.TryAddSingleton(s =>
+    services.TryAddTransient(provider =>
     {
         var authSettings = new AuthorizationSettings();
-
-        authSettings.AddPolicy("AdminPolicy", _ => _.RequireClaim("role", "Admin"));
-
+        configure(authSettings, provider);
         return authSettings;
     });
+
+    return services;
 }
+```
 
+Add policies to the `AuthorizationSettings`:
 
-public static void UseGraphQLWithAuth(this IApplicationBuilder app)
+```csharp
+services.AddGraphQLAuth(settings =>
 {
-    var settings = new GraphQLSettings
-    {
-        BuildUserContext = ctx =>
-        {
-            var userContext = new GraphQLUserContext
-            {
-                User = ctx.User
-            };
+    settings.AddPolicy("AdminPolicy", builder => builder.RequireClaim("role", "Admin"));
+});
+```
 
-            return Task.FromResult(userContext);
-        }
-    };
+Provide a `UserContext` class that implements `IProvideClaimsPrincipal`:
 
-    var rules = app.ApplicationServices.GetServices<IValidationRule>();
-    settings.ValidationRules.AddRange(rules);
-
-    app.UseMiddleware<GraphQLMiddleware>(settings);
-}
-
+```csharp
 public class GraphQLUserContext : IProvideClaimsPrincipal
 {
     public ClaimsPrincipal User { get; set; }
 }
 
-public class GraphQLSettings
+// AddGraphQL is an extension method from the GraphQL.Server.Core package and it is aware of all registered validation rules
+// see https://github.com/graphql-dotnet/server/blob/develop/src/Core/ServiceCollectionExtensions.cs
+services.AddGraphQL(options =>
 {
-    public Func<HttpContext, Task<object>> BuildUserContext { get; set; }
-    public object Root { get; set; }
-    public List<IValidationRule> ValidationRules { get; } = new List<IValidationRule>();
+    options.ExposeExceptions = true;
+    options.EnableMetrics = false;
+}).AddUserContextBuilder(context => new GraphQLUserContext { User = context.User });
+```
+
+Register your schema and append GraphQL middleware in the HTTP request pipeline:
+
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddSingleton<ISchema, YourSchema>();
+}
+
+public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+{
+    // UseGraphQL is an extension method from the GraphQL.Server.Transports.AspNetCore package
+    // see https://github.com/graphql-dotnet/server/blob/develop/src/Transports.AspNetCore/ApplicationBuilderExtensions.cs
+    app.UseGraphQL<ISchema>();
 }
 ```
 
-GraphType first syntax - use `AuthorizeWith`.
+GraphType first syntax - use `AuthorizeWith` extension method.
 
 ```csharp
 public class MyType : ObjectGraphType

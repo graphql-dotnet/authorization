@@ -1,5 +1,5 @@
-﻿using System.Linq;
 using Shouldly;
+using System.Linq;
 using Xunit;
 
 namespace GraphQL.Authorization.Tests

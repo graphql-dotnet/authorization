@@ -1,22 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using GraphQL.Authorization;
+using GraphQL.Server;
+using GraphQL.Types;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-
-using GraphQL;
-using GraphQL.Authorization;
-using GraphQL.Types;
-using GraphQL.Server.Transports.AspNetCore;
-using GraphQL.Server.Ui.GraphiQL;
-using GraphQL.Validation;
-using GraphQL.Server;
 
 namespace Harness
 {
@@ -46,38 +35,32 @@ namespace Harness
                 ";
                 var schema = Schema.For(
                     definitions,
-                    _ =>
+                    builder =>
                     {
-                        _.Types.Include<Query>();
+                        builder.Types.Include<Query>();
                     });
                 schema.FindType("User").AuthorizeWith("AdminPolicy");
                 return schema;
             });
 
             // extension method defined in this project
-            services.AddGraphQLAuth((_, s) =>
+            services.AddGraphQLAuth(settings =>
             {
-                _.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"));
+                settings.AddPolicy("AdminPolicy", builder => builder.RequireClaim("role", "Admin"));
             });
 
             services.AddGraphQL(options =>
             {
                 options.ExposeExceptions = true;
+                options.EnableMetrics = false;
             }).AddUserContextBuilder(context => new GraphQLUserContext { User = context.User });
-
-            services.AddMvc();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseDeveloperExceptionPage();
-
-            var validationRules = app.ApplicationServices.GetServices<IValidationRule>();
-
-            app.UseGraphQL<ISchema>("/graphql");
-            app.UseGraphiQLServer(new GraphiQLOptions());
-
-            app.UseMvc();
+            app.UseDeveloperExceptionPage()
+               .UseGraphQL<ISchema>()
+               .UseGraphiQLServer();
         }
     }
 }

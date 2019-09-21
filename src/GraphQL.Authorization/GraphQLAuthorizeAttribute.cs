@@ -1,4 +1,4 @@
-﻿using GraphQL.Utilities;
+using GraphQL.Utilities;
 
 namespace GraphQL.Authorization
 {
@@ -6,14 +6,8 @@ namespace GraphQL.Authorization
     {
         public string Policy { get; set; }
 
-        public override void Modify(TypeConfig type)
-        {
-            type.AuthorizeWith(Policy);
-        }
+        public override void Modify(TypeConfig type) => type.AuthorizeWith(Policy);
 
-        public override void Modify(FieldConfig field)
-        {
-            field.AuthorizeWith(Policy);
-        }
+        public override void Modify(FieldConfig field) => field.AuthorizeWith(Policy);
     }
 }

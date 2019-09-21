@@ -1,6 +1,6 @@
-﻿using System.Linq;
 using GraphQL.Types;
 using Shouldly;
+using System.Linq;
 using Xunit;
 
 namespace GraphQL.Authorization.Tests
@@ -37,10 +37,7 @@ namespace GraphQL.Authorization.Tests
         public class QueryWithAttributes
         {
             [GraphQLAuthorize(Policy = "FieldPolicy")]
-            public string Post(string id)
-            {
-                return "";
-            }
+            public string Post(string id) => "";
         }
     }
 }

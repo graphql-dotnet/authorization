@@ -1,14 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using GraphQL;
 using GraphQL.Execution;
 using GraphQL.Http;
 using GraphQL.Types;
 using GraphQL.Validation;
 using Shouldly;
-using Xunit;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 
 namespace GraphQL.Authorization.Tests
 {
@@ -28,15 +26,10 @@ namespace GraphQL.Authorization.Tests
         }
     }
 
-    public class GraphQLUserContext : Dictionary<string, object>, IProvideClaimsPrincipal
-    {
-        public ClaimsPrincipal User { get; set;}
-    }
-
     public class ValidationTestBase
     {
-        private IDocumentExecuter _executor = new DocumentExecuter();
-        private IDocumentWriter _writer = new DocumentWriter(indent: true);
+        private readonly IDocumentExecuter _executor = new DocumentExecuter();
+        private readonly IDocumentWriter _writer = new DocumentWriter(indent: true);
 
         public ValidationTestBase()
         {
