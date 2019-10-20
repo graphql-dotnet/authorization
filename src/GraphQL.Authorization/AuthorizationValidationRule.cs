@@ -1,4 +1,5 @@
-﻿using System.Linq;
+using System.Collections.Generic;
+using System.Security.Claims;
 using GraphQL.Language.AST;
 using GraphQL.Types;
 using GraphQL.Validation;
@@ -16,7 +17,7 @@ namespace GraphQL.Authorization
 
         public INodeVisitor Validate(ValidationContext context)
         {
-            var userContext = context.UserContext as IProvideClaimsPrincipal;
+            var userContext = context.UserContext;
 
             return new EnterLeaveListener(_ =>
             {
@@ -62,14 +63,18 @@ namespace GraphQL.Authorization
         private void CheckAuth(
             INode node,
             IProvideMetadata type,
-            IProvideClaimsPrincipal userContext,
+            IDictionary<string, object> userContext,
             ValidationContext context,
             OperationType operationType)
         {
             if (type == null || !type.RequiresAuthorization()) return;
 
+            ClaimsPrincipal principal = null;
+            if (userContext?.ContainsKey("User") == true)
+                principal = userContext?["User"] as ClaimsPrincipal;
+
             var result = type
-                .Authorize(userContext?.User, context.UserContext, context.Inputs, _evaluator)
+                .Authorize(principal, context.UserContext, context.Inputs, _evaluator)
                 .GetAwaiter()
                 .GetResult();
 
