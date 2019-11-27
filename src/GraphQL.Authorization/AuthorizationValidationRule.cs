@@ -1,6 +1,7 @@
 using GraphQL.Language.AST;
 using GraphQL.Types;
 using GraphQL.Validation;
+using System.Threading.Tasks;
 
 namespace GraphQL.Authorization
 {
@@ -13,11 +14,11 @@ namespace GraphQL.Authorization
             _evaluator = evaluator;
         }
 
-        public INodeVisitor Validate(ValidationContext context)
+        public Task<INodeVisitor> ValidateAsync(ValidationContext context)
         {
             var userContext = context.UserContext as IProvideClaimsPrincipal;
 
-            return new EnterLeaveListener(_ =>
+            return Task.FromResult((INodeVisitor)new EnterLeaveListener(_ =>
             {
                 var operationType = OperationType.Query;
 
@@ -56,7 +57,7 @@ namespace GraphQL.Authorization
                     // check returned graph type
                     CheckAuth(fieldAst, fieldDef.ResolvedType.GetNamedType(), userContext, context, operationType);
                 });
-            });
+            }));
         }
 
         private void CheckAuth(

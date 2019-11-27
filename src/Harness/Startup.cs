@@ -43,17 +43,17 @@ namespace Harness
                 return schema;
             });
 
-            // extension method defined in this project
-            services.AddGraphQLAuth(settings =>
-            {
-                settings.AddPolicy("AdminPolicy", builder => builder.RequireClaim("role", "Admin"));
-            });
-
-            services.AddGraphQL(options =>
-            {
-                options.ExposeExceptions = true;
-                options.EnableMetrics = false;
-            }).AddUserContextBuilder(context => new GraphQLUserContext { User = context.User });
+            services
+                .AddGraphQL(options =>
+                {
+                    options.ExposeExceptions = true;
+                    options.EnableMetrics = false;
+                })
+                .AddGraphQLAuth(settings => // extension method defined in this project
+                {
+                    settings.AddPolicy("AdminPolicy", builder => builder.RequireClaim("role", "Admin"));
+                })
+                .AddUserContextBuilder(context => new GraphQLUserContext { User = context.User });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

@@ -22,36 +22,35 @@ A toolset for authorizing access to graph types for [GraphQL .NET](https://githu
 Register the authorization classes in your container:
 
 ```csharp
-public static IServiceCollection AddGraphQLAuth(this IServiceCollection services, Action<AuthorizationSettings, IServiceProvider> configure)
+public static IGraphQLBuilder AddGraphQLAuth(this IGraphQLBuilder builder, Action<AuthorizationSettings, IServiceProvider> configure)
 {
-    if (configure == null)
-        throw new ArgumentNullException(nameof(configure));
+    if (builder == null)
+        throw new ArgumentNullException(nameof(builder));
 
-    services.AddHttpContextAccessor();
-    services.TryAddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
-    services.AddTransient<IValidationRule, AuthorizationValidationRule>();
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.TryAddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
+    builder.Services.AddTransient<IValidationRule, AuthorizationValidationRule>();
 
-    services.TryAddTransient(provider =>
+    builder.Services.TryAddTransient(provider =>
     {
         var authSettings = new AuthorizationSettings();
         configure(authSettings, provider);
         return authSettings;
     });
 
-    return services;
+    return builder;
+}
+
+public static IGraphQLBuilder AddGraphQLAuth(this IGraphQLBuilder builder, Action<AuthorizationSettings> configure)
+{
+    if (configure == null)
+        throw new ArgumentNullException(nameof(configure));
+
+    return builder.AddGraphQLAuth((settings, _) => configure(settings));
 }
 ```
 
-Add policies to the `AuthorizationSettings`:
-
-```csharp
-services.AddGraphQLAuth(settings =>
-{
-    settings.AddPolicy("AdminPolicy", builder => builder.RequireClaim("role", "Admin"));
-});
-```
-
-Provide a `UserContext` class that implements `IProvideClaimsPrincipal`:
+Provide a `UserContext` class that implements `IProvideClaimsPrincipal` and add policies to the `AuthorizationSettings`:
 
 ```csharp
 public class GraphQLUserContext : IProvideClaimsPrincipal
@@ -65,7 +64,12 @@ services.AddGraphQL(options =>
 {
     options.ExposeExceptions = true;
     options.EnableMetrics = false;
-}).AddUserContextBuilder(context => new GraphQLUserContext { User = context.User });
+})
+.AddUserContextBuilder(context => new GraphQLUserContext { User = context.User })
+.AddGraphQLAuth(settings =>
+{
+    settings.AddPolicy("AdminPolicy", options => options.RequireClaim("role", "Admin"));
+}
 ```
 
 Register your schema and append GraphQL middleware in the HTTP request pipeline:
@@ -84,7 +88,7 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 }
 ```
 
-GraphType first syntax - use `AuthorizeWith` extension method.
+GraphType first syntax - use `AuthorizeWith` extension method on GraphType or Field.
 
 ```csharp
 public class MyType : ObjectGraphType
@@ -97,7 +101,7 @@ public class MyType : ObjectGraphType
 }
 ```
 
-Schema first syntax - use `GraphQLAuthorize` attribute.
+Schema first syntax - use `GraphQLAuthorize` attribute on type or method.
 
 ```csharp
 [GraphQLAuthorize(Policy = "MyPolicy")]

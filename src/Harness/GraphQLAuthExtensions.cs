@@ -1,4 +1,5 @@
 using GraphQL.Authorization;
+using GraphQL.Server;
 using GraphQL.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -8,31 +9,31 @@ namespace Harness
 {
     public static class GraphQLAuthExtensions
     {
-        public static IServiceCollection AddGraphQLAuth(this IServiceCollection services, Action<AuthorizationSettings, IServiceProvider> configure)
+        public static IGraphQLBuilder AddGraphQLAuth(this IGraphQLBuilder builder, Action<AuthorizationSettings, IServiceProvider> configure)
         {
-            if (configure == null)
-                throw new ArgumentNullException(nameof(configure));
+            if (builder == null)
+                throw new ArgumentNullException(nameof(builder));
 
-            services.AddHttpContextAccessor();
-            services.TryAddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
-            services.AddTransient<IValidationRule, AuthorizationValidationRule>();
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.TryAddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
+            builder.Services.AddTransient<IValidationRule, AuthorizationValidationRule>();
 
-            services.TryAddTransient(provider =>
+            builder.Services.TryAddTransient(provider =>
             {
                 var authSettings = new AuthorizationSettings();
                 configure(authSettings, provider);
                 return authSettings;
             });
 
-            return services;
+            return builder;
         }
 
-        public static IServiceCollection AddGraphQLAuth(this IServiceCollection services, Action<AuthorizationSettings> configure)
+        public static IGraphQLBuilder AddGraphQLAuth(this IGraphQLBuilder builder, Action<AuthorizationSettings> configure)
         {
             if (configure == null)
                 throw new ArgumentNullException(nameof(configure));
 
-            return services.AddGraphQLAuth((settings, provider) => configure(settings));
+            return builder.AddGraphQLAuth((settings, _) => configure(settings));
         }
     }
 }

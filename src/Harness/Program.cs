@@ -11,8 +11,7 @@ namespace Harness
         }
 
         public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
+            WebHost.CreateDefaultBuilder<Startup>(args)
                 .Build();
     }
 }
