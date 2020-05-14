@@ -10,7 +10,7 @@ namespace GraphQL.Authorization
         Task<AuthorizationResult> Evaluate(
             ClaimsPrincipal principal,
             object userContext,
-            Dictionary<string, object> arguments,
+            IDictionary<string, object> arguments,
             IEnumerable<string> requiredPolicies);
     }
 
@@ -26,7 +26,7 @@ namespace GraphQL.Authorization
         public async Task<AuthorizationResult> Evaluate(
             ClaimsPrincipal principal,
             object userContext,
-            Dictionary<string, object> inputVariables,
+            IDictionary<string, object> inputVariables,
             IEnumerable<string> requiredPolicies)
         {
             var context = new AuthorizationContext();

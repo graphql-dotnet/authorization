@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using GraphQL.Authorization;
 using GraphQL.Validation;
-using System.Threading.Tasks;
 
 namespace Harness
 {
