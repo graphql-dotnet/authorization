@@ -12,7 +12,7 @@ namespace GraphQL.Authorization
 
         public object UserContext { get; set; }
 
-        public Dictionary<string, object> InputVariables { get; set; }
+        public IDictionary<string, object> InputVariables { get; set; }
 
         public IEnumerable<string> Errors => _errors;
 

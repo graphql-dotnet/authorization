@@ -2,13 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using GraphQL;
 using GraphQL.Execution;
-using GraphQL.Http;
+using GraphQL.NewtonsoftJson;
 using GraphQL.Types;
 using GraphQL.Validation;
 using Shouldly;
-using Xunit;
 
 namespace GraphQL.Authorization.Tests
 {
@@ -30,7 +28,7 @@ namespace GraphQL.Authorization.Tests
 
     public class GraphQLUserContext : Dictionary<string, object>, IProvideClaimsPrincipal
     {
-        public ClaimsPrincipal User { get; set;}
+        public ClaimsPrincipal User { get; set; }
     }
 
     public class ValidationTestBase
