@@ -63,21 +63,19 @@ namespace Harness
             services.AddGraphQL(options =>
             {
                 options.ExposeExceptions = true;
-            }).AddUserContextBuilder(context => new GraphQLUserContext { User = context.User });
-
-            services.AddMvc();
+            })
+            .AddSystemTextJson()
+            .AddUserContextBuilder(context => new GraphQLUserContext { User = context.User });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseDeveloperExceptionPage();
 
             var validationRules = app.ApplicationServices.GetServices<IValidationRule>();
 
             app.UseGraphQL<ISchema>("/graphql");
-            app.UseGraphiQLServer(new GraphiQLOptions());
-
-            app.UseMvc();
+            app.UseGraphiQLServer();
         }
     }
 }

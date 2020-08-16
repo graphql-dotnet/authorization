@@ -47,6 +47,13 @@ namespace GraphQL.Authorization
             return builder;
         }
 
+        public static ConnectionBuilder<TSourceType> AuthorizeWith<TSourceType>(
+            this ConnectionBuilder<TSourceType> builder, string policy)
+        {
+            builder.FieldType.AuthorizeWith(policy);
+            return builder;
+        }
+
         public static List<string> GetPolicies(this IProvideMetadata type)
         {
             return type.GetMetadata(PolicyKey, new List<string>());
