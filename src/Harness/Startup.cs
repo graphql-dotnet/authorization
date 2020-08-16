@@ -75,7 +75,7 @@ namespace Harness
             var validationRules = app.ApplicationServices.GetServices<IValidationRule>();
 
             app.UseGraphQL<ISchema>("/graphql");
-            app.UseGraphiQLServer(new GraphiQLOptions());
+            app.UseGraphiQLServer();
         }
     }
 }
