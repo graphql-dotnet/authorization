@@ -8,13 +8,14 @@ A toolset for authorizing access to graph types for [GraphQL .NET](https://githu
 
 # Usage
 
-* Register the authorization classes in your container (`IAuthorizationEvaluator`, `AuthorizationSettings`, and the `AuthorizationValidationRule`).
+* Register the authorization classes in your DI container (`IAuthorizationEvaluator`, `AuthorizationSettings`, and the `AuthorizationValidationRule`).
 * Provide a `UserContext` class that implements `IProvideClaimsPrincipal`.
 * Add policies to the `AuthorizationSettings`.
 * Apply a policy to a GraphType or Field (which implement `IProvideMetadata`) using `AuthorizeWith(string policy)`.
+* Make sure the `AuthorizationValidationRule` is registered with your Schema (depending on your server implementation, you may only need to register it in your DI container)
 * The `AuthorizationValidationRule` will run and verify the policies based on the registered policies.
 * You can write your own `IAuthorizationRequirement`.
-* Use `GraphQLAuthorize` attribute if using Schema + Handler syntax.
+* Use `GraphQLAuthorize` attribute if using Schema First syntax.
 
 # Examples
 
@@ -57,7 +58,7 @@ public static void UseGraphQLWithAuth(this IApplicationBuilder app)
     app.UseMiddleware<GraphQLMiddleware>(settings);
 }
 
-public class GraphQLUserContext : IProvideClaimsPrincipal
+public class GraphQLUserContext : Dictionary<string, object>, IProvideClaimsPrincipal
 {
     public ClaimsPrincipal User { get; set; }
 }
