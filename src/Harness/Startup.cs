@@ -51,7 +51,8 @@ namespace Harness
                 _.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"));
             });
 
-            var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Admin") }));
+            // claims principal must look something like this to allow access
+            // var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Admin") }));
 
             services.AddGraphQL()
                 .AddSystemTextJson()
