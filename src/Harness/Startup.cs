@@ -1,21 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+using System.Security.Claims;
 
-using GraphQL;
 using GraphQL.Authorization;
 using GraphQL.Types;
-using GraphQL.Server.Transports.AspNetCore;
-using GraphQL.Server.Ui.GraphiQL;
-using GraphQL.Validation;
 using GraphQL.Server;
 
 namespace Harness
@@ -60,20 +51,16 @@ namespace Harness
                 _.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"));
             });
 
-            services.AddGraphQL(options =>
-            {
-                options.ExposeExceptions = true;
-            })
-            .AddSystemTextJson()
-            .AddUserContextBuilder(context => new GraphQLUserContext { User = context.User });
+            var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Admin") }));
+
+            services.AddGraphQL()
+                .AddSystemTextJson()
+                .AddUserContextBuilder(context => new GraphQLUserContext { User = context.User });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseDeveloperExceptionPage();
-
-            var validationRules = app.ApplicationServices.GetServices<IValidationRule>();
-
             app.UseGraphQL<ISchema>("/graphql");
             app.UseGraphiQLServer();
         }
