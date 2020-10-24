@@ -1,26 +1,4 @@
-# GraphQL Authorization
-
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/graphql-dotnet/authorization?branch=master&svg=true)](https://ci.appveyor.com/project/graphql-dotnet-ci/authorization)
-[![NuGet](https://img.shields.io/nuget/v/GraphQL.Authorization.svg)](https://www.nuget.org/packages/GraphQL.Authorization/)
-[![Join the chat at https://gitter.im/graphql-dotnet/graphql-dotnet](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/graphql-dotnet/graphql-dotnet?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-A toolset for authorizing access to graph types for [GraphQL .NET](https://github.com/graphql-dotnet/graphql-dotnet).
-
-# Usage
-
-* Register the authorization classes in your DI container (`IAuthorizationEvaluator`, `AuthorizationSettings`, and the `AuthorizationValidationRule`).
-* Provide a `UserContext` class that implements `IProvideClaimsPrincipal`.
-* Add policies to the `AuthorizationSettings`.
-* Apply a policy to a GraphType or Field (which implement `IProvideMetadata`) using `AuthorizeWith(string policy)`.
-* Make sure the `AuthorizationValidationRule` is registered with your Schema (depending on your server implementation, you may only need to register it in your DI container)
-* The `AuthorizationValidationRule` will run and verify the policies based on the registered policies.
-* You can write your own `IAuthorizationRequirement`.
-* Use `GraphQLAuthorize` attribute if using Schema First syntax.
-
-# Examples
-
-```csharp
-namespace BasicSample
+﻿namespace BasicSample
 {
     using System;
     using System.Collections.Generic;
@@ -75,7 +53,9 @@ namespace BasicSample
             var json = await schema.ExecuteAsync(_ =>
             {
                 _.Query = "{ viewer { id name } }";
-                _.ValidationRules = serviceProvider.GetServices<IValidationRule>().Concat(DocumentValidator.CoreRules);
+                _.ValidationRules = serviceProvider
+                    .GetServices<IValidationRule>()
+                    .Concat(DocumentValidator.CoreRules);
                 _.RequestServices = serviceProvider;
                 _.UserContext = new GraphQLUserContext { User = authorizedUser };
             });
@@ -109,35 +89,3 @@ namespace BasicSample
         public string Name { get; set; }
     }
 }
-```
-
-GraphType first syntax - use `AuthorizeWith`.
-
-```csharp
-public class MyType : ObjectGraphType
-{
-    public MyType()
-    {
-        this.AuthorizeWith("AdminPolicy");
-        Field<StringGraphType>("name").AuthorizeWith("SomePolicy");
-    }
-}
-```
-
-Schema first syntax - use `GraphQLAuthorize` attribute.
-
-```csharp
-[GraphQLAuthorize(Policy = "MyPolicy")]
-public class MutationType
-{
-    [GraphQLAuthorize(Policy = "AnotherPolicy")]
-    public async Task<string> CreateSomething(MyInput input)
-    {
-        return Guid.NewGuid().ToString();
-    }
-}
-```
-
-# Known Issues
-
-* It is currently not possible to add a policy to Input objects using Schema first approach.
