@@ -29,10 +29,14 @@ jobs:
         env:
           NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: Install dependencies
+        working-directory: src
         run: dotnet restore
       - name: Build solution [Release]
+        working-directory: src
         run: dotnet build --no-restore -c Release -p:NoWarn=CS1591
       - name: Build solution [Debug]
+        working-directory: src
         run: dotnet build --no-restore -p:NoWarn=CS1591
       - name: Test solution [Debug]
+        working-directory: src
         run: dotnet test --no-restore --no-build

@@ -35,10 +35,13 @@ jobs:
         env:
           NUGET_AUTH_TOKEN: ${{secrets.NUGET_AUTH_TOKEN}}
       - name: Install dependencies
+        working-directory: src
         run: dotnet restore
       - name: Build solution [Release]
+        working-directory: src
         run: dotnet build --no-restore -c Release -p:NoWarn=CS1591 -p:Version=$version
       - name: Pack solution [Release]
+        working-directory: src
         run: dotnet pack --no-restore --no-build -c Release -p:Version=$version -o out
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
@@ -47,4 +50,5 @@ jobs:
           path: |
             out/*
       - name: Publish Nuget packages to Nuget registry
+        working-directory: src
         run: dotnet nuget push "out/*" -k ${{secrets.NUGET_AUTH_TOKEN}}
