@@ -29,10 +29,12 @@ namespace GraphQL.Authorization
             IDictionary<string, object> inputVariables,
             IEnumerable<string> requiredPolicies)
         {
-            var context = new AuthorizationContext();
-            context.User = principal ?? new ClaimsPrincipal(new ClaimsIdentity());
-            context.UserContext = userContext;
-            context.InputVariables = inputVariables;
+            var context = new AuthorizationContext
+            {
+                User = principal ?? new ClaimsPrincipal(new ClaimsIdentity()),
+                UserContext = userContext,
+                InputVariables = inputVariables
+            };
 
             var tasks = new List<Task>();
 

@@ -1,13 +1,12 @@
-﻿using Microsoft.AspNetCore.Builder;
+using GraphQL.Authorization;
+using GraphQL.Server;
+using GraphQL.Types;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using System.Security.Claims;
-
-using GraphQL.Authorization;
-using GraphQL.Types;
-using GraphQL.Server;
+using Microsoft.Extensions.Hosting;
 
 namespace Harness
 {
@@ -22,9 +21,9 @@ namespace Harness
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.TryAddSingleton<ISchema>(s =>
+            services.TryAddSingleton(s =>
             {
-                var definitions = @"
+                string definitions = @"
                   type User {
                     id: ID
                     name: String
@@ -35,21 +34,13 @@ namespace Harness
                     users: [User]
                   }
                 ";
-                var schema = Schema.For(
-                    definitions,
-                    _ =>
-                    {
-                        _.Types.Include<Query>();
-                    });
+                var schema = Schema.For(definitions, builder => builder.Types.Include<Query>());
                 schema.FindType("User").AuthorizeWith("AdminPolicy");
                 return schema;
             });
 
             // extension method defined in this project
-            services.AddGraphQLAuth((_, s) =>
-            {
-                _.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"));
-            });
+            services.AddGraphQLAuth((settings, provider) => settings.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin")));
 
             // claims principal must look something like this to allow access
             // var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Admin") }));
@@ -61,9 +52,12 @@ namespace Harness
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseDeveloperExceptionPage();
-            app.UseGraphQL<ISchema>("/graphql");
+            if (env.IsDevelopment())
+                app.UseDeveloperExceptionPage();
+
+            app.UseGraphQL<ISchema>();
             app.UseGraphiQLServer();
+            app.UseGraphQLPlayground();
         }
     }
 }

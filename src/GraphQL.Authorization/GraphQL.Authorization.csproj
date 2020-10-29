@@ -1,30 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>A toolset for authorizing access to graph types for GraphQL .NET</Description>
-    <VersionPrefix>3.0</VersionPrefix>
-    <Authors>Joe McBride</Authors>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <AssemblyName>GraphQL.Authorization</AssemblyName>
-    <PackageId>GraphQL.Authorization</PackageId>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>A toolset for authorizing access to graph types for GraphQL.NET</Description>
     <PackageTags>GraphQL;json;api</PackageTags>
-    <PackageProjectUrl>https://github.com/graphql-dotnet/authorization</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/graphql-dotnet/authorization/blob/master/LICENSE.md</PackageLicenseUrl>
-    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
-    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
-    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
-    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
-    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\CommonAssemblyInfo.cs" />
+    <None Include="..\..\assets\logo.64x64.png" Pack="true" PackagePath="\" />
   </ItemGroup>
-
+  
   <ItemGroup>
-    <PackageReference Include="GraphQL" Version="3.0.0.2026" />
+    <PackageReference Include="GraphQL" Version="3.1.2" />
   </ItemGroup>
 
 </Project>

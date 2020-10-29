@@ -1,9 +1,9 @@
 using System;
+using GraphQL.Authorization;
+using GraphQL.Validation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using GraphQL.Authorization;
-using GraphQL.Validation;
 
 namespace Harness
 {

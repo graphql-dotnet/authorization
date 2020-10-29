@@ -1,35 +1,33 @@
-﻿namespace BasicSample
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using GraphQL;
+using GraphQL.Authorization;
+using GraphQL.SystemTextJson;
+using GraphQL.Types;
+using GraphQL.Validation;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace BasicSample
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Security.Claims;
-    using System.Threading.Tasks;
-    using Microsoft.Extensions.DependencyInjection;
-    using GraphQL;
-    using GraphQL.Types;
-    using GraphQL.Validation;
-    using GraphQL.SystemTextJson;
-
-    using GraphQL.Authorization;
-
     class Program
     {
         static async Task Main(string[] args)
         {
-            var services = new ServiceCollection();
-            services.AddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
-            services.AddTransient<IValidationRule, AuthorizationValidationRule>();
-            services.AddTransient(s =>
-            {
-                var authSettings = new AuthorizationSettings();
-                authSettings.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"));
-                return authSettings;
-            });
+            using var serviceProvider = new ServiceCollection()
+                .AddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>()
+                .AddTransient<IValidationRule, AuthorizationValidationRule>()
+                .AddTransient(s =>
+                {
+                    var authSettings = new AuthorizationSettings();
+                    authSettings.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"));
+                    return authSettings;
+                })
+                .BuildServiceProvider();
 
-            var serviceProvider = services.BuildServiceProvider();
-
-            var definitions = @"
+            string definitions = @"
                 type User {
                     id: ID
                     name: String
@@ -40,17 +38,12 @@
                     users: [User]
                 }
             ";
-            var schema = Schema.For(
-                definitions,
-                _ =>
-                {
-                    _.Types.Include<Query>();
-                });
+            var schema = Schema.For(definitions, builder => builder.Types.Include<Query>());
 
             // remove claims to see the failure
             var authorizedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Admin") }));
 
-            var json = await schema.ExecuteAsync(_ =>
+            string json = await schema.ExecuteAsync(_ =>
             {
                 _.Query = "{ viewer { id name } }";
                 _.ValidationRules = serviceProvider

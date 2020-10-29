@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using GraphQL.Execution;
-using GraphQL.NewtonsoftJson;
 using GraphQL.Types;
 using GraphQL.Validation;
 using Shouldly;
@@ -33,9 +32,6 @@ namespace GraphQL.Authorization.Tests
 
     public class ValidationTestBase
     {
-        private IDocumentExecuter _executor = new DocumentExecuter();
-        private IDocumentWriter _writer = new DocumentWriter(indent: true);
-
         public ValidationTestBase()
         {
             Settings = new AuthorizationSettings();
@@ -57,7 +53,7 @@ namespace GraphQL.Authorization.Tests
 
             var result = Validate(config);
 
-            var message = "";
+            string message = "";
             if (result.Errors?.Any() == true)
             {
                 message = string.Join(", ", result.Errors.Select(x => x.Message));
@@ -93,10 +89,7 @@ namespace GraphQL.Authorization.Tests
         {
             var claimsList = new List<Claim>();
 
-            claims?.Apply(c =>
-            {
-                claimsList.Add(new Claim(c.Key, c.Value));
-            });
+            claims?.Apply(c => claimsList.Add(new Claim(c.Key, c.Value)));
 
             return new ClaimsPrincipal(new ClaimsIdentity(claimsList, authenticationType));
         }

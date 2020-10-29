@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Shouldly;
 using Xunit;
 
@@ -16,10 +16,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void can_add_a_claim_policy()
         {
-            _settings.AddPolicy("MyPolicy", _ =>
-            {
-                _.RequireClaim("Admin");
-            });
+            _settings.AddPolicy("MyPolicy", builder => builder.RequireClaim("Admin"));
 
             _settings.Policies.Count().ShouldBe(1);
 
