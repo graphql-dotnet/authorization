@@ -12,7 +12,7 @@ namespace GraphQL.Authorization
         private readonly IEnumerable<string> _allowedValues;
 
         public ClaimAuthorizationRequirement(string claimType)
-            : this(claimType, null, null)
+            : this(claimType, (IEnumerable<string>)null, null)
         {
         }
 
@@ -21,26 +21,35 @@ namespace GraphQL.Authorization
         {
         }
 
+        public ClaimAuthorizationRequirement(string claimType, params string[] allowedValues)
+            : this(claimType, allowedValues, null)
+        {
+        }
+
         public ClaimAuthorizationRequirement(string claimType, IEnumerable<string> allowedValues, IEnumerable<string> displayValues)
         {
-            _claimType = claimType;
-            _allowedValues = allowedValues ?? new List<string>();
+            _claimType = claimType ?? throw new ArgumentNullException(nameof(claimType));
+            _allowedValues = allowedValues ?? Enumerable.Empty<string>();
             _displayValues = displayValues;
         }
 
         public Task Authorize(AuthorizationContext context)
         {
             bool found = false;
-            if (_allowedValues == null || !_allowedValues.Any())
+
+            if (context.User != null)
             {
-                found = context.User.Claims.Any(
-                    c => string.Equals(c.Type, _claimType, StringComparison.OrdinalIgnoreCase));
-            }
-            else
-            {
-                found = context.User.Claims.Any(
-                    c => string.Equals(c.Type, _claimType, StringComparison.OrdinalIgnoreCase)
-                         && _allowedValues.Contains(c.Value, StringComparer.Ordinal));
+                if (_allowedValues == null || !_allowedValues.Any())
+                {
+                    found = context.User.Claims.Any(
+                        claim => string.Equals(claim.Type, _claimType, StringComparison.OrdinalIgnoreCase));
+                }
+                else
+                {
+                    found = context.User.Claims.Any(
+                        claim => string.Equals(claim.Type, _claimType, StringComparison.OrdinalIgnoreCase)
+                             && _allowedValues.Contains(claim.Value, StringComparer.Ordinal));
+                }
             }
 
             if (!found)
