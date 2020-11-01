@@ -9,7 +9,7 @@ namespace GraphQL.Authorization
         Task<AuthorizationResult> Evaluate(
             ClaimsPrincipal principal,
             IDictionary<string, object> userContext,
-            Dictionary<string, object> arguments,
+            Inputs arguments,
             IEnumerable<string> requiredPolicies);
     }
 }

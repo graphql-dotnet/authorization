@@ -22,7 +22,7 @@ namespace GraphQL.Authorization
             this IProvideMetadata type,
             ClaimsPrincipal principal,
             IDictionary<string, object> userContext,
-            Dictionary<string, object> inputVariables,
+            Inputs inputVariables,
             IAuthorizationEvaluator evaluator)
         {
             return evaluator.Evaluate(principal, userContext, inputVariables, GetPolicies(type));
@@ -56,11 +56,6 @@ namespace GraphQL.Authorization
         {
             builder.FieldType.AuthorizeWith(policy);
             return builder;
-        }
-
-        public static List<string> GetPolicies(this IProvideMetadata type)
-        {
-            return type.GetMetadata(PolicyKey, new List<string>());
         }
     }
 }

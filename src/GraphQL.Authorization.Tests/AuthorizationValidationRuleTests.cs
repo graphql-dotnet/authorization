@@ -1,5 +1,6 @@
-using GraphQL.Types;
 using System.Collections.Generic;
+using GraphQL.Types;
+using GraphQL.Types.Relay.DataObjects;
 using Xunit;
 
 namespace GraphQL.Authorization.Tests

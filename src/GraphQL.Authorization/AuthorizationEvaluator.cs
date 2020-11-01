@@ -16,7 +16,7 @@ namespace GraphQL.Authorization
         public async Task<AuthorizationResult> Evaluate(
             ClaimsPrincipal principal,
             IDictionary<string, object> userContext,
-            Dictionary<string, object> inputVariables,
+            Inputs inputVariables,
             IEnumerable<string> requiredPolicies)
         {
             if (requiredPolicies == null)
