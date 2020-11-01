@@ -1,0 +1,22 @@
+{
+  "profiles": {
+    "Harness [GraphiQL]": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "ui/graphiql",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "http://localhost:5000"
+    },
+    "Harness [Playground]": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "ui/playground",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "http://localhost:5000"
+    }
+  }
+}
