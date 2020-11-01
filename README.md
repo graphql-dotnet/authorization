@@ -1,10 +1,20 @@
 # GraphQL Authorization
 
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/graphql-dotnet/authorization?branch=master&svg=true)](https://ci.appveyor.com/project/graphql-dotnet-ci/authorization)
-[![NuGet](https://img.shields.io/nuget/v/GraphQL.Authorization.svg)](https://www.nuget.org/packages/GraphQL.Authorization/)
 [![Join the chat at https://gitter.im/graphql-dotnet/graphql-dotnet](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/graphql-dotnet/graphql-dotnet?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-A toolset for authorizing access to graph types for [GraphQL .NET](https://github.com/graphql-dotnet/graphql-dotnet).
+[![Build status](https://github.com/graphql-dotnet/authorization/workflows/Build%20artifacts/badge.svg)](https://github.com/graphql-dotnet/authorization/actions)
+[![Build status](https://github.com/graphql-dotnet/authorization/workflows/Publish%20release/badge.svg)](https://github.com/graphql-dotnet/authorization/actions)
+
+[![NuGet](https://img.shields.io/nuget/v/GraphQL.Authorization.svg)](https://www.nuget.org/packages/GraphQL.Authorization)
+[![Nuget](https://img.shields.io/nuget/dt/GraphQL.Authorization)](https://www.nuget.org/packages/GraphQL.Authorization)
+
+![Activity](https://img.shields.io/github/commit-activity/w/graphql-dotnet/authorization)
+![Activity](https://img.shields.io/github/commit-activity/m/graphql-dotnet/authorization)
+![Activity](https://img.shields.io/github/commit-activity/y/graphql-dotnet/authorization)
+
+![Size](https://img.shields.io/github/repo-size/graphql-dotnet/authorization)
+
+A toolset for authorizing access to graph types for [GraphQL.NET](https://github.com/graphql-dotnet/graphql-dotnet).
 
 # Usage
 
@@ -19,101 +29,11 @@ A toolset for authorizing access to graph types for [GraphQL .NET](https://githu
 
 # Examples
 
-```csharp
-namespace BasicSample
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Security.Claims;
-    using System.Threading.Tasks;
-    using Microsoft.Extensions.DependencyInjection;
-    using GraphQL;
-    using GraphQL.Types;
-    using GraphQL.Validation;
-    using GraphQL.SystemTextJson;
+1. Fully functional [basic sample](src/BasicSample/Program.cs).
 
-    using GraphQL.Authorization;
+2. GraphType first syntax - use `AuthorizeWith`.
 
-    class Program
-    {
-        static async Task Main(string[] args)
-        {
-            var services = new ServiceCollection();
-            services.AddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
-            services.AddTransient<IValidationRule, AuthorizationValidationRule>();
-            services.AddTransient(s =>
-            {
-                var authSettings = new AuthorizationSettings();
-                authSettings.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"));
-                return authSettings;
-            });
-
-            var serviceProvider = services.BuildServiceProvider();
-
-            var definitions = @"
-                type User {
-                    id: ID
-                    name: String
-                }
-
-                type Query {
-                    viewer: User
-                    users: [User]
-                }
-            ";
-            var schema = Schema.For(
-                definitions,
-                _ =>
-                {
-                    _.Types.Include<Query>();
-                });
-
-            // remove claims to see the failure
-            var authorizedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Admin") }));
-
-            var json = await schema.ExecuteAsync(_ =>
-            {
-                _.Query = "{ viewer { id name } }";
-                _.ValidationRules = serviceProvider.GetServices<IValidationRule>().Concat(DocumentValidator.CoreRules);
-                _.RequestServices = serviceProvider;
-                _.UserContext = new GraphQLUserContext { User = authorizedUser };
-            });
-
-            Console.WriteLine(json);
-        }
-    }
-
-    public class GraphQLUserContext : Dictionary<string, object>, IProvideClaimsPrincipal
-    {
-        public ClaimsPrincipal User { get; set; }
-    }
-
-    public class Query
-    {
-        [GraphQLAuthorize(Policy = "AdminPolicy")]
-        public User Viewer()
-        {
-            return new User { Id = Guid.NewGuid().ToString(), Name = "Quinn" };
-        }
-
-        public List<User> Users()
-        {
-            return new List<User> { new User { Id = Guid.NewGuid().ToString(), Name = "Quinn" } };
-        }
-    }
-
-    public class User
-    {
-        public string Id { get; set; }
-        public string Name { get; set; }
-    }
-}
-```
-
-GraphType first syntax - use `AuthorizeWith`.
-
-```csharp
+```c#
 public class MyType : ObjectGraphType
 {
     public MyType()
@@ -124,9 +44,9 @@ public class MyType : ObjectGraphType
 }
 ```
 
-Schema first syntax - use `GraphQLAuthorize` attribute.
+3. Schema first syntax - use `GraphQLAuthorize` attribute.
 
-```csharp
+```c#
 [GraphQLAuthorize(Policy = "MyPolicy")]
 public class MutationType
 {

@@ -37,12 +37,11 @@ namespace GraphQL.Authorization
 
                 _.Match<ObjectField>(objectFieldAst =>
                 {
-                    var argumentType = context.TypeInfo.GetArgument().ResolvedType.GetNamedType() as IComplexGraphType;
-                    if (argumentType == null)
-                        return;
-
-                    var fieldType = argumentType.GetField(objectFieldAst.Name);
-                    CheckAuth(objectFieldAst, fieldType, userContext, context, operationType);
+                    if (context.TypeInfo.GetArgument().ResolvedType.GetNamedType() is IComplexGraphType argumentType)
+                    {
+                        var fieldType = argumentType.GetField(objectFieldAst.Name);
+                        CheckAuth(objectFieldAst, fieldType, userContext, context, operationType);
+                    }
                 });
 
                 _.Match<Field>(fieldAst =>
@@ -75,7 +74,7 @@ namespace GraphQL.Authorization
 
             if (result.Succeeded) return;
 
-            var errors = string.Join("\n", result.Errors);
+            string errors = string.Join("\n", result.Errors);
 
             context.ReportError(new ValidationError(
                 context.OriginalQuery,

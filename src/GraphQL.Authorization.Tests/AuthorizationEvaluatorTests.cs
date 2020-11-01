@@ -20,10 +20,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public async Task fails_with_null_principal()
         {
-            _settings.AddPolicy("MyPolicy", _ =>
-            {
-                _.RequireClaim("Admin");
-            });
+            _settings.AddPolicy("MyPolicy", builder => builder.RequireClaim("Admin"));
 
             var result = await _evaluator.Evaluate(
                 null,
@@ -38,10 +35,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public async Task fails_when_missing_claim()
         {
-            _settings.AddPolicy("MyPolicy", _ =>
-            {
-                _.RequireClaim("Admin");
-            });
+            _settings.AddPolicy("MyPolicy", builder => builder.RequireClaim("Admin"));
 
             var result = await _evaluator.Evaluate(
                 CreatePrincipal(),
@@ -56,10 +50,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public async Task fails_when_missing_policy()
         {
-            _settings.AddPolicy("MyPolicy", _ =>
-            {
-                _.RequireClaim("Admin");
-            });
+            _settings.AddPolicy("MyPolicy", builder => builder.RequireClaim("Admin"));
 
             var result = await _evaluator.Evaluate(
                 CreatePrincipal(claims: new Dictionary<string, string>
@@ -77,10 +68,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public async Task succeeds_when_policy_applied()
         {
-            _settings.AddPolicy("MyPolicy", _ =>
-            {
-                _.RequireClaim("Admin");
-            });
+            _settings.AddPolicy("MyPolicy", builder => builder.RequireClaim("Admin"));
 
             var result = await _evaluator.Evaluate(
                 CreatePrincipal(claims: new Dictionary<string, string>
@@ -98,10 +86,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public async Task succeeds_with_claim_value()
         {
-            _settings.AddPolicy("MyPolicy", _ =>
-            {
-                _.RequireClaim("Admin", "true");
-            });
+            _settings.AddPolicy("MyPolicy", builder => builder.RequireClaim("Admin", "true"));
 
             var result = await _evaluator.Evaluate(
                 CreatePrincipal(claims: new Dictionary<string, string>
@@ -119,10 +104,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public async Task succeeds_when_null_policies()
         {
-            _settings.AddPolicy("MyPolicy", _ =>
-            {
-                _.RequireClaim("Admin");
-            });
+            _settings.AddPolicy("MyPolicy", builder => builder.RequireClaim("Admin"));
 
             var result = await _evaluator.Evaluate(
                 CreatePrincipal(claims: new Dictionary<string, string>
@@ -154,10 +136,7 @@ namespace GraphQL.Authorization.Tests
         {
             var claimsList = new List<Claim>();
 
-            claims?.Apply(c =>
-            {
-                claimsList.Add(new Claim(c.Key, c.Value));
-            });
+            claims?.Apply(c => claimsList.Add(new Claim(c.Key, c.Value)));
 
             return new ClaimsPrincipal(new ClaimsIdentity(claimsList, authenticationType));
         }

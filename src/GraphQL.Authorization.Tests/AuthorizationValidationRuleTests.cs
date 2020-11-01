@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using GraphQL;
+using System.Collections.Generic;
 using GraphQL.Types;
 using GraphQL.Types.Relay.DataObjects;
 using Xunit;
@@ -28,10 +27,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void class_policy_fail()
         {
-            Settings.AddPolicy("ClassPolicy", _ =>
-            {
-                _.RequireClaim("admin");
-            });
+            Settings.AddPolicy("ClassPolicy", builder => builder.RequireClaim("admin"));
 
             ShouldFailRule(_ =>
             {
@@ -60,10 +56,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void field_policy_fail()
         {
-            Settings.AddPolicy("FieldPolicy", _ =>
-            {
-                _.RequireClaim("admin");
-            });
+            Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
 
             ShouldFailRule(_ =>
             {
@@ -75,10 +68,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void nested_type_policy_success()
         {
-            Settings.AddPolicy("PostPolicy", _ =>
-            {
-                _.RequireClaim("admin");
-            });
+            Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
 
             ShouldPassRule(_ =>
             {
@@ -94,10 +84,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void nested_type_policy_fail()
         {
-            Settings.AddPolicy("PostPolicy", _ =>
-            {
-                _.RequireClaim("admin");
-            });
+            Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
 
             ShouldFailRule(_ =>
             {
@@ -109,10 +96,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void nested_type_list_policy_fail()
         {
-            Settings.AddPolicy("PostPolicy", _ =>
-            {
-                _.RequireClaim("admin");
-            });
+            Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
 
             ShouldFailRule(_ =>
             {
@@ -124,10 +108,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void nested_type_list_non_null_policy_fail()
         {
-            Settings.AddPolicy("PostPolicy", _ =>
-            {
-                _.RequireClaim("admin");
-            });
+            Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
 
             ShouldFailRule(_ =>
             {
@@ -139,10 +120,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void passes_with_claim_on_input_type()
         {
-            Settings.AddPolicy("FieldPolicy", _ =>
-            {
-                _.RequireClaim("admin");
-            });
+            Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
 
             ShouldPassRule(_ =>
             {
@@ -158,10 +136,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void fails_on_missing_claim_on_input_type()
         {
-            Settings.AddPolicy("FieldPolicy", _ =>
-            {
-                _.RequireClaim("admin");
-            });
+            Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
 
             ShouldFailRule(_ =>
             {
@@ -219,16 +194,13 @@ namespace GraphQL.Authorization.Tests
 
         private ISchema BasicSchema()
         {
-            var defs = @"
+            string defs = @"
                 type Query {
                     post(id: ID!): String
                 }
             ";
 
-            return Schema.For(defs, _ =>
-            {
-                _.Types.Include<BasicQueryWithAttributes>();
-            });
+            return Schema.For(defs, builder => builder.Types.Include<BasicQueryWithAttributes>());
         }
 
         [GraphQLMetadata("Query")]
@@ -244,7 +216,7 @@ namespace GraphQL.Authorization.Tests
 
         private ISchema NestedSchema()
         {
-            var defs = @"
+            string defs = @"
                 type Query {
                     post(id: ID!): Post
                     posts: [Post]

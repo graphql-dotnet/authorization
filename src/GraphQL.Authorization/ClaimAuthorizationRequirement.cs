@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -30,7 +30,7 @@ namespace GraphQL.Authorization
 
         public Task Authorize(AuthorizationContext context)
         {
-            var found = false;
+            bool found = false;
             if (_allowedValues == null || !_allowedValues.Any())
             {
                 found = context.User.Claims.Any(
@@ -47,7 +47,7 @@ namespace GraphQL.Authorization
             {
                 if (_allowedValues != null && _allowedValues.Any())
                 {
-                    var values = string.Join(", ", _displayValues ?? _allowedValues);
+                    string values = string.Join(", ", _displayValues ?? _allowedValues);
                     context.ReportError($"Required claim '{_claimType}' with any value of '{values}' is not present.");
                 }
                 else

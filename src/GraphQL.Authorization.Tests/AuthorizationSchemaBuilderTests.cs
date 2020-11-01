@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using GraphQL.Types;
 using Shouldly;
 using Xunit;
@@ -10,16 +10,13 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void can_set_policy_from_authorize_attribute()
         {
-            var defs = @"
+            string defs = @"
                 type Query {
                     post(id: ID!): String
                 }
             ";
 
-            var schema = Schema.For(defs, _ =>
-            {
-                _.Types.Include<QueryWithAttributes>();
-            });
+            var schema = Schema.For(defs, builder => builder.Types.Include<QueryWithAttributes>());
 
             schema.Initialize();
 

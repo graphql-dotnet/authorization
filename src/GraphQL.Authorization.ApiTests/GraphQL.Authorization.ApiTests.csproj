@@ -1,11 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <NoWarn>$(NoWarn);1591;IDE1006</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="PublicApiGenerator" Version="10.2.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
     <PackageReference Include="Shouldly" Version="4.0.0-beta0004" />
     <PackageReference Include="xunit" Version="2.4.1" />
@@ -15,5 +15,5 @@
   <ItemGroup>
     <ProjectReference Include="..\GraphQL.Authorization\GraphQL.Authorization.csproj" />
   </ItemGroup>
-
+  
 </Project>

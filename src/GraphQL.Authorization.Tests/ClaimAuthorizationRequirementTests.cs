@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -14,8 +14,10 @@ namespace GraphQL.Authorization.Tests
         {
             var req = new ClaimAuthorizationRequirement("Admin");
 
-            var context = new AuthorizationContext();
-            context.User = CreatePrincipal();
+            var context = new AuthorizationContext
+            {
+                User = CreatePrincipal()
+            };
 
             await req.Authorize(context);
 
@@ -28,8 +30,10 @@ namespace GraphQL.Authorization.Tests
         {
             var req = new ClaimAuthorizationRequirement("Admin", new[] {"true"});
 
-            var context = new AuthorizationContext();
-            context.User = CreatePrincipal();
+            var context = new AuthorizationContext
+            {
+                User = CreatePrincipal()
+            };
 
             await req.Authorize(context);
 
@@ -42,8 +46,10 @@ namespace GraphQL.Authorization.Tests
         {
             var req = new ClaimAuthorizationRequirement("Admin", new[] {"true", "maybe"});
 
-            var context = new AuthorizationContext();
-            context.User = CreatePrincipal();
+            var context = new AuthorizationContext
+            {
+                User = CreatePrincipal()
+            };
 
             await req.Authorize(context);
 
@@ -56,8 +62,10 @@ namespace GraphQL.Authorization.Tests
         {
             var req = new ClaimAuthorizationRequirement("Admin");
 
-            var context = new AuthorizationContext();
-            context.User = CreatePrincipal(claims: new Dictionary<string, string> {{"Admin", "true"}});
+            var context = new AuthorizationContext
+            {
+                User = CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "true" } })
+            };
 
             await req.Authorize(context);
 
@@ -69,8 +77,10 @@ namespace GraphQL.Authorization.Tests
         {
             var req = new ClaimAuthorizationRequirement("Admin", new[] {"true"});
 
-            var context = new AuthorizationContext();
-            context.User = CreatePrincipal(claims: new Dictionary<string, string> {{"Admin", "true"}});
+            var context = new AuthorizationContext
+            {
+                User = CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "true" } })
+            };
 
             await req.Authorize(context);
 
@@ -82,8 +92,10 @@ namespace GraphQL.Authorization.Tests
         {
             var req = new ClaimAuthorizationRequirement("Admin", new[] {"true", "maybe"});
 
-            var context = new AuthorizationContext();
-            context.User = CreatePrincipal(claims: new Dictionary<string, string> {{"Admin", "maybe"}});
+            var context = new AuthorizationContext
+            {
+                User = CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "maybe" } })
+            };
 
             await req.Authorize(context);
 
@@ -94,10 +106,7 @@ namespace GraphQL.Authorization.Tests
         {
             var claimsList = new List<Claim>();
 
-            claims?.Apply(c =>
-            {
-                claimsList.Add(new Claim(c.Key, c.Value));
-            });
+            claims?.Apply(c => claimsList.Add(new Claim(c.Key, c.Value)));
 
             return new ClaimsPrincipal(new ClaimsIdentity(claimsList, authenticationType));
         }

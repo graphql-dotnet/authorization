@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using GraphQL.Types;
 using Shouldly;
 using Xunit;
 
@@ -15,8 +14,10 @@ namespace GraphQL.Authorization.Tests
         {
             var req = new AuthenticatedUserRequirement();
 
-            var context = new AuthorizationContext();
-            context.User = CreatePrincipal();
+            var context = new AuthorizationContext
+            {
+                User = CreatePrincipal()
+            };
 
             await req.Authorize(context);
 
@@ -29,8 +30,10 @@ namespace GraphQL.Authorization.Tests
         {
             var req = new AuthenticatedUserRequirement();
 
-            var context = new AuthorizationContext();
-            context.User = CreatePrincipal("jwt");
+            var context = new AuthorizationContext
+            {
+                User = CreatePrincipal("jwt")
+            };
 
             await req.Authorize(context);
 
@@ -41,10 +44,7 @@ namespace GraphQL.Authorization.Tests
         {
             var claimsList = new List<Claim>();
 
-            claims?.Apply(c =>
-            {
-                claimsList.Add(new Claim(c.Key, c.Value));
-            });
+            claims?.Apply(c => claimsList.Add(new Claim(c.Key, c.Value)));
 
             return new ClaimsPrincipal(new ClaimsIdentity(claimsList, authenticationType));
         }
