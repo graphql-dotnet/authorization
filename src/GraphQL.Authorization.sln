@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
-VisualStudioVersion = 16.0.29424.173
+VisualStudioVersion = 16.0.29613.14
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQL.Authorization", "GraphQL.Authorization\GraphQL.Authorization.csproj", "{21771B0C-0FCE-41DA-BF0B-67D70368BB00}"
 EndProject
@@ -8,14 +8,33 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphQL.Authorization.Tests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Harness", "Harness\Harness.csproj", "{DEA32495-F7AA-45F0-8AF6-DE4FB089994F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5B5E58D5-09BC-4005-BF7F-766ED6758018}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F1263413-6A34-42F2-ABA7-E38AB3DCB548}"
 	ProjectSection(SolutionItems) = preProject
 		..\.editorconfig = ..\.editorconfig
 		..\.gitignore = ..\.gitignore
-		..\appveyor.yml = ..\appveyor.yml
-		nuget.config = nuget.config
+		Directory.Build.props = Directory.Build.props
+		..\LICENSE.md = ..\LICENSE.md
 		..\README.md = ..\README.md
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{84514A09-9BB4-4C85-8A8E-92AF5AA26445}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\dependabot.yml = ..\.github\dependabot.yml
+		..\.github\labeler.yml = ..\.github\labeler.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{C1216C18-FAAE-46CA-95EB-B2202FBC994A}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\workflows\build.yml = ..\.github\workflows\build.yml
+		..\.github\workflows\label.yml = ..\.github\workflows\label.yml
+		..\.github\workflows\publish.yml = ..\.github\workflows\publish.yml
+		..\.github\workflows\test.yml = ..\.github\workflows\test.yml
+		..\.github\workflows\wipcheck.yml = ..\.github\workflows\wipcheck.yml
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BasicSample", "BasicSample\BasicSample.csproj", "{49174102-8BD4-4193-8CB6-026881BF1B6B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphQL.Authorization.ApiTests", "GraphQL.Authorization.ApiTests\GraphQL.Authorization.ApiTests.csproj", "{0A74FD44-76DD-4FD1-BFA1-8A0B950021E0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,11 +82,38 @@ Global
 		{DEA32495-F7AA-45F0-8AF6-DE4FB089994F}.Release|x64.Build.0 = Release|Any CPU
 		{DEA32495-F7AA-45F0-8AF6-DE4FB089994F}.Release|x86.ActiveCfg = Release|Any CPU
 		{DEA32495-F7AA-45F0-8AF6-DE4FB089994F}.Release|x86.Build.0 = Release|Any CPU
+		{49174102-8BD4-4193-8CB6-026881BF1B6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49174102-8BD4-4193-8CB6-026881BF1B6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49174102-8BD4-4193-8CB6-026881BF1B6B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{49174102-8BD4-4193-8CB6-026881BF1B6B}.Debug|x64.Build.0 = Debug|Any CPU
+		{49174102-8BD4-4193-8CB6-026881BF1B6B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{49174102-8BD4-4193-8CB6-026881BF1B6B}.Debug|x86.Build.0 = Debug|Any CPU
+		{49174102-8BD4-4193-8CB6-026881BF1B6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49174102-8BD4-4193-8CB6-026881BF1B6B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49174102-8BD4-4193-8CB6-026881BF1B6B}.Release|x64.ActiveCfg = Release|Any CPU
+		{49174102-8BD4-4193-8CB6-026881BF1B6B}.Release|x64.Build.0 = Release|Any CPU
+		{49174102-8BD4-4193-8CB6-026881BF1B6B}.Release|x86.ActiveCfg = Release|Any CPU
+		{49174102-8BD4-4193-8CB6-026881BF1B6B}.Release|x86.Build.0 = Release|Any CPU
+		{0A74FD44-76DD-4FD1-BFA1-8A0B950021E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A74FD44-76DD-4FD1-BFA1-8A0B950021E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A74FD44-76DD-4FD1-BFA1-8A0B950021E0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0A74FD44-76DD-4FD1-BFA1-8A0B950021E0}.Debug|x64.Build.0 = Debug|Any CPU
+		{0A74FD44-76DD-4FD1-BFA1-8A0B950021E0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0A74FD44-76DD-4FD1-BFA1-8A0B950021E0}.Debug|x86.Build.0 = Debug|Any CPU
+		{0A74FD44-76DD-4FD1-BFA1-8A0B950021E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A74FD44-76DD-4FD1-BFA1-8A0B950021E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A74FD44-76DD-4FD1-BFA1-8A0B950021E0}.Release|x64.ActiveCfg = Release|Any CPU
+		{0A74FD44-76DD-4FD1-BFA1-8A0B950021E0}.Release|x64.Build.0 = Release|Any CPU
+		{0A74FD44-76DD-4FD1-BFA1-8A0B950021E0}.Release|x86.ActiveCfg = Release|Any CPU
+		{0A74FD44-76DD-4FD1-BFA1-8A0B950021E0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C1216C18-FAAE-46CA-95EB-B2202FBC994A} = {84514A09-9BB4-4C85-8A8E-92AF5AA26445}
+	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {AB869DD6-5A29-4731-9E03-2398EE729160}
+		SolutionGuid = {B582AABA-5414-45C5-920C-1A00B5B1FDB4}
 	EndGlobalSection
 EndGlobal

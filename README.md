@@ -1,14 +1,24 @@
 # GraphQL Authorization
 
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/graphql-dotnet/authorization?branch=master&svg=true)](https://ci.appveyor.com/project/graphql-dotnet-ci/authorization)
-[![NuGet](https://img.shields.io/nuget/v/GraphQL.Authorization.svg)](https://www.nuget.org/packages/GraphQL.Authorization/)
 [![Join the chat at https://gitter.im/graphql-dotnet/graphql-dotnet](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/graphql-dotnet/graphql-dotnet?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-A toolset for authorizing access to graph types for [GraphQL .NET](https://github.com/graphql-dotnet/graphql-dotnet).
+[![Build status](https://github.com/graphql-dotnet/authorization/workflows/Build%20artifacts/badge.svg)](https://github.com/graphql-dotnet/authorization/actions)
+[![Build status](https://github.com/graphql-dotnet/authorization/workflows/Publish%20release/badge.svg)](https://github.com/graphql-dotnet/authorization/actions)
+
+[![NuGet](https://img.shields.io/nuget/v/GraphQL.Authorization.svg)](https://www.nuget.org/packages/GraphQL.Authorization)
+[![Nuget](https://img.shields.io/nuget/dt/GraphQL.Authorization)](https://www.nuget.org/packages/GraphQL.Authorization)
+
+![Activity](https://img.shields.io/github/commit-activity/w/graphql-dotnet/authorization)
+![Activity](https://img.shields.io/github/commit-activity/m/graphql-dotnet/authorization)
+![Activity](https://img.shields.io/github/commit-activity/y/graphql-dotnet/authorization)
+
+![Size](https://img.shields.io/github/repo-size/graphql-dotnet/authorization)
+
+A toolset for authorizing access to graph types for [GraphQL.NET](https://github.com/graphql-dotnet/graphql-dotnet).
 
 # Usage
 
-* Register the authorization classes in your container (`IAuthorizationEvaluator`, `AuthorizationSettings`, and the `AuthorizationValidationRule`).
+* Register the authorization classes in your DI container (`IAuthorizationEvaluator`, `AuthorizationSettings`, and the `AuthorizationValidationRule`).
 * Provide a `UserContext` class that implements `IProvideClaimsPrincipal`.
 * Add policies to the `AuthorizationSettings`.
 * Apply a policy to a GraphType or Field (both implement `IProvideMetadata`):
@@ -19,6 +29,7 @@ A toolset for authorizing access to graph types for [GraphQL .NET](https://githu
 
 # Examples
 
+1. Fully functional [basic sample](src/BasicSample/Program.cs).
 Register the authorization classes in your container:
 
 ```csharp
@@ -101,9 +112,9 @@ public class MyType : ObjectGraphType
 }
 ```
 
-Schema first syntax - use `GraphQLAuthorize` attribute on type or method.
+3. Schema first syntax - use `GraphQLAuthorize` attribute on type or method.
 
-```csharp
+```c#
 [GraphQLAuthorize(Policy = "MyPolicy")]
 public class MutationType
 {

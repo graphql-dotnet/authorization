@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Shouldly;
 using Xunit;
 
 namespace GraphQL.Authorization.Tests
@@ -44,10 +45,7 @@ namespace GraphQL.Authorization.Tests
         {
             var claimsList = new List<Claim>();
 
-            claims?.Apply(c =>
-            {
-                claimsList.Add(new Claim(c.Key, c.Value));
-            });
+            claims?.Apply(c => claimsList.Add(new Claim(c.Key, c.Value)));
 
             return new ClaimsPrincipal(new ClaimsIdentity(claimsList, authenticationType));
         }

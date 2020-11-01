@@ -5,7 +5,7 @@ namespace Harness
 {
     public class Query
     {
-        // [GraphQLAuthorize(Policy = "AdminPolicy")]
+        [GraphQLAuthorize(Policy = "AdminPolicy")]
         public User Viewer()
         {
             return new User { Id = Guid.NewGuid().ToString(), Name = "Quinn" };

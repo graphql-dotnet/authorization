@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using GraphQL.Language.AST;
 using GraphQL.Types;
 using GraphQL.Validation;
@@ -79,7 +80,7 @@ namespace GraphQL.Authorization
             if (result.Succeeded)
                 return;
 
-            var errors = string.Join("\n", result.Errors);
+            string errors = string.Join("\n", result.Errors);
 
             context.ReportError(new ValidationError(
                 context.OriginalQuery,

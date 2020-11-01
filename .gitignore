@@ -5,13 +5,6 @@
 *.user
 *.suo
 *.nupkg
-npm-debug.log
-yarn-error.log
 
-TestResults/
 [Oo]bj/
 [Bb]in/
-packages/
-node_modules/
-nuget/lib
-artifacts

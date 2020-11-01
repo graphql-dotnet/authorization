@@ -1,39 +1,40 @@
+using System;
 using GraphQL.Authorization;
-using GraphQL.Server;
 using GraphQL.Validation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using System;
 
 namespace Harness
 {
     public static class GraphQLAuthExtensions
     {
-        public static IGraphQLBuilder AddGraphQLAuth(this IGraphQLBuilder builder, Action<AuthorizationSettings, IServiceProvider> configure)
+        public static void AddGraphQLAuth(this IServiceCollection services, Action<AuthorizationSettings, IServiceProvider> configure)
         {
-            if (builder == null)
-                throw new ArgumentNullException(nameof(builder));
+            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.TryAddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
+            services.AddTransient<IValidationRule, AuthorizationValidationRule>();
 
-            builder.Services.AddHttpContextAccessor();
-            builder.Services.TryAddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
-            builder.Services.AddTransient<IValidationRule, AuthorizationValidationRule>();
-
-            builder.Services.TryAddTransient(provider =>
+            services.TryAddTransient(s =>
             {
                 var authSettings = new AuthorizationSettings();
-                configure(authSettings, provider);
+                configure(authSettings, s);
                 return authSettings;
             });
-
-            return builder;
         }
 
-        public static IGraphQLBuilder AddGraphQLAuth(this IGraphQLBuilder builder, Action<AuthorizationSettings> configure)
+        public static void AddGraphQLAuth(this IServiceCollection services, Action<AuthorizationSettings> configure)
         {
-            if (configure == null)
-                throw new ArgumentNullException(nameof(configure));
+            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.TryAddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
+            services.AddTransient<IValidationRule, AuthorizationValidationRule>();
 
-            return builder.AddGraphQLAuth((settings, _) => configure(settings));
+            services.TryAddTransient(s =>
+            {
+                var authSettings = new AuthorizationSettings();
+                configure(authSettings);
+                return authSettings;
+            });
         }
     }
 }

@@ -56,7 +56,7 @@ namespace GraphQL.Authorization
             {
                 if (_allowedValues != null && _allowedValues.Any())
                 {
-                    var values = string.Join(", ", _displayValues ?? _allowedValues);
+                    string values = string.Join(", ", _displayValues ?? _allowedValues);
                     context.ReportError($"Required claim '{_claimType}' with any value of '{values}' is not present.");
                 }
                 else
