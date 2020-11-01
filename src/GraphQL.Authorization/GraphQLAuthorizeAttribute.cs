@@ -1,4 +1,4 @@
-﻿using GraphQL.Utilities;
+using GraphQL.Utilities;
 
 namespace GraphQL.Authorization
 {

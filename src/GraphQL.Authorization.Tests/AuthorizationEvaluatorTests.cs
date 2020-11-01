@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -26,7 +27,7 @@ namespace GraphQL.Authorization.Tests
                 null,
                 null,
                 null,
-                new[] {"MyPolicy"}
+                new[] { "MyPolicy" }
             );
 
             result.Succeeded.ShouldBeFalse();
@@ -41,7 +42,7 @@ namespace GraphQL.Authorization.Tests
                 CreatePrincipal(),
                 null,
                 null,
-                new[] {"MyPolicy"}
+                new[] { "MyPolicy" }
             );
 
             result.Succeeded.ShouldBeFalse();
@@ -55,7 +56,7 @@ namespace GraphQL.Authorization.Tests
             var result = await _evaluator.Evaluate(
                 CreatePrincipal(claims: new Dictionary<string, string>
                 {
-                    {"Admin", "true"}
+                    { "Admin", "true" }
                 }),
                 null,
                 null,
@@ -73,11 +74,11 @@ namespace GraphQL.Authorization.Tests
             var result = await _evaluator.Evaluate(
                 CreatePrincipal(claims: new Dictionary<string, string>
                 {
-                    {"Admin", "true"}
+                    { "Admin", "true" }
                 }),
                 null,
                 null,
-                new[] {"MyPolicy"}
+                new[] { "MyPolicy" }
             );
 
             result.Succeeded.ShouldBeTrue();
@@ -91,11 +92,11 @@ namespace GraphQL.Authorization.Tests
             var result = await _evaluator.Evaluate(
                 CreatePrincipal(claims: new Dictionary<string, string>
                 {
-                    {"Admin", "true"}
+                    { "Admin", "true" }
                 }),
                 null,
                 null,
-                new[] {"MyPolicy"}
+                new[] { "MyPolicy" }
             );
 
             result.Succeeded.ShouldBeTrue();
@@ -109,11 +110,29 @@ namespace GraphQL.Authorization.Tests
             var result = await _evaluator.Evaluate(
                 CreatePrincipal(claims: new Dictionary<string, string>
                 {
-                    {"Admin", "true"}
+                    { "Admin", "true" }
                 }),
                 null,
                 null,
                 null
+            );
+
+            result.Succeeded.ShouldBeTrue();
+        }
+
+        [Fact]
+        public async Task succeeds_when_empty_policies()
+        {
+            _settings.AddPolicy("MyPolicy", _ => { });
+
+            var result = await _evaluator.Evaluate(
+                CreatePrincipal(claims: new Dictionary<string, string>
+                {
+                    { "Admin", "true" }
+                }),
+                null,
+                null,
+                Array.Empty<string>()
             );
 
             result.Succeeded.ShouldBeTrue();
