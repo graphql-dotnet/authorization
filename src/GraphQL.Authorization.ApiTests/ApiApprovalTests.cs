@@ -10,7 +10,7 @@ namespace GraphQL.Authorization.ApiTests
     {
         [Theory]
         [InlineData(typeof(IAuthorizationRequirement))]
-        public void PublicApi(Type type)
+        public void public_api_should_not_change_unintentionally(Type type)
         {
             string publicApi = type.Assembly.GeneratePublicApi(new ApiGeneratorOptions
             {
