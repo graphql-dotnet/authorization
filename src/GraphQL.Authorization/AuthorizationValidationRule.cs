@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using GraphQL.Language.AST;
 using GraphQL.Types;
 using GraphQL.Validation;
+using System.Threading.Tasks;
 
 namespace GraphQL.Authorization
 {
@@ -26,6 +27,7 @@ namespace GraphQL.Authorization
                 // it would be better to implement a filter on the Schema so it
                 // acts as if they just don't exist vs. an auth denied error
                 // - filtering the Schema is not currently supported
+                // TODO: apply ISchemaFilter - context.Schema.Filter.AllowXXX
 
                 _.Match<Operation>(astType =>
                 {
@@ -37,7 +39,7 @@ namespace GraphQL.Authorization
 
                 _.Match<ObjectField>(objectFieldAst =>
                 {
-                    if (context.TypeInfo.GetArgument().ResolvedType.GetNamedType() is IComplexGraphType argumentType)
+                    if (context.TypeInfo.GetArgument()?.ResolvedType.GetNamedType() is IComplexGraphType argumentType)
                     {
                         var fieldType = argumentType.GetField(objectFieldAst.Name);
                         CheckAuth(objectFieldAst, fieldType, userContext, context, operationType);
@@ -48,7 +50,8 @@ namespace GraphQL.Authorization
                 {
                     var fieldDef = context.TypeInfo.GetFieldDef();
 
-                    if (fieldDef == null) return;
+                    if (fieldDef == null)
+                        return;
 
                     // check target field
                     CheckAuth(fieldAst, fieldDef, userContext, context, operationType);
@@ -65,14 +68,17 @@ namespace GraphQL.Authorization
             ValidationContext context,
             OperationType operationType)
         {
-            if (type == null || !type.RequiresAuthorization()) return;
+            if (type == null || !type.RequiresAuthorization())
+                return;
 
+            // TODO: async -> sync transition
             var result = type
                 .Authorize(userContext?.User, context.UserContext, context.Inputs, _evaluator)
                 .GetAwaiter()
                 .GetResult();
 
-            if (result.Succeeded) return;
+            if (result.Succeeded)
+                return;
 
             string errors = string.Join("\n", result.Errors);
 
