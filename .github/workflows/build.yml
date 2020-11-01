@@ -38,7 +38,7 @@ jobs:
         with:
           name: Nuget packages
           path: |
-            out/*
+            src/out/*
       - name: Publish Nuget packages to GitHub registry
         working-directory: src
         run: dotnet nuget push "out/*" -k ${{secrets.GITHUB_TOKEN}}
