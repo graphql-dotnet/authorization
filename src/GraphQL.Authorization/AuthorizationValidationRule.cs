@@ -2,7 +2,6 @@ using System.Threading.Tasks;
 using GraphQL.Language.AST;
 using GraphQL.Types;
 using GraphQL.Validation;
-using System.Threading.Tasks;
 
 namespace GraphQL.Authorization
 {
