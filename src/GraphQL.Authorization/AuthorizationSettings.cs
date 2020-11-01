@@ -1,51 +1,68 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GraphQL.Authorization
 {
+    /// <summary>
+    /// Authorization settings are represented by a set of named policies (each policy has a set of authorization requirements).
+    /// </summary>
     public class AuthorizationSettings
     {
-        private readonly IDictionary<string, IAuthorizationPolicy> _policies;
+        private readonly IDictionary<string, IAuthorizationPolicy> _policies = new Dictionary<string, IAuthorizationPolicy>(StringComparer.OrdinalIgnoreCase);
 
-        public AuthorizationSettings()
-        {
-            _policies = new Dictionary<string, IAuthorizationPolicy>(StringComparer.OrdinalIgnoreCase);
-        }
-
+        /// <summary>
+        /// Returns all policies.
+        /// </summary>
         public IEnumerable<IAuthorizationPolicy> Policies => _policies.Values;
 
+        /// <summary>
+        /// Returns policies with the specified names.
+        /// </summary>
+        /// <param name="policies"></param>
+        /// <returns>A set of policy names.</returns>
         public IEnumerable<IAuthorizationPolicy> GetPolicies(IEnumerable<string> policies)
         {
-            var found = new List<IAuthorizationPolicy>();
+            List<IAuthorizationPolicy> found = null;
 
             policies?.Apply(name =>
             {
-                if (_policies.ContainsKey(name))
-                {
-                    found.Add(_policies[name]);
-                }
+                var policy = GetPolicy(name);
+                if (policy != null)
+                    (found ??= new List<IAuthorizationPolicy>()).Add(policy);
             });
 
-            return found;
+            return found ?? Enumerable.Empty<IAuthorizationPolicy>();
         }
 
-        public IAuthorizationPolicy GetPolicy(string name)
-        {
-            return _policies.ContainsKey(name) ? _policies[name] : null;
-        }
+        /// <summary>
+        /// Returns one policy with the specified name.
+        /// </summary>
+        /// <param name="name">Name of the required policy.</param>
+        /// <returns>Required policy if exists, otherwise <see langword="null"/>.</returns>
+        public IAuthorizationPolicy GetPolicy(string name) => _policies.TryGetValue(name, out var policy) ? policy : null;
 
-        public void AddPolicy(string name, IAuthorizationPolicy policy)
-        {
-            _policies[name] = policy;
-        }
+        /// <summary>
+        /// Adds a policy with the specified name. If a policy with that name already exists then it will be replaced.
+        /// </summary>
+        /// <param name="name">Policy name.</param>
+        /// <param name="policy">Policy to add.</param>
+        public void AddPolicy(string name, IAuthorizationPolicy policy) => _policies[name] = policy;
 
+        /// <summary>
+        /// Adds a policy built from <see cref="AuthorizationPolicyBuilder"/> with the specified name.
+        /// </summary>
+        /// <param name="name">Policy name.</param>
+        /// <param name="configure">Delegate to configure provided policy builder.</param>
         public void AddPolicy(string name, Action<AuthorizationPolicyBuilder> configure)
         {
+            if (configure == null)
+                throw new ArgumentNullException(nameof(configure));
+
             var builder = new AuthorizationPolicyBuilder();
             configure(builder);
 
-            var policy = builder.Build();
-            _policies[name] = policy;
+            _policies[name] = builder.Build();
         }
     }
 }
