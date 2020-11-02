@@ -18,6 +18,11 @@ jobs:
         os: 
           - ubuntu-latest
           - windows-latest
+        graphqlversion:
+          - 3.0.0
+          - 3.1.0
+          - 3.1.3
+          - 4.0.0-preview-17
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
@@ -28,15 +33,22 @@ jobs:
           source-url: https://nuget.pkg.github.com/graphql-dotnet/index.json
         env:
           NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-      - name: Install dependencies
+      - name: Install dependencies with GraphQL version ${{ matrix.graphqlversion }}
         working-directory: src
-        run: dotnet restore
+        run: dotnet restore -p:GraphQLTestVersion=${{ matrix.graphqlversion }}
       - name: Build solution [Release]
         working-directory: src
-        run: dotnet build --no-restore -c Release -p:NoWarn=CS1591
+        run: dotnet build --no-restore -c Release -p:NoWarn=CS1591 -p:GraphQLTestVersion=${{ matrix.graphqlversion }}
       - name: Build solution [Debug]
         working-directory: src
-        run: dotnet build --no-restore -p:NoWarn=CS1591
+        run: dotnet build --no-restore -p:NoWarn=CS1591 -p:GraphQLTestVersion=${{ matrix.graphqlversion }}
       - name: Test solution [Debug]
         working-directory: src
         run: dotnet test --no-restore --no-build
+  all-tests:
+    needs:
+      - test
+    runs-on: ubuntu-latest
+    steps:
+      - name: All tests completed successfully
+        run: exit 0
