@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <NoWarn>$(NoWarn);1591;IDE1006</NoWarn>
+    <GraphQLTestVersion>3.1.3</GraphQLTestVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,4 +17,8 @@
     <ProjectReference Include="..\GraphQL.Authorization\GraphQL.Authorization.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="GraphQL" Version="$(GraphQLTestVersion)" />
+  </ItemGroup>
+  
 </Project>
