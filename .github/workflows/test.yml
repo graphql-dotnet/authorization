@@ -45,3 +45,10 @@ jobs:
       - name: Test solution [Debug]
         working-directory: src
         run: dotnet test --no-restore --no-build
+  all-tests:
+    needs:
+      - test
+    runs-on: ubuntu-latest
+    steps:
+      - name: All tests completed successfully
+        run: exit 0
