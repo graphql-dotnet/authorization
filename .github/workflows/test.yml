@@ -39,7 +39,7 @@ jobs:
       - name: Build solution [Release]
         working-directory: src
         run: dotnet build --no-restore -c Release -p:NoWarn=CS1591 -p:GraphQLTestVersion=${{ matrix.graphqlversion }}
-      - name: Build solution [Debug]
+      - name: Build solution [Debug] with GraphQL version ${{ matrix.graphqlversion }}
         working-directory: src
         run: dotnet build --no-restore -p:NoWarn=CS1591 -p:GraphQLTestVersion=${{ matrix.graphqlversion }}
       - name: Test solution [Debug]
