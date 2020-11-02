@@ -17,7 +17,7 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(GraphQLTestVersion)' == '' || '$(GraphQLTestVersion)' == 'default'">
+  <PropertyGroup Condition="'$(GraphQLTestVersion)' == '' OR '$(GraphQLTestVersion)' == 'default'">
     <GraphQLTestVersion>3.1.3</GraphQLTestVersion>
   </PropertyGroup>
   
