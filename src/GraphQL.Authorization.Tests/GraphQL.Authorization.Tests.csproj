@@ -16,4 +16,8 @@
     <ProjectReference Include="..\GraphQL.Authorization\GraphQL.Authorization.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="GraphQL" Version="$(GraphQLTestVersion)" />
+  </ItemGroup>
+  
 </Project>
