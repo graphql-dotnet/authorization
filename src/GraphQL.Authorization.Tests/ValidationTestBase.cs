@@ -25,11 +25,6 @@ namespace GraphQL.Authorization.Tests
         }
     }
 
-    public class GraphQLUserContext : Dictionary<string, object>, IProvideClaimsPrincipal
-    {
-        public ClaimsPrincipal User { get; set; }
-    }
-
     public class ValidationTestBase
     {
         public ValidationTestBase()
@@ -82,7 +77,7 @@ namespace GraphQL.Authorization.Tests
             var documentBuilder = new GraphQLDocumentBuilder();
             var document = documentBuilder.Build(config.Query);
             var validator = new DocumentValidator();
-            return validator.ValidateAsync(config.Query, config.Schema, document, config.Rules, userContext, config.Inputs).GetAwaiter().GetResult(); ;
+            return validator.ValidateAsync(config.Query, config.Schema, document, config.Rules, userContext, config.Inputs).GetAwaiter().GetResult();
         }
 
         protected ClaimsPrincipal CreatePrincipal(string authenticationType = null, IDictionary<string, string> claims = null)

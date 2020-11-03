@@ -10,8 +10,8 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void class_policy_success()
         {
-            Settings.AddPolicy("ClassPolicy", _ => _.RequireClaim("admin"));
-            Settings.AddPolicy("FieldPolicy", _ => _.RequireClaim("admin"));
+            Settings.AddPolicy("ClassPolicy", builder => builder.RequireClaim("admin"));
+            Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
 
             ShouldPassRule(_ =>
             {
@@ -19,7 +19,7 @@ namespace GraphQL.Authorization.Tests
                 _.Schema = BasicSchema();
                 _.User = CreatePrincipal(claims: new Dictionary<string, string>
                     {
-                        {"Admin", "true"}
+                        { "Admin", "true" }
                     });
             });
         }
@@ -39,8 +39,8 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void field_policy_success()
         {
-            Settings.AddPolicy("ClassPolicy", _ => _.RequireClaim("admin"));
-            Settings.AddPolicy("FieldPolicy", _ => _.RequireClaim("admin"));
+            Settings.AddPolicy("ClassPolicy", builder => builder.RequireClaim("admin"));
+            Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
 
             ShouldPassRule(_ =>
             {
@@ -48,7 +48,7 @@ namespace GraphQL.Authorization.Tests
                 _.Schema = BasicSchema();
                 _.User = CreatePrincipal(claims: new Dictionary<string, string>
                     {
-                        {"Admin", "true"}
+                        { "Admin", "true" }
                     });
             });
         }
@@ -76,7 +76,7 @@ namespace GraphQL.Authorization.Tests
                 _.Schema = NestedSchema();
                 _.User = CreatePrincipal(claims: new Dictionary<string, string>
                     {
-                        {"Admin", "true"}
+                        { "Admin", "true" }
                     });
             });
         }
@@ -128,7 +128,7 @@ namespace GraphQL.Authorization.Tests
                 _.Schema = TypedSchema();
                 _.User = CreatePrincipal(claims: new Dictionary<string, string>
                     {
-                        {"Admin", "true"}
+                        { "Admin", "true" }
                     });
             });
         }
@@ -148,9 +148,9 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void passes_with_multiple_policies_on_field_and_single_on_input_type()
         {
-            Settings.AddPolicy("FieldPolicy", _ => _.RequireClaim("admin"));
-            Settings.AddPolicy("AdminPolicy", _ => _.RequireClaim("admin"));
-            Settings.AddPolicy("ConfidentialPolicy", _ => _.RequireClaim("admin"));
+            Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
+            Settings.AddPolicy("AdminPolicy", builder => builder.RequireClaim("admin"));
+            Settings.AddPolicy("ConfidentialPolicy", builder => builder.RequireClaim("admin"));
 
             ShouldPassRule(_ =>
             {
@@ -158,7 +158,21 @@ namespace GraphQL.Authorization.Tests
                 _.Schema = TypedSchema();
                 _.User = CreatePrincipal(claims: new Dictionary<string, string>
                 {
-                    {"Admin", "true"}
+                    { "Admin", "true" }
+                });
+            });
+        }
+
+        [Fact]
+        public void Issue61()
+        {
+            ShouldPassRule(_ =>
+            {
+                _.Query = @"query { unknown(obj: {id: 7}) }";
+                _.Schema = TypedSchema();
+                _.User = CreatePrincipal(claims: new Dictionary<string, string>
+                {
+                    { "Admin", "true" }
                 });
             });
         }
@@ -228,10 +242,10 @@ namespace GraphQL.Authorization.Tests
                 }
             ";
 
-            return Schema.For(defs, _ =>
+            return Schema.For(defs, builder =>
             {
-                _.Types.Include<NestedQueryWithAttributes>();
-                _.Types.Include<Post>();
+                builder.Types.Include<NestedQueryWithAttributes>();
+                builder.Types.Include<Post>();
             });
         }
 

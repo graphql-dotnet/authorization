@@ -1,7 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,5 +16,5 @@
   <ItemGroup>
     <ProjectReference Include="..\GraphQL.Authorization\GraphQL.Authorization.csproj" />
   </ItemGroup>
-  
+
 </Project>

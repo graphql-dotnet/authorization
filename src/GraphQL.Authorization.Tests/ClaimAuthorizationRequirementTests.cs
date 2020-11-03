@@ -28,7 +28,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public async Task produces_error_when_missing_claim_with_single_value()
         {
-            var req = new ClaimAuthorizationRequirement("Admin", new[] {"true"});
+            var req = new ClaimAuthorizationRequirement("Admin", "true");
 
             var context = new AuthorizationContext
             {
@@ -44,7 +44,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public async Task produces_error_when_missing_claim_with_multiple_values()
         {
-            var req = new ClaimAuthorizationRequirement("Admin", new[] {"true", "maybe"});
+            var req = new ClaimAuthorizationRequirement("Admin", "true", "maybe");
 
             var context = new AuthorizationContext
             {
@@ -75,7 +75,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public async Task succeeds_when_claim_with_single_value()
         {
-            var req = new ClaimAuthorizationRequirement("Admin", new[] {"true"});
+            var req = new ClaimAuthorizationRequirement("Admin", "true");
 
             var context = new AuthorizationContext
             {
@@ -90,7 +90,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public async Task succeeds_when_claim_with_multiple_values()
         {
-            var req = new ClaimAuthorizationRequirement("Admin", new[] {"true", "maybe"});
+            var req = new ClaimAuthorizationRequirement("Admin", "true", "maybe");
 
             var context = new AuthorizationContext
             {
