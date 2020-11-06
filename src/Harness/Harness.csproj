@@ -13,7 +13,7 @@
     <PackageReference Include="GraphQL.Server.Transports.AspNetCore.SystemTextJson" Version="4.2.0" />
     <PackageReference Include="GraphQL.Server.Ui.GraphiQL" Version="4.2.0" />
     <PackageReference Include="GraphQL.Server.Ui.Playground" Version="4.2.0" />
-    <PackageReference Include="GraphQL.Server.Transports.AspNetCore" Version="4.2.0" />
+    <PackageReference Include="GraphQL.Server.Transports.AspNetCore" Version="4.2.1" />
   </ItemGroup>
 
 </Project>
