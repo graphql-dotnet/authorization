@@ -1,3 +1,4 @@
+using System;
 using Shouldly;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -125,9 +126,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public async Task succeeds_when_empty_policies()
         {
-            _settings.AddPolicy("MyPolicy", _ =>
-            {
-            });
+            _settings.AddPolicy("MyPolicy", _ => { });
 
             var result = await _evaluator.Evaluate(
                 CreatePrincipal(claims: new Dictionary<string, string>
@@ -136,7 +135,7 @@ namespace GraphQL.Authorization.Tests
                 }),
                 null,
                 null,
-                null
+                Array.Empty<string>()
             );
 
             result.Succeeded.ShouldBeTrue();

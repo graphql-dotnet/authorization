@@ -5,6 +5,8 @@ namespace GraphQL.Authorization
 {
     public class AuthenticatedUserRequirement : IAuthorizationRequirement
     {
+        internal static readonly AuthenticatedUserRequirement Instance = new AuthenticatedUserRequirement();
+
         public Task Authorize(AuthorizationContext context)
         {
             if (context.User == null || !context.User.Identities.Any(x => x.IsAuthenticated))

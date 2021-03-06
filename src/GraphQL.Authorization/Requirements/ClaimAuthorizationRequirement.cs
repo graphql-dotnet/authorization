@@ -35,7 +35,7 @@ namespace GraphQL.Authorization
 
         public Task Authorize(AuthorizationContext context)
         {
-            var found = false;
+            bool found = false;
 
             if (context.User != null)
             {
