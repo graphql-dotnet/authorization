@@ -17,35 +17,33 @@ namespace GraphQL.Authorization
         public Task<INodeVisitor> ValidateAsync(ValidationContext context)
         {
             var userContext = context.UserContext as IProvideClaimsPrincipal;
+            var operationType = OperationType.Query;
 
-            return Task.FromResult((INodeVisitor)new EnterLeaveListener(_ =>
-            {
-                var operationType = OperationType.Query;
+            // this could leak info about hidden fields or types in error messages
+            // it would be better to implement a filter on the Schema so it
+            // acts as if they just don't exist vs. an auth denied error
+            // - filtering the Schema is not currently supported
+            // TODO: apply ISchemaFilter - context.Schema.Filter.AllowXXX
 
-                // this could leak info about hidden fields or types in error messages
-                // it would be better to implement a filter on the Schema so it
-                // acts as if they just don't exist vs. an auth denied error
-                // - filtering the Schema is not currently supported
-                // TODO: apply ISchemaFilter - context.Schema.Filter.AllowXXX
-
-                _.Match<Operation>(astType =>
+            return Task.FromResult((INodeVisitor)new NodeVisitors(
+                new MatchingNodeVisitor<Operation>((astType, context) =>
                 {
                     operationType = astType.OperationType;
 
                     var type = context.TypeInfo.GetLastType();
                     CheckAuth(astType, type, userContext, context, operationType);
-                });
+                }),
 
-                _.Match<ObjectField>(objectFieldAst =>
+                new MatchingNodeVisitor<ObjectField>((objectFieldAst, context) =>
                 {
                     if (context.TypeInfo.GetArgument()?.ResolvedType.GetNamedType() is IComplexGraphType argumentType)
                     {
                         var fieldType = argumentType.GetField(objectFieldAst.Name);
                         CheckAuth(objectFieldAst, fieldType, userContext, context, operationType);
                     }
-                });
+                }),
 
-                _.Match<Field>(fieldAst =>
+                new MatchingNodeVisitor<Field>((fieldAst, context) =>
                 {
                     var fieldDef = context.TypeInfo.GetFieldDef();
 
@@ -56,23 +54,23 @@ namespace GraphQL.Authorization
                     CheckAuth(fieldAst, fieldDef, userContext, context, operationType);
                     // check returned graph type
                     CheckAuth(fieldAst, fieldDef.ResolvedType.GetNamedType(), userContext, context, operationType);
-                });
-            }));
+                })
+            ));
         }
 
         private void CheckAuth(
             INode node,
-            IProvideMetadata type,
+            IProvideMetadata provider,
             IProvideClaimsPrincipal userContext,
             ValidationContext context,
-            OperationType operationType)
+            OperationType? operationType)
         {
-            if (type == null || !type.RequiresAuthorization())
+            if (provider == null || !provider.RequiresAuthorization())
                 return;
 
             // TODO: async -> sync transition
-            var result = type
-                .Authorize(userContext?.User, context.UserContext, context.Inputs, _evaluator)
+            var result = _evaluator
+                .Evaluate(userContext?.User, context.UserContext, context.Inputs, provider.GetPolicies())
                 .GetAwaiter()
                 .GetResult();
 
@@ -82,7 +80,7 @@ namespace GraphQL.Authorization
             string errors = string.Join("\n", result.Errors);
 
             context.ReportError(new ValidationError(
-                context.OriginalQuery,
+                context.Document.OriginalQuery,
                 "authorization",
                 $"You are not authorized to run this {operationType.ToString().ToLower()}.\n{errors}",
                 node));

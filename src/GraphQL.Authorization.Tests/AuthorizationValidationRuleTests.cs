@@ -206,7 +206,7 @@ namespace GraphQL.Authorization.Tests
             });
         }
 
-        private ISchema BasicSchema()
+        private static ISchema BasicSchema()
         {
             string defs = @"
                 type Query {
@@ -222,13 +222,10 @@ namespace GraphQL.Authorization.Tests
         public class BasicQueryWithAttributes
         {
             [GraphQLAuthorize(Policy = "FieldPolicy")]
-            public string Post(string id)
-            {
-                return "";
-            }
+            public string Post(string id) => "";
         }
 
-        private ISchema NestedSchema()
+        private static ISchema NestedSchema()
         {
             string defs = @"
                 type Query {
@@ -252,20 +249,11 @@ namespace GraphQL.Authorization.Tests
         [GraphQLMetadata("Query")]
         public class NestedQueryWithAttributes
         {
-            public Post Post(string id)
-            {
-                return null;
-            }
+            public Post Post(string id) => null;
 
-            public IEnumerable<Post> Posts()
-            {
-                return null;
-            }
+            public IEnumerable<Post> Posts() => null;
 
-            public IEnumerable<Post> PostsNonNull()
-            {
-                return null;
-            }
+            public IEnumerable<Post> PostsNonNull() => null;
         }
 
         [GraphQLAuthorize(Policy = "PostPolicy")]
@@ -287,7 +275,7 @@ namespace GraphQL.Authorization.Tests
             public string Name { get; set; }
         }
 
-        private ISchema TypedSchema()
+        private static ISchema TypedSchema()
         {
             var query = new ObjectGraphType();
             query.Field<StringGraphType>(
@@ -305,7 +293,7 @@ namespace GraphQL.Authorization.Tests
                 "project",
                 arguments: new QueryArguments(new QueryArgument<AuthorInputType> { Name = "input" }),
                 resolve: context => "testing"
-            ).AuthorizeWith("AdminPolicy", "ConfidentialPolicy");
+            ).AuthorizeWith("AdminPolicy").AuthorizeWith("ConfidentialPolicy");
 
             return new Schema { Query = query };
         }

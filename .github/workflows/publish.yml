@@ -27,10 +27,10 @@ jobs:
           version="${github_ref:10}"
           echo version=$version
           echo "version=$version" >> $GITHUB_ENV
-      - name: Use .NET Core 3.1 SDK
+      - name: Setup .NET Core 5.0 SDK
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '3.1.x'
+          dotnet-version: '5.0.x'
           source-url: https://api.nuget.org/v3/index.json
         env:
           NUGET_AUTH_TOKEN: ${{secrets.NUGET_AUTH_TOKEN}}
@@ -39,11 +39,11 @@ jobs:
         run: dotnet restore
       - name: Build solution [Release]
         working-directory: src
-        run: dotnet build --no-restore -c Release -p:NoWarn=CS1591 -p:Version=$version
+        run: dotnet build --no-restore -c Release -p:Version=$version
       - name: Pack solution [Release]
         working-directory: src
         run: dotnet pack --no-restore --no-build -c Release -p:Version=$version -o out
-      - name: Upload artifacts
+      - name: Upload Nuget packages as workflow artifacts
         uses: actions/upload-artifact@v2
         with:
           name: Nuget packages

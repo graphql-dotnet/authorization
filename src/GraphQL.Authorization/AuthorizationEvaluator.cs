@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -38,8 +37,9 @@ namespace GraphQL.Authorization
 
             var tasks = new List<Task>();
 
-            requiredPolicies?.ToList()
-                .Apply(requiredPolicy =>
+            if (requiredPolicies != null)
+            {
+                foreach (string requiredPolicy in requiredPolicies)
                 {
                     var authorizationPolicy = _settings.GetPolicy(requiredPolicy);
                     if (authorizationPolicy == null)
@@ -48,13 +48,14 @@ namespace GraphQL.Authorization
                     }
                     else
                     {
-                        authorizationPolicy.Requirements.Apply(r =>
+                        foreach (var r in authorizationPolicy.Requirements)
                         {
                             var task = r.Authorize(context);
                             tasks.Add(task);
-                        });
+                        }
                     }
-                });
+                }
+            }
 
             await Task.WhenAll(tasks.ToArray());
 

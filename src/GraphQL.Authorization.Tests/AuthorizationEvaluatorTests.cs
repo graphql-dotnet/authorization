@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Shouldly;
 using Xunit;
@@ -39,7 +38,7 @@ namespace GraphQL.Authorization.Tests
             _settings.AddPolicy("MyPolicy", builder => builder.RequireClaim("Admin"));
 
             var result = await _evaluator.Evaluate(
-                CreatePrincipal(),
+                ValidationTestBase.CreatePrincipal(),
                 null,
                 null,
                 new[] { "MyPolicy" }
@@ -54,7 +53,7 @@ namespace GraphQL.Authorization.Tests
             _settings.AddPolicy("MyPolicy", builder => builder.RequireClaim("Admin"));
 
             var result = await _evaluator.Evaluate(
-                CreatePrincipal(claims: new Dictionary<string, string>
+                ValidationTestBase.CreatePrincipal(claims: new Dictionary<string, string>
                 {
                     { "Admin", "true" }
                 }),
@@ -72,7 +71,7 @@ namespace GraphQL.Authorization.Tests
             _settings.AddPolicy("MyPolicy", builder => builder.RequireClaim("Admin"));
 
             var result = await _evaluator.Evaluate(
-                CreatePrincipal(claims: new Dictionary<string, string>
+                ValidationTestBase.CreatePrincipal(claims: new Dictionary<string, string>
                 {
                     { "Admin", "true" }
                 }),
@@ -90,7 +89,7 @@ namespace GraphQL.Authorization.Tests
             _settings.AddPolicy("MyPolicy", builder => builder.RequireClaim("Admin", "true"));
 
             var result = await _evaluator.Evaluate(
-                CreatePrincipal(claims: new Dictionary<string, string>
+                ValidationTestBase.CreatePrincipal(claims: new Dictionary<string, string>
                 {
                     { "Admin", "true" }
                 }),
@@ -108,7 +107,7 @@ namespace GraphQL.Authorization.Tests
             _settings.AddPolicy("MyPolicy", builder => builder.RequireClaim("Admin"));
 
             var result = await _evaluator.Evaluate(
-                CreatePrincipal(claims: new Dictionary<string, string>
+                ValidationTestBase.CreatePrincipal(claims: new Dictionary<string, string>
                 {
                     { "Admin", "true" }
                 }),
@@ -126,7 +125,7 @@ namespace GraphQL.Authorization.Tests
             _settings.AddPolicy("MyPolicy", _ => { });
 
             var result = await _evaluator.Evaluate(
-                CreatePrincipal(claims: new Dictionary<string, string>
+                ValidationTestBase.CreatePrincipal(claims: new Dictionary<string, string>
                 {
                     { "Admin", "true" }
                 }),
@@ -149,15 +148,6 @@ namespace GraphQL.Authorization.Tests
             );
 
             result.Succeeded.ShouldBeTrue();
-        }
-
-        private ClaimsPrincipal CreatePrincipal(string authenticationType = null, IDictionary<string, string> claims = null)
-        {
-            var claimsList = new List<Claim>();
-
-            claims?.Apply(c => claimsList.Add(new Claim(c.Key, c.Value)));
-
-            return new ClaimsPrincipal(new ClaimsIdentity(claimsList, authenticationType));
         }
     }
 }
