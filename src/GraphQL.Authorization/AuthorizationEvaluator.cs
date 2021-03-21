@@ -4,35 +4,34 @@ using System.Threading.Tasks;
 
 namespace GraphQL.Authorization
 {
-    public interface IAuthorizationEvaluator
-    {
-        Task<AuthorizationResult> Evaluate(
-            ClaimsPrincipal principal,
-            object userContext,
-            IDictionary<string, object> arguments,
-            IEnumerable<string> requiredPolicies);
-    }
-
+    /// <summary>
+    /// Default implementation of <see cref="IAuthorizationEvaluator"/>.
+    /// </summary>
     public class AuthorizationEvaluator : IAuthorizationEvaluator
     {
         private readonly AuthorizationSettings _settings;
 
+        /// <summary>
+        /// Creates an instance of <see cref="AuthorizationEvaluator"/> with the
+        /// specified authorization settings.
+        /// </summary>
         public AuthorizationEvaluator(AuthorizationSettings settings)
         {
             _settings = settings;
         }
 
+        /// <inheritdoc />
         public async Task<AuthorizationResult> Evaluate(
             ClaimsPrincipal principal,
-            object userContext,
-            IDictionary<string, object> inputVariables,
+            IDictionary<string, object> userContext,
+            IReadOnlyDictionary<string, object> inputs,
             IEnumerable<string> requiredPolicies)
         {
             var context = new AuthorizationContext
             {
                 User = principal ?? new ClaimsPrincipal(new ClaimsIdentity()),
                 UserContext = userContext,
-                InputVariables = inputVariables
+                Inputs = inputs
             };
 
             var tasks = new List<Task>();

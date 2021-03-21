@@ -10,7 +10,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Harness
 {
-    public class Startup
+    internal class Startup
     {
         public Startup(IConfiguration configuration)
         {
@@ -21,7 +21,7 @@ namespace Harness
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.TryAddSingleton(s =>
+            services.TryAddSingleton<ISchema>(s =>
             {
                 string definitions = @"
                   type User {
@@ -45,7 +45,8 @@ namespace Harness
             // claims principal must look something like this to allow access
             // var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Admin") }));
 
-            services.AddGraphQL()
+            services
+                .AddGraphQL()
                 .AddSystemTextJson()
                 .AddUserContextBuilder(context => new GraphQLUserContext { User = context.User });
         }
