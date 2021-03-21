@@ -3,7 +3,6 @@
 
   <PropertyGroup>
     <TargetFrameworks>net5;netcoreapp3.1</TargetFrameworks>
-    <GraphQLTestVersion>4.0.2</GraphQLTestVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GraphQL" Version="$(GraphQLTestVersion)" />
+    <PackageReference Include="GraphQL" Version="4.0.2" />
   </ItemGroup>
 
 </Project>
