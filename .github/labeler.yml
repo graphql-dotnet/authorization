@@ -1,12 +1,12 @@
-"test":
+test:
   - src/GraphQL.Authorization.Tests/**/*
   - src/GraphQL.Authorization.ApiTests/**/*
 
-"CI":
+CI:
   - .github/workflows/**/*
 
-"code style":
+code style:
   - .editorconfig
 
-"documentation":
+documentation:
   - README.md
