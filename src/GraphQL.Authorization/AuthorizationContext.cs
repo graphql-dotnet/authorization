@@ -16,7 +16,7 @@ namespace GraphQL.Authorization
 
         public IEnumerable<string> Errors => _errors;
 
-        public bool HasErrors => _errors.Any<string>();
+        public bool HasErrors => _errors.Count > 0;
 
         public void ReportError(string error)
         {
