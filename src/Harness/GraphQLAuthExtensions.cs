@@ -12,10 +12,9 @@ namespace Harness
     public static class GraphQLAuthExtensions
     {
         /// <summary>
-        /// Adds all necessary classes into provided DI container.
+        /// Adds all necessary classes into provided <paramref name="services"/>
+        /// and provides a delegate to configure authorization settings.
         /// </summary>
-        /// <param name="services">An instance of the DI container.</param>
-        /// <param name="configure">Delegate to configure authorization settings.</param>
         public static void AddGraphQLAuth(this IServiceCollection services, Action<AuthorizationSettings, IServiceProvider> configure)
         {
             services.TryAddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
@@ -30,10 +29,9 @@ namespace Harness
         }
 
         /// <summary>
-        /// Adds all necessary classes into provided DI container.
+        /// Adds all necessary classes into provided <paramref name="services"/>
+        /// and provides a delegate to configure authorization settings.
         /// </summary>
-        /// <param name="services">An instance of the DI container.</param>
-        /// <param name="configure">Delegate to configure authorization settings.</param>
         public static void AddGraphQLAuth(this IServiceCollection services, Action<AuthorizationSettings> configure)
         {
             services.TryAddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
