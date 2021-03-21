@@ -222,6 +222,7 @@ namespace GraphQL.Authorization.Tests
         public class BasicQueryWithAttributes
         {
             [GraphQLAuthorize(Policy = "FieldPolicy")]
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "test")]
             public string Post(string id) => "";
         }
 
@@ -249,6 +250,7 @@ namespace GraphQL.Authorization.Tests
         [GraphQLMetadata("Query")]
         public class NestedQueryWithAttributes
         {
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "test")]
             public Post Post(string id) => null;
 
             public IEnumerable<Post> Posts() => null;

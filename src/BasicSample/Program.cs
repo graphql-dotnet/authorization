@@ -14,7 +14,8 @@ namespace BasicSample
 {
     internal class Program
     {
-        private static async Task Main(string[] args)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "main")]
+        private static async Task Main()
         {
             using var serviceProvider = new ServiceCollection()
                 .AddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>()
