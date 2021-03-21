@@ -23,11 +23,14 @@ env:
 
 jobs:
   test:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
-    name: ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+        os:
+          - ubuntu-latest
+          - windows-latest
+        graphqlversion:
+          - 4.0.2
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
@@ -45,9 +48,9 @@ jobs:
           source-url: https://nuget.pkg.github.com/graphql-dotnet/index.json
         env:
           NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-      - name: Install dependencies
+      - name: Install dependencies with GraphQL version ${{ matrix.graphqlversion }}
         working-directory: src
-        run: dotnet restore
+        run: dotnet restore -p:GraphQLTestVersion=${{ matrix.graphqlversion }}
       - name: Check formatting
         if: ${{ startsWith(matrix.os, 'ubuntu') }}
         working-directory: src
@@ -57,10 +60,10 @@ jobs:
           dotnet format --check -v diag --fix-style warn --fix-analyzers warn || (echo "Run 'dotnet format' to fix formatting issues" && exit 1)
       - name: Build solution [Release]
         working-directory: src
-        run: dotnet build --no-restore -c Release
+        run: dotnet build --no-restore -c Release -p:GraphQLTestVersion=${{ matrix.graphqlversion }}
       - name: Build solution [Debug]
         working-directory: src
-        run: dotnet build --no-restore
+        run: dotnet build --no-restore -p:GraphQLTestVersion=${{ matrix.graphqlversion }}
       - name: Test solution [Debug]
         working-directory: src
         run: dotnet test --no-restore --no-build -p:CollectCoverage=true
