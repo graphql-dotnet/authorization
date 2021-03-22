@@ -30,8 +30,8 @@ Note that GitHub requires authentication to consume the feed. See [here](https:/
 
 # Usage
 
-* Register the authorization classes in your DI container (`IAuthorizationEvaluator`, `AuthorizationSettings`, and the `AuthorizationValidationRule`).
-* Provide a `UserContext` class that implements `IProvideClaimsPrincipal`.
+* Register the authorization classes in your DI container - `IAuthorizationEvaluator`, `AuthorizationSettings`, and the `AuthorizationValidationRule`.
+* Provide a custom `UserContext` class that implements `IProvideClaimsPrincipal`.
 * Add policies to the `AuthorizationSettings`.
 * Apply a policy to a GraphType or Field (both implement `IProvideMetadata`):
   - using `AuthorizeWith(string policy)` extension method
@@ -41,77 +41,11 @@ Note that GitHub requires authentication to consume the feed. See [here](https:/
 
 # Examples
 
-1. Fully functional [basic sample](src/BasicSample/Program.cs).
-Register the authorization classes in your container:
+1. Fully functional basic [Console sample](src/BasicSample/Program.cs).
 
-```csharp
-public static IGraphQLBuilder AddGraphQLAuth(this IGraphQLBuilder builder, Action<AuthorizationSettings, IServiceProvider> configure)
-{
-    if (builder == null)
-        throw new ArgumentNullException(nameof(builder));
+2. Fully functional [ASP.NET Core sample](src/Harness/Program.cs).
 
-    builder.Services.AddHttpContextAccessor();
-    builder.Services.TryAddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
-    builder.Services.AddTransient<IValidationRule, AuthorizationValidationRule>();
-
-    builder.Services.TryAddTransient(provider =>
-    {
-        var authSettings = new AuthorizationSettings();
-        configure(authSettings, provider);
-        return authSettings;
-    });
-
-    return builder;
-}
-
-public static IGraphQLBuilder AddGraphQLAuth(this IGraphQLBuilder builder, Action<AuthorizationSettings> configure)
-{
-    if (configure == null)
-        throw new ArgumentNullException(nameof(configure));
-
-    return builder.AddGraphQLAuth((settings, _) => configure(settings));
-}
-```
-
-Provide a `UserContext` class that implements `IProvideClaimsPrincipal` and add policies to the `AuthorizationSettings`:
-
-```csharp
-public class GraphQLUserContext : IProvideClaimsPrincipal
-{
-    public ClaimsPrincipal User { get; set; }
-}
-
-// AddGraphQL is an extension method from the GraphQL.Server.Core package and it is aware of all registered validation rules
-// see https://github.com/graphql-dotnet/server/blob/develop/src/Core/ServiceCollectionExtensions.cs
-services.AddGraphQL(options =>
-{
-    options.ExposeExceptions = true;
-    options.EnableMetrics = false;
-})
-.AddUserContextBuilder(context => new GraphQLUserContext { User = context.User })
-.AddGraphQLAuth(settings =>
-{
-    settings.AddPolicy("AdminPolicy", options => options.RequireClaim("role", "Admin"));
-}
-```
-
-Register your schema and append GraphQL middleware in the HTTP request pipeline:
-
-```csharp
-public void ConfigureServices(IServiceCollection services)
-{
-    services.AddSingleton<ISchema, YourSchema>();
-}
-
-public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-{
-    // UseGraphQL is an extension method from the GraphQL.Server.Transports.AspNetCore package
-    // see https://github.com/graphql-dotnet/server/blob/develop/src/Transports.AspNetCore/ApplicationBuilderExtensions.cs
-    app.UseGraphQL<ISchema>();
-}
-```
-
-GraphType first syntax - use `AuthorizeWith` extension method on GraphType or Field.
+3. GraphType first syntax - use `AuthorizeWith` extension method on `IGraphType` or `IFieldType`.
 
 ```csharp
 public class MyType : ObjectGraphType
@@ -124,9 +58,9 @@ public class MyType : ObjectGraphType
 }
 ```
 
-3. Schema first syntax - use `GraphQLAuthorize` attribute on type or method.
+4. Schema first syntax - use `GraphQLAuthorize` attribute on type or method.
 
-```c#
+```csharp
 [GraphQLAuthorize(Policy = "MyPolicy")]
 public class MutationType
 {

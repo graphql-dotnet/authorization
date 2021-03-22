@@ -5,7 +5,8 @@ using System.Linq;
 namespace GraphQL.Authorization
 {
     /// <summary>
-    /// Authorization settings are represented by a set of named policies, each of which has a set of authorization requirements.
+    /// Authorization settings are represented by a set of named policies
+    /// where each policy has a set of authorization requirements.
     /// </summary>
     public class AuthorizationSettings
     {
@@ -19,8 +20,8 @@ namespace GraphQL.Authorization
         /// <summary>
         /// Returns policies with the specified names.
         /// </summary>
-        /// <param name="policies"></param>
-        /// <returns>A set of policy names.</returns>
+        /// <param name="policies">A set of policies names.</param>
+        /// <returns>Policies with matched names.</returns>
         public IEnumerable<IAuthorizationPolicy> GetPolicies(IEnumerable<string> policies)
         {
             List<IAuthorizationPolicy> found = null;

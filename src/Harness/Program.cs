@@ -4,7 +4,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Harness
 {
-    public class Program
+    internal class Program
     {
         public static Task Main(string[] args) => CreateHostBuilder(args).Build().RunAsync();
 
