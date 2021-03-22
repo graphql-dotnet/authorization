@@ -1,63 +1,72 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using GraphQL.Language.AST;
 using GraphQL.Types;
 using GraphQL.Validation;
 
 namespace GraphQL.Authorization
 {
+    /// <summary>
+    /// GraphQL authorization validation rule which evaluates configured
+    /// (via policies) requirements on schema elements: types, fields, etc.
+    /// </summary>
     public class AuthorizationValidationRule : IValidationRule
     {
         private readonly IAuthorizationEvaluator _evaluator;
 
+        /// <summary>
+        /// Creates an instance of <see cref="AuthorizationValidationRule"/> with
+        /// the specified authorization evaluator.
+        /// </summary>
         public AuthorizationValidationRule(IAuthorizationEvaluator evaluator)
         {
             _evaluator = evaluator;
         }
 
-        public INodeVisitor Validate(ValidationContext context)
+        /// <inheritdoc />
+        public Task<INodeVisitor> ValidateAsync(ValidationContext context)
         {
             var userContext = context.UserContext as IProvideClaimsPrincipal;
+            var operationType = OperationType.Query;
 
-            return new EnterLeaveListener(_ =>
-            {
-                var operationType = OperationType.Query;
+            // this could leak info about hidden fields or types in error messages
+            // it would be better to implement a filter on the Schema so it
+            // acts as if they just don't exist vs. an auth denied error
+            // - filtering the Schema is not currently supported
+            // TODO: apply ISchemaFilter - context.Schema.Filter.AllowXXX
 
-                // this could leak info about hidden fields or types in error messages
-                // it would be better to implement a filter on the Schema so it
-                // acts as if they just don't exist vs. an auth denied error
-                // - filtering the Schema is not currently supported
-
-                _.Match<Operation>(astType =>
+            return Task.FromResult((INodeVisitor)new NodeVisitors(
+                new MatchingNodeVisitor<Operation>((astType, context) =>
                 {
                     operationType = astType.OperationType;
 
                     var type = context.TypeInfo.GetLastType();
                     CheckAuth(astType, type, userContext, context, operationType);
-                });
+                }),
 
-                _.Match<ObjectField>(objectFieldAst =>
+                new MatchingNodeVisitor<ObjectField>((objectFieldAst, context) =>
                 {
-                    var argumentType = context.TypeInfo.GetArgument().ResolvedType.GetNamedType() as IComplexGraphType;
-                    if (argumentType == null)
-                        return;
+                    if (context.TypeInfo.GetArgument()?.ResolvedType.GetNamedType() is IComplexGraphType argumentType)
+                    {
+                        var fieldType = argumentType.GetField(objectFieldAst.Name);
+                        CheckAuth(objectFieldAst, fieldType, userContext, context, operationType);
+                    }
+                }),
 
-                    var fieldType = argumentType.GetField(objectFieldAst.Name);
-                    CheckAuth(objectFieldAst, fieldType, userContext, context, operationType);
-                });
-
-                _.Match<Field>(fieldAst =>
+                new MatchingNodeVisitor<Field>((fieldAst, context) =>
                 {
                     var fieldDef = context.TypeInfo.GetFieldDef();
 
-                    if (fieldDef == null) return;
+                    if (fieldDef == null)
+                        return;
 
                     // check target field
                     CheckAuth(fieldAst, fieldDef, userContext, context, operationType);
                     // check returned graph type
                     CheckAuth(fieldAst, fieldDef.ResolvedType.GetNamedType(), userContext, context, operationType);
-                });
+                }),
 
-                _.Match<VariableReference>(variable =>
+                new MatchingNodeVisitor<VariableReference>((variable, context) =>
                 {
                     var variableType = context.TypeInfo.GetArgument().ResolvedType.GetNamedType() as IComplexGraphType;
                     if (variableType == null)
@@ -77,30 +86,33 @@ namespace GraphQL.Authorization
                             }
                         }
                     }
-                });
-            });
+                })
+            ));
         }
 
         private void CheckAuth(
             INode node,
-            IProvideMetadata type,
+            IProvideMetadata provider,
             IProvideClaimsPrincipal userContext,
             ValidationContext context,
-            OperationType operationType)
+            OperationType? operationType)
         {
-            if (type == null || !type.RequiresAuthorization()) return;
+            if (provider == null || !provider.RequiresAuthorization())
+                return;
 
-            var result = type
-                .Authorize(userContext?.User, context.UserContext, context.Inputs, _evaluator)
+            // TODO: async -> sync transition
+            var result = _evaluator
+                .Evaluate(userContext?.User, context.UserContext, context.Inputs, provider.GetPolicies())
                 .GetAwaiter()
                 .GetResult();
 
-            if (result.Succeeded) return;
+            if (result.Succeeded)
+                return;
 
-            var errors = string.Join("\n", result.Errors);
+            string errors = string.Join("\n", result.Errors);
 
             context.ReportError(new ValidationError(
-                context.OriginalQuery,
+                context.Document.OriginalQuery,
                 "authorization",
                 $"You are not authorized to run this {operationType.ToString().ToLower()}.\n{errors}",
                 node));

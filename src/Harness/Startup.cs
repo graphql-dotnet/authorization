@@ -1,26 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using GraphQL;
+using GraphQL.Server;
+using GraphQL.Types;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-
-using GraphQL;
-using GraphQL.Authorization;
-using GraphQL.Types;
-using GraphQL.Server.Transports.AspNetCore;
-using GraphQL.Server.Ui.GraphiQL;
-using GraphQL.Validation;
-using GraphQL.Server;
+using Microsoft.Extensions.Hosting;
 
 namespace Harness
 {
-    public class Startup
+    internal class Startup
     {
         public Startup(IConfiguration configuration)
         {
@@ -33,7 +23,7 @@ namespace Harness
         {
             services.TryAddSingleton<ISchema>(s =>
             {
-                var definitions = @"
+                string definitions = @"
                   type User {
                     id: ID
                     name: String
@@ -44,40 +34,31 @@ namespace Harness
                     users: [User]
                   }
                 ";
-                var schema = Schema.For(
-                    definitions,
-                    _ =>
-                    {
-                        _.Types.Include<Query>();
-                    });
-                schema.FindType("User").AuthorizeWith("AdminPolicy");
+                var schema = Schema.For(definitions, builder => builder.Types.Include<Query>());
+                schema.AllTypes["User"].AuthorizeWith("AdminPolicy");
                 return schema;
             });
 
             // extension method defined in this project
-            services.AddGraphQLAuth(_ =>
-            {
-                _.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"));
-            });
+            services.AddGraphQLAuth((settings, provider) => settings.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin")));
 
-            services.AddGraphQL(options =>
-            {
-                options.ExposeExceptions = true;
-            }).AddUserContextBuilder(context => new GraphQLUserContext { User = context.User });
+            // claims principal must look something like this to allow access
+            // var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Admin") }));
 
-            services.AddMvc();
+            services
+                .AddGraphQL()
+                .AddSystemTextJson()
+                .AddUserContextBuilder(context => new GraphQLUserContext { User = context.User });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseDeveloperExceptionPage();
+            if (env.IsDevelopment())
+                app.UseDeveloperExceptionPage();
 
-            var validationRules = app.ApplicationServices.GetServices<IValidationRule>();
-
-            app.UseGraphQL<ISchema>("/graphql");
-            app.UseGraphiQLServer(new GraphiQLOptions());
-
-            app.UseMvc();
+            app.UseGraphQL<ISchema>();
+            app.UseGraphQLGraphiQL();
+            app.UseGraphQLPlayground();
         }
     }
 }

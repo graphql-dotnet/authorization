@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using GraphQL.Types;
 using Shouldly;
 using Xunit;
@@ -10,20 +10,17 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void can_set_policy_from_authorize_attribute()
         {
-            var defs = @"
+            string defs = @"
                 type Query {
                     post(id: ID!): String
                 }
             ";
 
-            var schema = Schema.For(defs, _ =>
-            {
-                _.Types.Include<QueryWithAttributes>();
-            });
+            var schema = Schema.For(defs, builder => builder.Types.Include<QueryWithAttributes>());
 
             schema.Initialize();
 
-            var query = schema.FindType("Query") as IObjectGraphType;
+            var query = schema.AllTypes["Query"] as IObjectGraphType;
             query.RequiresAuthorization().ShouldBeTrue();
             query.GetPolicies().Single().ShouldBe("ClassPolicy");
 
@@ -37,10 +34,8 @@ namespace GraphQL.Authorization.Tests
         public class QueryWithAttributes
         {
             [GraphQLAuthorize(Policy = "FieldPolicy")]
-            public string Post(string id)
-            {
-                return "";
-            }
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "test")]
+            public string Post(string id) => "";
         }
     }
 }

@@ -1,51 +1,60 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace GraphQL.Authorization
 {
-    public interface IAuthorizationEvaluator
-    {
-        Task<AuthorizationResult> Evaluate(
-            ClaimsPrincipal principal,
-            object userContext,
-            Dictionary<string, object> arguments,
-            IEnumerable<string> requiredPolicies);
-    }
-
+    /// <summary>
+    /// Default implementation of <see cref="IAuthorizationEvaluator"/>.
+    /// </summary>
     public class AuthorizationEvaluator : IAuthorizationEvaluator
     {
         private readonly AuthorizationSettings _settings;
 
+        /// <summary>
+        /// Creates an instance of <see cref="AuthorizationEvaluator"/> with the
+        /// specified authorization settings.
+        /// </summary>
         public AuthorizationEvaluator(AuthorizationSettings settings)
         {
             _settings = settings;
         }
 
+        /// <inheritdoc />
         public async Task<AuthorizationResult> Evaluate(
             ClaimsPrincipal principal,
-            object userContext,
-            Dictionary<string, object> arguments,
+            IDictionary<string, object> userContext,
+            IReadOnlyDictionary<string, object> inputs,
             IEnumerable<string> requiredPolicies)
         {
-            var context = new AuthorizationContext();
-            context.User = principal ?? new ClaimsPrincipal(new ClaimsIdentity());
-            context.UserContext = userContext;
-            context.Arguments = arguments;
-
-            var authPolicies = _settings.GetPolicies(requiredPolicies).ToList();
+            var context = new AuthorizationContext
+            {
+                User = principal ?? new ClaimsPrincipal(new ClaimsIdentity()),
+                UserContext = userContext,
+                Inputs = inputs
+            };
 
             var tasks = new List<Task>();
 
-            authPolicies.Apply(p =>
+            if (requiredPolicies != null)
             {
-                p.Requirements.Apply(r =>
+                foreach (string requiredPolicy in requiredPolicies)
                 {
-                    var task = r.Authorize(context);
-                    tasks.Add(task);
-                });
-            });
+                    var authorizationPolicy = _settings.GetPolicy(requiredPolicy);
+                    if (authorizationPolicy == null)
+                    {
+                        context.ReportError($"Required policy '{requiredPolicy}' is not present.");
+                    }
+                    else
+                    {
+                        foreach (var r in authorizationPolicy.Requirements)
+                        {
+                            var task = r.Authorize(context);
+                            tasks.Add(task);
+                        }
+                    }
+                }
+            }
 
             await Task.WhenAll(tasks.ToArray());
 

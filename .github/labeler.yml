@@ -1,0 +1,12 @@
+test:
+  - src/GraphQL.Authorization.Tests/**/*
+  - src/GraphQL.Authorization.ApiTests/**/*
+
+CI:
+  - .github/workflows/**/*
+
+code style:
+  - .editorconfig
+
+documentation:
+  - README.md
