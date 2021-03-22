@@ -1,4 +1,4 @@
-using GraphQL.Authorization;
+using GraphQL;
 using GraphQL.Server;
 using GraphQL.Types;
 using Microsoft.AspNetCore.Builder;
@@ -35,7 +35,7 @@ namespace Harness
                   }
                 ";
                 var schema = Schema.For(definitions, builder => builder.Types.Include<Query>());
-                schema.FindType("User").AuthorizeWith("AdminPolicy");
+                schema.AllTypes["User"].AuthorizeWith("AdminPolicy");
                 return schema;
             });
 
@@ -56,7 +56,7 @@ namespace Harness
                 app.UseDeveloperExceptionPage();
 
             app.UseGraphQL<ISchema>();
-            app.UseGraphiQLServer();
+            app.UseGraphQLGraphiQL();
             app.UseGraphQLPlayground();
         }
     }

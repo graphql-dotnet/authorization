@@ -1,7 +1,4 @@
-using Shouldly;
-using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Shouldly;
 using Xunit;
@@ -17,7 +14,7 @@ namespace GraphQL.Authorization.Tests
 
             var context = new AuthorizationContext
             {
-                User = CreatePrincipal()
+                User = ValidationTestBase.CreatePrincipal()
             };
 
             await req.Authorize(context);
@@ -33,21 +30,12 @@ namespace GraphQL.Authorization.Tests
 
             var context = new AuthorizationContext
             {
-                User = CreatePrincipal("jwt")
+                User = ValidationTestBase.CreatePrincipal("jwt")
             };
 
             await req.Authorize(context);
 
             context.HasErrors.ShouldBeFalse();
-        }
-
-        private ClaimsPrincipal CreatePrincipal(string authenticationType = null, IDictionary<string, string> claims = null)
-        {
-            var claimsList = new List<Claim>();
-
-            claims?.Apply(c => claimsList.Add(new Claim(c.Key, c.Value)));
-
-            return new ClaimsPrincipal(new ClaimsIdentity(claimsList, authenticationType));
         }
     }
 }

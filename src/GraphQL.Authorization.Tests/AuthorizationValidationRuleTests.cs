@@ -206,7 +206,7 @@ namespace GraphQL.Authorization.Tests
             });
         }
 
-        private ISchema BasicSchema()
+        private static ISchema BasicSchema()
         {
             string defs = @"
                 type Query {
@@ -222,10 +222,11 @@ namespace GraphQL.Authorization.Tests
         public class BasicQueryWithAttributes
         {
             [GraphQLAuthorize(Policy = "FieldPolicy")]
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "test")]
             public string Post(string id) => "";
         }
 
-        private ISchema NestedSchema()
+        private static ISchema NestedSchema()
         {
             string defs = @"
                 type Query {
@@ -249,6 +250,7 @@ namespace GraphQL.Authorization.Tests
         [GraphQLMetadata("Query")]
         public class NestedQueryWithAttributes
         {
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "test")]
             public Post Post(string id) => null;
 
             public IEnumerable<Post> Posts() => null;
@@ -275,7 +277,7 @@ namespace GraphQL.Authorization.Tests
             public string Name { get; set; }
         }
 
-        private ISchema TypedSchema()
+        private static ISchema TypedSchema()
         {
             var query = new ObjectGraphType();
             query.Field<StringGraphType>(
@@ -293,7 +295,7 @@ namespace GraphQL.Authorization.Tests
                 "project",
                 arguments: new QueryArguments(new QueryArgument<AuthorInputType> { Name = "input" }),
                 resolve: context => "testing"
-            ).AuthorizeWith("AdminPolicy", "ConfidentialPolicy");
+            ).AuthorizeWith("AdminPolicy").AuthorizeWith("ConfidentialPolicy");
 
             return new Schema { Query = query };
         }

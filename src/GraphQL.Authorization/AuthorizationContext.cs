@@ -16,7 +16,7 @@ namespace GraphQL.Authorization
 
         public IEnumerable<string> Errors => _errors ?? Enumerable.Empty<string>();
 
-        public bool HasErrors => _errors?.Any() == true;
+        public bool HasErrors => _errors?.Count > 0;
 
         /// <summary>
         /// Called by <see cref="IAuthorizationRequirement.Authorize(AuthorizationContext)"/> if the requirement is not met.

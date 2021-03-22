@@ -25,16 +25,15 @@ namespace GraphQL.Authorization
         {
             List<IAuthorizationPolicy> found = null;
 
-            policies?.Apply(name =>
+            if (policies != null)
             {
-                var policy = GetPolicy(name);
-                if (policy != null)
-                    (found ??= new List<IAuthorizationPolicy>()).Add(policy);
-                if (_policies.ContainsKey(name))
+                foreach (string name in policies)
                 {
-                    found.Add(_policies[name]);
+                    var policy = GetPolicy(name);
+                    if (policy != null)
+                        (found ??= new List<IAuthorizationPolicy>()).Add(policy);
                 }
-            });
+            }
 
             return found ?? Enumerable.Empty<IAuthorizationPolicy>();
         }

@@ -31,18 +31,25 @@ namespace GraphQL.Authorization
 
             var tasks = new List<Task>();
 
-            requiredPolicies.Apply(requiredPolicy =>
+            if (requiredPolicies != null)
             {
-                var authorizationPolicy = _settings.GetPolicy(requiredPolicy);
-                if (authorizationPolicy == null)
+                foreach (string requiredPolicy in requiredPolicies)
                 {
-                    context.ReportError($"Required policy '{requiredPolicy}' is not present.");
+                    var authorizationPolicy = _settings.GetPolicy(requiredPolicy);
+                    if (authorizationPolicy == null)
+                    {
+                        context.ReportError($"Required policy '{requiredPolicy}' is not present.");
+                    }
+                    else
+                    {
+                        foreach (var r in authorizationPolicy.Requirements)
+                        {
+                            var task = r.Authorize(context);
+                            tasks.Add(task);
+                        }
+                    }
                 }
-                else
-                {
-                    authorizationPolicy.Requirements.Apply(req => tasks.Add(req.Authorize(context)));
-                }
-            });
+            }
 
             await Task.WhenAll(tasks).ConfigureAwait(false);
 

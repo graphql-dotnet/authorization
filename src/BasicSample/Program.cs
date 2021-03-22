@@ -12,9 +12,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace BasicSample
 {
-    class Program
+    internal class Program
     {
-        static async Task Main(string[] args)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "main")]
+        private static async Task Main()
         {
             using var serviceProvider = new ServiceCollection()
                 .AddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>()
@@ -79,6 +80,7 @@ namespace BasicSample
     public class User
     {
         public string Id { get; set; }
+
         public string Name { get; set; }
     }
 }

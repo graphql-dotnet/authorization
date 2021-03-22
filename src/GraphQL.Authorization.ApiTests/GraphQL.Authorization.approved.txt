@@ -20,16 +20,6 @@ namespace GraphQL.Authorization
         public AuthorizationEvaluator(GraphQL.Authorization.AuthorizationSettings settings) { }
         public System.Threading.Tasks.Task<GraphQL.Authorization.AuthorizationResult> Evaluate(System.Security.Claims.ClaimsPrincipal principal, System.Collections.Generic.IDictionary<string, object> userContext, GraphQL.Inputs inputVariables, System.Collections.Generic.IEnumerable<string> requiredPolicies) { }
     }
-    public static class AuthorizationMetadataExtensions
-    {
-        public static readonly string PolicyKey;
-        public static System.Threading.Tasks.Task<GraphQL.Authorization.AuthorizationResult> Authorize(this GraphQL.Types.IProvideMetadata type, System.Security.Claims.ClaimsPrincipal principal, System.Collections.Generic.IDictionary<string, object> userContext, GraphQL.Inputs inputVariables, GraphQL.Authorization.IAuthorizationEvaluator evaluator) { }
-        public static void AuthorizeWith(this GraphQL.Types.IProvideMetadata type, params string[] policies) { }
-        public static GraphQL.Builders.ConnectionBuilder<TSourceType> AuthorizeWith<TSourceType>(this GraphQL.Builders.ConnectionBuilder<TSourceType> builder, string policy) { }
-        public static GraphQL.Builders.FieldBuilder<TSourceType, TReturnType> AuthorizeWith<TSourceType, TReturnType>(this GraphQL.Builders.FieldBuilder<TSourceType, TReturnType> builder, string policy) { }
-        public static System.Collections.Generic.IEnumerable<string> GetPolicies(this GraphQL.Types.IProvideMetadata type) { }
-        public static bool RequiresAuthorization(this GraphQL.Types.IProvideMetadata type) { }
-    }
     public class AuthorizationPolicy : GraphQL.Authorization.IAuthorizationPolicy
     {
         public AuthorizationPolicy(System.Collections.Generic.IEnumerable<GraphQL.Authorization.IAuthorizationRequirement> requirements) { }

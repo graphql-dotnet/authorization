@@ -1,6 +1,6 @@
+using System.Linq;
 using GraphQL.Types;
 using Shouldly;
-using System.Linq;
 using Xunit;
 
 namespace GraphQL.Authorization.Tests
@@ -20,7 +20,7 @@ namespace GraphQL.Authorization.Tests
 
             schema.Initialize();
 
-            var query = schema.FindType("Query") as IObjectGraphType;
+            var query = schema.AllTypes["Query"] as IObjectGraphType;
             query.RequiresAuthorization().ShouldBeTrue();
             query.GetPolicies().Single().ShouldBe("ClassPolicy");
 
@@ -34,6 +34,7 @@ namespace GraphQL.Authorization.Tests
         public class QueryWithAttributes
         {
             [GraphQLAuthorize(Policy = "FieldPolicy")]
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "test")]
             public string Post(string id) => "";
         }
     }

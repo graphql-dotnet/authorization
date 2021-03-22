@@ -5,6 +5,17 @@ on:
     branches:
       - master
       - develop
+    paths:
+      - src/**
+      - .github/workflows/**
+  # Upload code coverage results when PRs are merged
+  push:
+    branches:
+      - master
+      - develop
+    paths:
+      - src/**
+      - .github/workflows/**
 
 env:
   DOTNET_NOLOGO: true
@@ -15,40 +26,62 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: 
+        os:
           - ubuntu-latest
           - windows-latest
         graphqlversion:
-          - 3.0.0
-          - 3.1.0
-          - 3.1.3
-          - 4.0.0-preview-17
+          - 4.0.2
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
-      - name: Use .NET Core 3.1 LTS SDK
+      - name: Setup .NET Core 3.1 SDK
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '3.1.x'
           source-url: https://nuget.pkg.github.com/graphql-dotnet/index.json
         env:
           NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Setup .NET Core 5.0 SDK
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+          source-url: https://nuget.pkg.github.com/graphql-dotnet/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       - name: Install dependencies with GraphQL version ${{ matrix.graphqlversion }}
         working-directory: src
         run: dotnet restore -p:GraphQLTestVersion=${{ matrix.graphqlversion }}
+      - name: Check formatting
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        working-directory: src
+        run: |
+          dotnet tool install -g dotnet-format --version 6.0.* --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
+          dotnet format --check --fix-whitespace || (echo "Run 'dotnet format' to fix formatting issues" && exit 1)
+          dotnet format --check -v diag --fix-style warn --fix-analyzers warn || (echo "Run 'dotnet format' to fix formatting issues" && exit 1)
       - name: Build solution [Release]
         working-directory: src
-        run: dotnet build --no-restore -c Release -p:NoWarn=CS1591 -p:GraphQLTestVersion=${{ matrix.graphqlversion }}
+        run: dotnet build --no-restore -c Release -p:GraphQLTestVersion=${{ matrix.graphqlversion }}
       - name: Build solution [Debug]
         working-directory: src
-        run: dotnet build --no-restore -p:NoWarn=CS1591 -p:GraphQLTestVersion=${{ matrix.graphqlversion }}
+        run: dotnet build --no-restore -p:GraphQLTestVersion=${{ matrix.graphqlversion }}
       - name: Test solution [Debug]
         working-directory: src
-        run: dotnet test --no-restore --no-build
-  all-tests:
+        run: dotnet test --no-restore --no-build -p:CollectCoverage=true
+      - name: Upload coverage to codecov
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+        uses: codecov/codecov-action@v1.2.1
+        with:
+          files: .coverage/GraphQL.Authorization.Tests/coverage.net5.opencover.xml
+
+  buildcheck:
     needs:
       - test
     runs-on: ubuntu-latest
+    if: always()
     steps:
-      - name: All tests completed successfully
+      - name: Pass build check
+        if: ${{ needs.test.result == 'success' }}
         run: exit 0
+      - name: Fail build check
+        if: ${{ needs.test.result != 'success' }}
+        run: exit 1

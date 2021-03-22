@@ -1,7 +1,6 @@
 using Shouldly;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -16,7 +15,7 @@ namespace GraphQL.Authorization.Tests
 
             var context = new AuthorizationContext
             {
-                User = CreatePrincipal()
+                User = ValidationTestBase.CreatePrincipal()
             };
 
             await req.Authorize(context);
@@ -32,7 +31,7 @@ namespace GraphQL.Authorization.Tests
 
             var context = new AuthorizationContext
             {
-                User = CreatePrincipal()
+                User = ValidationTestBase.CreatePrincipal()
             };
 
             await req.Authorize(context);
@@ -48,7 +47,7 @@ namespace GraphQL.Authorization.Tests
 
             var context = new AuthorizationContext
             {
-                User = CreatePrincipal()
+                User = ValidationTestBase.CreatePrincipal()
             };
 
             await req.Authorize(context);
@@ -64,7 +63,7 @@ namespace GraphQL.Authorization.Tests
 
             var context = new AuthorizationContext
             {
-                User = CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "true" } })
+                User = ValidationTestBase.CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "true" } })
             };
 
             await req.Authorize(context);
@@ -79,7 +78,7 @@ namespace GraphQL.Authorization.Tests
 
             var context = new AuthorizationContext
             {
-                User = CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "true" } })
+                User = ValidationTestBase.CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "true" } })
             };
 
             await req.Authorize(context);
@@ -94,21 +93,12 @@ namespace GraphQL.Authorization.Tests
 
             var context = new AuthorizationContext
             {
-                User = CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "maybe" } })
+                User = ValidationTestBase.CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "maybe" } })
             };
 
             await req.Authorize(context);
 
             context.HasErrors.ShouldBeFalse();
-        }
-
-        private ClaimsPrincipal CreatePrincipal(string authenticationType = null, IDictionary<string, string> claims = null)
-        {
-            var claimsList = new List<Claim>();
-
-            claims?.Apply(c => claimsList.Add(new Claim(c.Key, c.Value)));
-
-            return new ClaimsPrincipal(new ClaimsIdentity(claimsList, authenticationType));
         }
     }
 }
