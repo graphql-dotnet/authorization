@@ -58,7 +58,7 @@ public class MyType : ObjectGraphType
 }
 ```
 
-4. Schema first syntax - use `GraphQLAuthorize` attribute on type or method.
+4. Schema first syntax - use `GraphQLAuthorize` attribute on type, method or property.
 
 ```csharp
 [GraphQLAuthorize(Policy = "MyPolicy")]
@@ -67,8 +67,11 @@ public class MutationType
     [GraphQLAuthorize(Policy = "AnotherPolicy")]
     public async Task<string> CreateSomething(MyInput input)
     {
-        return Guid.NewGuid().ToString();
+        return await SomeMethodAsync(input);
     }
+
+    [GraphQLAuthorize(Policy = "SuperPolicy")]
+    public string SomeProperty => Guid.NewGuid().ToString();
 }
 ```
 
