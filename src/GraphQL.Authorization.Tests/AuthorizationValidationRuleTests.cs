@@ -203,10 +203,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void fails_on_missing_claim_on_variable_type()
         {
-            Settings.AddPolicy("FieldPolicy", _ =>
-            {
-                _.RequireClaim("admin");
-            });
+            Settings.AddPolicy("FieldPolicy", _ => _.RequireClaim("admin"));
 
             ShouldFailRule(_ =>
             {
