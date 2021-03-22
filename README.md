@@ -30,8 +30,8 @@ Note that GitHub requires authentication to consume the feed. See [here](https:/
 
 # Usage
 
-* Register the authorization classes in your DI container (`IAuthorizationEvaluator`, `AuthorizationSettings`, and the `AuthorizationValidationRule`).
-* Provide a `UserContext` class that implements `IProvideClaimsPrincipal`.
+* Register the authorization classes in your DI container - `IAuthorizationEvaluator`, `AuthorizationSettings`, and the `AuthorizationValidationRule`.
+* Provide a custom `UserContext` class that implements `IProvideClaimsPrincipal`.
 * Add policies to the `AuthorizationSettings`.
 * Apply a policy to a GraphType or Field (which implement `IProvideMetadata`) using `AuthorizeWith(string policy)`.
 * Make sure the `AuthorizationValidationRule` is registered with your Schema (depending on your server implementation, you may only need to register it in your DI container)
@@ -41,9 +41,11 @@ Note that GitHub requires authentication to consume the feed. See [here](https:/
 
 # Examples
 
-1. Fully functional [basic sample](src/BasicSample/Program.cs).
+1. Fully functional basic [Console sample](src/BasicSample/Program.cs).
 
-2. GraphType first syntax - use `AuthorizeWith`.
+2. Fully functional [ASP.NET Core sample](src/Harness/Program.cs).
+
+3. GraphType first syntax - use `AuthorizeWith`.
 
 ```c#
 public class MyType : ObjectGraphType

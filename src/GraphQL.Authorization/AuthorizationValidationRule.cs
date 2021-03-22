@@ -5,15 +5,24 @@ using GraphQL.Validation;
 
 namespace GraphQL.Authorization
 {
+    /// <summary>
+    /// GraphQL authorization validation rule which evaluates configured
+    /// (via policies) requirements on schema elements: types, fields, etc.
+    /// </summary>
     public class AuthorizationValidationRule : IValidationRule
     {
         private readonly IAuthorizationEvaluator _evaluator;
 
+        /// <summary>
+        /// Creates an instance of <see cref="AuthorizationValidationRule"/> with
+        /// the specified authorization evaluator.
+        /// </summary>
         public AuthorizationValidationRule(IAuthorizationEvaluator evaluator)
         {
             _evaluator = evaluator;
         }
 
+        /// <inheritdoc />
         public Task<INodeVisitor> ValidateAsync(ValidationContext context)
         {
             var userContext = context.UserContext as IProvideClaimsPrincipal;
