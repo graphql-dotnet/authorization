@@ -1,4 +1,4 @@
-using GraphQL.Authorization;
+using GraphQL;
 using GraphQL.Server;
 using GraphQL.Types;
 using Microsoft.AspNetCore.Builder;
@@ -10,7 +10,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Harness
 {
-    public class Startup
+    internal class Startup
     {
         public Startup(IConfiguration configuration)
         {
@@ -21,7 +21,7 @@ namespace Harness
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.TryAddSingleton(s =>
+            services.TryAddSingleton<ISchema>(s =>
             {
                 string definitions = @"
                   type User {
@@ -35,7 +35,7 @@ namespace Harness
                   }
                 ";
                 var schema = Schema.For(definitions, builder => builder.Types.Include<Query>());
-                schema.FindType("User").AuthorizeWith("AdminPolicy");
+                schema.AllTypes["User"].AuthorizeWith("AdminPolicy");
                 return schema;
             });
 
@@ -45,7 +45,8 @@ namespace Harness
             // claims principal must look something like this to allow access
             // var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Admin") }));
 
-            services.AddGraphQL()
+            services
+                .AddGraphQL()
                 .AddSystemTextJson()
                 .AddUserContextBuilder(context => new GraphQLUserContext { User = context.User });
         }
@@ -56,7 +57,7 @@ namespace Harness
                 app.UseDeveloperExceptionPage();
 
             app.UseGraphQL<ISchema>();
-            app.UseGraphiQLServer();
+            app.UseGraphQLGraphiQL();
             app.UseGraphQLPlayground();
         }
     }

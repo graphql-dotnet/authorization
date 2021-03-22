@@ -13,7 +13,7 @@ namespace GraphQL.Authorization.Tests
             Settings.AddPolicy("ClassPolicy", builder => builder.RequireClaim("admin"));
             Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldPassRule(_=>
+            ShouldPassRule(_ =>
             {
                 _.Query = @"query { post }";
                 _.Schema = BasicSchema();
@@ -29,7 +29,7 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("ClassPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldFailRule(_=>
+            ShouldFailRule(_ =>
             {
                 _.Query = @"query { post }";
                 _.Schema = BasicSchema();
@@ -42,7 +42,7 @@ namespace GraphQL.Authorization.Tests
             Settings.AddPolicy("ClassPolicy", builder => builder.RequireClaim("admin"));
             Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldPassRule(_=>
+            ShouldPassRule(_ =>
             {
                 _.Query = @"query { post }";
                 _.Schema = BasicSchema();
@@ -58,7 +58,7 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldFailRule(_=>
+            ShouldFailRule(_ =>
             {
                 _.Query = @"query { post }";
                 _.Schema = BasicSchema();
@@ -70,7 +70,7 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldPassRule(_=>
+            ShouldPassRule(_ =>
             {
                 _.Query = @"query { post }";
                 _.Schema = NestedSchema();
@@ -98,7 +98,7 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldFailRule(_=>
+            ShouldFailRule(_ =>
             {
                 _.Query = @"query { posts }";
                 _.Schema = NestedSchema();
@@ -122,7 +122,7 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldPassRule(_=>
+            ShouldPassRule(_ =>
             {
                 _.Query = @"query { author(input: { name: ""Quinn"" }) }";
                 _.Schema = TypedSchema();
@@ -214,7 +214,7 @@ namespace GraphQL.Authorization.Tests
                 _.RequireClaim("admin");
             });
 
-            ShouldPassRule(_=>
+            ShouldPassRule(_ =>
             {
                 _.Query = @"query { post @include(if: false) }";
                 _.Schema = BasicSchema();
@@ -229,7 +229,7 @@ namespace GraphQL.Authorization.Tests
                 _.RequireClaim("admin");
             });
 
-            ShouldFailRule(_=>
+            ShouldFailRule(_ =>
             {
                 _.Query = @"query { post @include(if: true) }";
                 _.Schema = BasicSchema();
@@ -244,7 +244,7 @@ namespace GraphQL.Authorization.Tests
                 _.RequireClaim("admin");
             });
 
-            ShouldPassRule(_=>
+            ShouldPassRule(_ =>
             {
                 _.Query = @"query { post @skip(if: true) }";
                 _.Schema = BasicSchema();
@@ -259,14 +259,14 @@ namespace GraphQL.Authorization.Tests
                 _.RequireClaim("admin");
             });
 
-            ShouldFailRule(_=>
+            ShouldFailRule(_ =>
             {
                 _.Query = @"query { post @skip(if: false) }";
                 _.Schema = BasicSchema();
             });
         }
 
-        private ISchema BasicSchema()
+        private static ISchema BasicSchema()
         {
             string defs = @"
                 type Query {
@@ -282,13 +282,11 @@ namespace GraphQL.Authorization.Tests
         public class BasicQueryWithAttributes
         {
             [GraphQLAuthorize(Policy = "FieldPolicy")]
-            public string Post(string id)
-            {
-                return "";
-            }
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "test")]
+            public string Post(string id) => "";
         }
 
-        private ISchema NestedSchema()
+        private static ISchema NestedSchema()
         {
             string defs = @"
                 type Query {
@@ -312,20 +310,12 @@ namespace GraphQL.Authorization.Tests
         [GraphQLMetadata("Query")]
         public class NestedQueryWithAttributes
         {
-            public Post Post(string id)
-            {
-                return null;
-            }
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "test")]
+            public Post Post(string id) => null;
 
-            public IEnumerable<Post> Posts()
-            {
-                return null;
-            }
+            public IEnumerable<Post> Posts() => null;
 
-            public IEnumerable<Post> PostsNonNull()
-            {
-                return null;
-            }
+            public IEnumerable<Post> PostsNonNull() => null;
         }
 
         [GraphQLAuthorize(Policy = "PostPolicy")]
@@ -347,7 +337,7 @@ namespace GraphQL.Authorization.Tests
             public string Name { get; set; }
         }
 
-        private ISchema TypedSchema()
+        private static ISchema TypedSchema()
         {
             var query = new ObjectGraphType();
             query.Field<StringGraphType>(
@@ -365,7 +355,7 @@ namespace GraphQL.Authorization.Tests
                 "project",
                 arguments: new QueryArguments(new QueryArgument<AuthorInputType> { Name = "input" }),
                 resolve: context => "testing"
-            ).AuthorizeWith("AdminPolicy", "ConfidentialPolicy");
+            ).AuthorizeWith("AdminPolicy").AuthorizeWith("ConfidentialPolicy");
 
             return new Schema { Query = query };
         }

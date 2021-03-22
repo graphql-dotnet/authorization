@@ -3,28 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using GraphQL.Execution;
-using GraphQL.Types;
 using GraphQL.Validation;
 using Shouldly;
 
 namespace GraphQL.Authorization.Tests
 {
-    public class ValidationTestConfig
-    {
-        private readonly List<IValidationRule> _rules = new List<IValidationRule>();
-
-        public string Query { get; set; }
-        public ISchema Schema { get; set; }
-        public IEnumerable<IValidationRule> Rules => _rules;
-        public ClaimsPrincipal User { get; set; }
-        public Inputs Inputs { get; set; }
-
-        public void Rule(params IValidationRule[] rules)
-        {
-            _rules.AddRange(rules);
-        }
-    }
-
     public class ValidationTestBase
     {
         public ValidationTestBase()
@@ -34,12 +17,13 @@ namespace GraphQL.Authorization.Tests
         }
 
         protected AuthorizationValidationRule Rule { get; }
+
         protected AuthorizationSettings Settings { get; }
 
         protected void ShouldPassRule(Action<ValidationTestConfig> configure)
         {
             var config = new ValidationTestConfig();
-            config.Rule(Rule);
+            config.Rules.Add(Rule);
             configure(config);
 
             config.Rules.Any().ShouldBeTrue("Must provide at least one rule to validate against.");
@@ -54,12 +38,13 @@ namespace GraphQL.Authorization.Tests
                 message = string.Join(", ", result.Errors.Select(x => x.Message));
             }
             result.IsValid.ShouldBeTrue(message);
+            config.ValidateResult(result);
         }
 
         protected void ShouldFailRule(Action<ValidationTestConfig> configure)
         {
             var config = new ValidationTestConfig();
-            config.Rule(Rule);
+            config.Rules.Add(Rule);
             configure(config);
 
             config.Rules.Any().ShouldBeTrue("Must provide at least one rule to validate against.");
@@ -69,22 +54,27 @@ namespace GraphQL.Authorization.Tests
             var result = Validate(config);
 
             result.IsValid.ShouldBeFalse("Expected validation errors though there were none.");
+            config.ValidateResult(result);
         }
 
-        private IValidationResult Validate(ValidationTestConfig config)
+        private static IValidationResult Validate(ValidationTestConfig config)
         {
             var userContext = new GraphQLUserContext { User = config.User };
             var documentBuilder = new GraphQLDocumentBuilder();
             var document = documentBuilder.Build(config.Query);
             var validator = new DocumentValidator();
-            return validator.ValidateAsync(config.Query, config.Schema, document, config.Rules, userContext, config.Inputs).GetAwaiter().GetResult();
+            return validator.ValidateAsync(config.Schema, document, document.Operations.First().Variables, config.Rules, userContext, config.Inputs).GetAwaiter().GetResult().validationResult;
         }
 
-        protected ClaimsPrincipal CreatePrincipal(string authenticationType = null, IDictionary<string, string> claims = null)
+        internal static ClaimsPrincipal CreatePrincipal(string authenticationType = null, IDictionary<string, string> claims = null)
         {
             var claimsList = new List<Claim>();
 
-            claims?.Apply(c => claimsList.Add(new Claim(c.Key, c.Value)));
+            if (claims != null)
+            {
+                foreach (var c in claims)
+                    claimsList.Add(new Claim(c.Key, c.Value));
+            }
 
             return new ClaimsPrincipal(new ClaimsIdentity(claimsList, authenticationType));
         }

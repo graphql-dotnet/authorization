@@ -3,10 +3,15 @@ using System.Threading.Tasks;
 
 namespace GraphQL.Authorization
 {
+    /// <summary>
+    /// Implements an <see cref="IAuthorizationRequirement"/> which requires that
+    /// current user from <see cref="AuthorizationContext.User"/> must be authenticated.
+    /// </summary>
     public class AuthenticatedUserRequirement : IAuthorizationRequirement
     {
         internal static readonly AuthenticatedUserRequirement Instance = new AuthenticatedUserRequirement();
 
+        /// <inheritdoc />
         public Task Authorize(AuthorizationContext context)
         {
             if (context.User == null || !context.User.Identities.Any(x => x.IsAuthenticated))

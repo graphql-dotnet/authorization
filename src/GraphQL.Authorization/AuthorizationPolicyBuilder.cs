@@ -4,7 +4,8 @@ using System.Collections.Generic;
 namespace GraphQL.Authorization
 {
     /// <summary>
-    /// Configures and then builds authorization policy from various authorization requirements. Provides fluent API.
+    /// Configures and then builds authorization policy from various authorization requirements.
+    /// Provides fluent API.
     /// </summary>
     public class AuthorizationPolicyBuilder
     {
@@ -44,7 +45,10 @@ namespace GraphQL.Authorization
         /// </summary>
         /// <param name="claimType">Type of the claim.</param>
         /// <param name="allowedValues">Allowed values for this claim.</param>
-        /// <param name="displayValues">Display values for this claim. If no allowed claims are found, display values will be used to generate an error message for <see cref="AuthorizationContext.Errors"/>.</param>
+        /// <param name="displayValues">
+        /// Display values for this claim. If no allowed claims are found, display values will be used to generate
+        /// an error message for <see cref="AuthorizationContext.Errors"/>.
+        /// </param>
         /// <returns>Reference to the same builder.</returns>
         public AuthorizationPolicyBuilder RequireClaim(string claimType, IEnumerable<string> allowedValues, IEnumerable<string> displayValues)
         {

@@ -1,0 +1,9 @@
+<Project>
+
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <CoverletOutputFormat>opencover</CoverletOutputFormat>
+    <CoverletOutput>$(MSBuildThisFileDirectory)../.coverage/$(AssemblyName)/</CoverletOutput>
+    <Exclude>[BasicSample]*,[Harness]*</Exclude>
+  </PropertyGroup>
+
+</Project>

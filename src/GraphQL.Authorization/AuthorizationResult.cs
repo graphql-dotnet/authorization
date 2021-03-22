@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace GraphQL.Authorization
 {
     /// <summary>
-    /// Represents the result of an authorization evaluation. 
+    /// Represents the result of an authorization evaluation.
     /// </summary>
     public class AuthorizationResult
     {
