@@ -180,10 +180,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void passes_with_claim_on_variable_type()
         {
-            Settings.AddPolicy("FieldPolicy", _ =>
-            {
-                _.RequireClaim("admin");
-            });
+            Settings.AddPolicy("FieldPolicy", _ => _.RequireClaim("admin"));
 
             ShouldPassRule(_ =>
             {
