@@ -209,10 +209,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void passes_when_field_is_not_included()
         {
-            Settings.AddPolicy("FieldPolicy", _=>
-            {
-                _.RequireClaim("admin");
-            });
+            Settings.AddPolicy("FieldPolicy", _ => _.RequireClaim("admin"));
 
             ShouldPassRule(_ =>
             {
@@ -224,10 +221,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void fails_when_field_is_included()
         {
-            Settings.AddPolicy("FieldPolicy", _=>
-            {
-                _.RequireClaim("admin");
-            });
+            Settings.AddPolicy("FieldPolicy", _ => _.RequireClaim("admin"));
 
             ShouldFailRule(_ =>
             {
@@ -239,10 +233,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void passes_when_field_is_skipped()
         {
-            Settings.AddPolicy("FieldPolicy", _=>
-            {
-                _.RequireClaim("admin");
-            });
+            Settings.AddPolicy("FieldPolicy", _ => _.RequireClaim("admin"));
 
             ShouldPassRule(_ =>
             {
@@ -254,10 +245,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void fails_when_field_is_not_skipped()
         {
-            Settings.AddPolicy("FieldPolicy", _=>
-            {
-                _.RequireClaim("admin");
-            });
+            Settings.AddPolicy("FieldPolicy", _ => _.RequireClaim("admin"));
 
             ShouldFailRule(_ =>
             {
