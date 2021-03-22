@@ -27,6 +27,9 @@ namespace GraphQL.Authorization
             IReadOnlyDictionary<string, object> inputs,
             IEnumerable<string> requiredPolicies)
         {
+            if (requiredPolicies == null)
+                return AuthorizationResult.Success();
+
             var context = new AuthorizationContext
             {
                 User = principal ?? new ClaimsPrincipal(new ClaimsIdentity()),
@@ -36,31 +39,28 @@ namespace GraphQL.Authorization
 
             var tasks = new List<Task>();
 
-            if (requiredPolicies != null)
+            foreach (string requiredPolicy in requiredPolicies)
             {
-                foreach (string requiredPolicy in requiredPolicies)
+                var authorizationPolicy = _settings.GetPolicy(requiredPolicy);
+                if (authorizationPolicy == null)
                 {
-                    var authorizationPolicy = _settings.GetPolicy(requiredPolicy);
-                    if (authorizationPolicy == null)
+                    context.ReportError($"Required policy '{requiredPolicy}' is not present.");
+                }
+                else
+                {
+                    foreach (var r in authorizationPolicy.Requirements)
                     {
-                        context.ReportError($"Required policy '{requiredPolicy}' is not present.");
-                    }
-                    else
-                    {
-                        foreach (var r in authorizationPolicy.Requirements)
-                        {
-                            var task = r.Authorize(context);
-                            tasks.Add(task);
-                        }
+                        var task = r.Authorize(context);
+                        tasks.Add(task);
                     }
                 }
             }
 
-            await Task.WhenAll(tasks.ToArray());
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            return !context.HasErrors
-                ? AuthorizationResult.Success()
-                : AuthorizationResult.Fail(context.Errors);
+            return context.HasErrors
+                ? AuthorizationResult.Fail(context.Errors)
+                : AuthorizationResult.Success();
         }
     }
 }

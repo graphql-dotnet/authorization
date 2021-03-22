@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 
 namespace GraphQL.Authorization
@@ -8,7 +9,7 @@ namespace GraphQL.Authorization
     /// </summary>
     public class AuthorizationContext
     {
-        private readonly List<string> _errors = new List<string>();
+        private List<string> _errors;
 
         /// <summary>
         /// Current user.
@@ -28,17 +29,17 @@ namespace GraphQL.Authorization
         /// <summary>
         /// Returns a set of authorization errors.
         /// </summary>
-        public IEnumerable<string> Errors => _errors;
+        public IEnumerable<string> Errors => _errors ?? Enumerable.Empty<string>();
 
         /// <summary>
         /// Returns whether there are any errors.
         /// </summary>
-        public bool HasErrors => _errors.Count > 0;
+        public bool HasErrors => _errors?.Count > 0;
 
         /// <summary>
         /// Reports an error during evaluation of policy requirement.
         /// </summary>
         /// <param name="error">Error message.</param>
-        public void ReportError(string error) => _errors.Add(error);
+        public void ReportError(string error) => (_errors ??= new List<string>()).Add(error);
     }
 }

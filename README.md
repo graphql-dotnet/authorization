@@ -33,11 +33,11 @@ Note that GitHub requires authentication to consume the feed. See [here](https:/
 * Register the authorization classes in your DI container - `IAuthorizationEvaluator`, `AuthorizationSettings`, and the `AuthorizationValidationRule`.
 * Provide a custom `UserContext` class that implements `IProvideClaimsPrincipal`.
 * Add policies to the `AuthorizationSettings`.
-* Apply a policy to a GraphType or Field (which implement `IProvideMetadata`) using `AuthorizeWith(string policy)`.
-* Make sure the `AuthorizationValidationRule` is registered with your Schema (depending on your server implementation, you may only need to register it in your DI container)
+* Apply a policy to a GraphType or Field (both implement `IProvideMetadata`):
+  - using `AuthorizeWith(string policy)` extension method
+  - or with `GraphQLAuthorize` attribute if using Schema + Handler syntax.
 * The `AuthorizationValidationRule` will run and verify the policies based on the registered policies.
 * You can write your own `IAuthorizationRequirement`.
-* Use `GraphQLAuthorize` attribute if using Schema First syntax.
 
 # Examples
 
@@ -45,9 +45,9 @@ Note that GitHub requires authentication to consume the feed. See [here](https:/
 
 2. Fully functional [ASP.NET Core sample](src/Harness/Program.cs).
 
-3. GraphType first syntax - use `AuthorizeWith`.
+3. GraphType first syntax - use `AuthorizeWith` extension method on `IGraphType` or `IFieldType`.
 
-```c#
+```csharp
 public class MyType : ObjectGraphType
 {
     public MyType()
@@ -58,17 +58,20 @@ public class MyType : ObjectGraphType
 }
 ```
 
-3. Schema first syntax - use `GraphQLAuthorize` attribute.
+4. Schema first syntax - use `GraphQLAuthorize` attribute on type, method or property.
 
-```c#
+```csharp
 [GraphQLAuthorize(Policy = "MyPolicy")]
 public class MutationType
 {
     [GraphQLAuthorize(Policy = "AnotherPolicy")]
     public async Task<string> CreateSomething(MyInput input)
     {
-        return Guid.NewGuid().ToString();
+        return await SomeMethodAsync(input);
     }
+
+    [GraphQLAuthorize(Policy = "SuperPolicy")]
+    public string SomeProperty => Guid.NewGuid().ToString();
 }
 ```
 
