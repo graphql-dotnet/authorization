@@ -255,7 +255,7 @@ namespace GraphQL.Authorization.Tests
 
             public IEnumerable<Post> Posts() => null;
 
-            public IEnumerable<Post> PostsNonNull => null;
+            public IEnumerable<Post> PostsNonNull() => null;
         }
 
         [GraphQLAuthorize(Policy = "PostPolicy")]

@@ -1,7 +1,7 @@
 using System;
-using Shouldly;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Shouldly;
 using Xunit;
 
 namespace GraphQL.Authorization.Tests
@@ -104,10 +104,7 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public async Task succeeds_when_null_policies()
         {
-            _settings.AddPolicy("MyPolicy", builder =>
-            {
-                builder.RequireClaim("Admin");
-            });
+            _settings.AddPolicy("MyPolicy", builder => builder.RequireClaim("Admin"));
 
             var result = await _evaluator.Evaluate(
                 ValidationTestBase.CreatePrincipal(claims: new Dictionary<string, string>
