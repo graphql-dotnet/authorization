@@ -11,6 +11,14 @@ namespace GraphQL.Authorization.Tests
     public class AuthorizationValidationRuleTests : ValidationTestBase
     {
         [Fact]
+        public void throw_on_null_arguments()
+        {
+            Should.Throw<ArgumentNullException>(() => new AuthorizationValidationRule(null!, new DefaultClaimsPrincipalAccessor(), new DefaultAuthorizationPolicyProvider(new AuthorizationSettings()))).ParamName.ShouldBe("authorizationService");
+            Should.Throw<ArgumentNullException>(() => new AuthorizationValidationRule(new DefaultAuthorizationService(), null!, new DefaultAuthorizationPolicyProvider(new AuthorizationSettings()))).ParamName.ShouldBe("claimsPrincipalAccessor");
+            Should.Throw<ArgumentNullException>(() => new AuthorizationValidationRule(new DefaultAuthorizationService(), new DefaultClaimsPrincipalAccessor(), null!)).ParamName.ShouldBe("policyProvider");
+        }
+
+        [Fact]
         public void class_policy_success()
         {
             Settings.AddPolicy("ClassPolicy", builder => builder.RequireClaim("admin"));
