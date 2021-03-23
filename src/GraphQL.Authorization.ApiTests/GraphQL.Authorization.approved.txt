@@ -35,6 +35,8 @@ namespace GraphQL.Authorization
     }
     public static class AuthorizationPolicyBuilderExtensions
     {
+        public static GraphQL.Authorization.AuthorizationPolicyBuilder Require(this GraphQL.Authorization.AuthorizationPolicyBuilder builder, System.Action<GraphQL.Authorization.IAuthorizationContext> action) { }
+        public static GraphQL.Authorization.AuthorizationPolicyBuilder Require(this GraphQL.Authorization.AuthorizationPolicyBuilder builder, System.Func<GraphQL.Authorization.IAuthorizationContext, System.Threading.Tasks.Task> action) { }
         public static GraphQL.Authorization.AuthorizationPolicyBuilder RequireAuthenticatedUser(this GraphQL.Authorization.AuthorizationPolicyBuilder builder) { }
         public static GraphQL.Authorization.AuthorizationPolicyBuilder RequireClaim(this GraphQL.Authorization.AuthorizationPolicyBuilder builder, string claimType) { }
         public static GraphQL.Authorization.AuthorizationPolicyBuilder RequireClaim(this GraphQL.Authorization.AuthorizationPolicyBuilder builder, string claimType, params string[] allowedValues) { }
@@ -107,6 +109,11 @@ namespace GraphQL.Authorization
     {
         public DefinedPolicyRequirement(string policyName) { }
         public string PolicyName { get; }
+        public System.Threading.Tasks.Task Authorize(GraphQL.Authorization.IAuthorizationContext context) { }
+    }
+    public class DelegatedRequirement : GraphQL.Authorization.IAuthorizationRequirement
+    {
+        public DelegatedRequirement(System.Func<GraphQL.Authorization.IAuthorizationContext, System.Threading.Tasks.Task> action) { }
         public System.Threading.Tasks.Task Authorize(GraphQL.Authorization.IAuthorizationContext context) { }
     }
     public class GraphQLAuthorizeAttribute : GraphQL.GraphQLAttribute

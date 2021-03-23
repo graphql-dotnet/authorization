@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using GraphQL.Types;
 using GraphQL.Types.Relay.DataObjects;
+using Shouldly;
 using Xunit;
 
 namespace GraphQL.Authorization.Tests
@@ -185,6 +188,20 @@ namespace GraphQL.Authorization.Tests
             });
         }
 
+        [Fact]
+        public void fails_on_explicitly_called_fail()
+        {
+            Settings.AddPolicy("FailedPolicy", _ => _.Require(c => c.Fail()));
+
+            ShouldFailRule(_ =>
+            {
+                _.Query = @"query { failed }";
+                _.Schema = TypedSchema();
+                _.User = CreatePrincipal();
+                _.ValidateResult = r => r.Errors.Single().Message.ShouldBe("You are not authorized to run this query.");
+            });
+        }
+
         private static ISchema BasicSchema()
         {
             string defs = @"
@@ -275,6 +292,11 @@ namespace GraphQL.Authorization.Tests
                 arguments: new QueryArguments(new QueryArgument<AuthorInputType> { Name = "input" }),
                 resolve: context => "testing"
             ).AuthorizeWith("AdminPolicy").AuthorizeWith("ConfidentialPolicy");
+
+            query.Field<StringGraphType>(
+               "failed",
+               resolve: context => throw new NotSupportedException("Should never called")
+           ).AuthorizeWith("FailedPolicy");
 
             return new Schema { Query = query };
         }
