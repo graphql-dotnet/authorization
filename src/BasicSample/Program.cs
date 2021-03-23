@@ -43,9 +43,9 @@ namespace BasicSample
             var schema = Schema.For(definitions, builder => builder.Types.Include<Query>());
 
             var authorizedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Admin") }));
-            var nonauthorizedUser = new ClaimsPrincipal(new ClaimsIdentity());
+            var nonAuthorizedUser = new ClaimsPrincipal(new ClaimsIdentity());
 
-            foreach (var principal in new[] { authorizedUser, nonauthorizedUser })
+            foreach (var principal in new[] { authorizedUser, nonAuthorizedUser })
             {
                 string json = await schema.ExecuteAsync(options =>
                 {

@@ -19,8 +19,8 @@
 
 A toolset for authorizing access to graph types for [GraphQL.NET](https://github.com/graphql-dotnet/graphql-dotnet).
 It provides a [validation rule](src/GraphQL.Authorization/AuthorizationValidationRule.cs) that checks all of the
-Graph Types in the GraphQL operation (query/mutation/subscription) to see if they have authorization policies applied
-to them and evaluates these policies if any.
+Graph Types in the given GraphQL operation (query/mutation/subscription) to see if they have authorization policies
+applied to them and evaluates these policies if any.
 
 Provides the following packages:
 
