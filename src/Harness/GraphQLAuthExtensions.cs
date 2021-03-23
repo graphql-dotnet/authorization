@@ -17,14 +17,14 @@ namespace Harness
         /// </summary>
         public static void AddGraphQLAuth(this IServiceCollection services, Action<AuthorizationSettings, IServiceProvider> configure)
         {
-            services.TryAddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
-            services.AddTransient<IValidationRule, AuthorizationValidationRule>();
-
-            services.TryAddTransient(s =>
+            services.TryAddSingleton<IValidationRule, AuthorizationValidationRule>();
+            services.TryAddSingleton<IAuthorizationService, DefaultAuthorizationService>();
+            services.TryAddSingleton<IClaimsPrincipalAccessor, DefaultClaimsPrincipalAccessor>();
+            services.TryAddSingleton<IAuthorizationPolicyProvider>(provider =>
             {
                 var authSettings = new AuthorizationSettings();
-                configure(authSettings, s);
-                return authSettings;
+                configure(authSettings, provider);
+                return new DefaultAuthorizationPolicyProvider(authSettings);
             });
         }
 
@@ -33,16 +33,6 @@ namespace Harness
         /// and provides a delegate to configure authorization settings.
         /// </summary>
         public static void AddGraphQLAuth(this IServiceCollection services, Action<AuthorizationSettings> configure)
-        {
-            services.TryAddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>();
-            services.AddTransient<IValidationRule, AuthorizationValidationRule>();
-
-            services.TryAddTransient(s =>
-            {
-                var authSettings = new AuthorizationSettings();
-                configure(authSettings);
-                return authSettings;
-            });
-        }
+            => services.AddGraphQLAuth((settings, _) => configure(settings));
     }
 }

@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace GraphQL.Authorization
 {
     /// <summary>
@@ -10,27 +8,33 @@ namespace GraphQL.Authorization
         // allocation optimization for green path
         private static readonly AuthorizationResult _success = new AuthorizationResult { Succeeded = true };
 
+        private AuthorizationResult() { }
+
         /// <summary>
         /// Is the authorization result successful?
         /// </summary>
         public bool Succeeded { get; private set; }
 
         /// <summary>
-        /// Returns a set of authorization errors if the authorization result is unsuccessful.
+        /// Contains information about why authorization failed.
         /// </summary>
-        public IEnumerable<string> Errors { get; private set; }
+        public AuthorizationFailure Failure { get; private set; }
 
         /// <summary>
         /// Creates successful authorization result.
         /// </summary>
-        /// <returns>Instance of <see cref="AuthorizationResult"/>.</returns>
         public static AuthorizationResult Success() => _success;
 
         /// <summary>
-        /// Creates unsuccessful authorization result
+        /// Creates a failed authorization result.
         /// </summary>
-        /// <param name="errors">A set of authorization errors.</param>
-        /// <returns>Instance of <see cref="AuthorizationResult"/>.</returns>
-        public static AuthorizationResult Fail(IEnumerable<string> errors) => new AuthorizationResult { Errors = errors };
+        /// <param name="failure">Contains information about why authorization failed.</param>
+        public static AuthorizationResult Failed(AuthorizationFailure failure) => new AuthorizationResult { Failure = failure };
+
+        /// <summary>
+        /// Creates a failed authorization result.
+        /// </summary>
+        /// <returns>The <see cref="AuthorizationResult"/>.</returns>
+        public static AuthorizationResult Failed() => new AuthorizationResult { Failure = AuthorizationFailure.ExplicitFail() };
     }
 }

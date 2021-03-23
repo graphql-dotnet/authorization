@@ -13,12 +13,12 @@ namespace GraphQL.Authorization.Tests
         public ValidationTestBase()
         {
             Settings = new AuthorizationSettings();
-            Rule = new AuthorizationValidationRule(new AuthorizationEvaluator(Settings));
+            Rule = new AuthorizationValidationRule(new DefaultAuthorizationService(), new DefaultClaimsPrincipalAccessor(), new DefaultAuthorizationPolicyProvider(Settings));
         }
 
-        protected AuthorizationValidationRule Rule { get; }
-
         protected AuthorizationSettings Settings { get; }
+
+        protected AuthorizationValidationRule Rule { get; }
 
         protected void ShouldPassRule(Action<ValidationTestConfig> configure)
         {

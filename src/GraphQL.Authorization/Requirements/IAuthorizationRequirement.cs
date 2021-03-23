@@ -9,9 +9,9 @@ namespace GraphQL.Authorization
     public interface IAuthorizationRequirement
     {
         /// <summary>
-        /// Execute requirement. If the requirement is not met then this method
-        /// should call <see cref="AuthorizationContext.ReportError(string)"/>.
+        /// Execute requirement. If the requirement is met then this method
+        /// should call <see cref="IAuthorizationContext.Succeed(IAuthorizationRequirement)"/>.
         /// </summary>
-        Task Authorize(AuthorizationContext context);
+        Task Authorize(IAuthorizationContext context);
     }
 }

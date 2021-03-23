@@ -21,7 +21,7 @@ namespace GraphQL.Authorization.Tests
             _settings.Policies.Count().ShouldBe(1);
 
             var policy = _settings.Policies.Single();
-            policy.Requirements.Single().ShouldBeOfType<ClaimAuthorizationRequirement>();
+            policy.Requirements.Single().ShouldBeOfType<ClaimsAuthorizationRequirement>();
         }
     }
 }
