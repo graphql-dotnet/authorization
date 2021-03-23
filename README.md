@@ -31,6 +31,15 @@ Provides the following packages:
 You can get all preview versions from [GitHub Packages](https://github.com/orgs/graphql-dotnet/packages?repo_name=authorization).
 Note that GitHub requires authentication to consume the feed. See [here](https://docs.github.com/en/free-pro-team@latest/packages/publishing-and-managing-packages/about-github-packages#authenticating-to-github-packages).
 
+## Note for ASP.NET Core users
+
+If you came here in search for GraphQL authorization for the ASP.NET Core applications,
+then it makes sense to look into the [server](https://github.com/graphql-dotnet/server) project
+and its [GraphQL.Server.Authorization.AspNetCore](https://www.nuget.org/packages/GraphQL.Server.Authorization.AspNetCore)
+package. Although you will be able to integrate GraphQL authorization with the help of classes
+from the current repository, the _GraphQL.Server.Authorization.AspNetCore_ package is much better
+adapted to work within the ASP.NET Core applications.
+
 ## Usage
 
 1. Register the necessary authorization classes in your DI container:
