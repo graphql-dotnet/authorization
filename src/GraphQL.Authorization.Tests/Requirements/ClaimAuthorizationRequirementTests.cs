@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,9 +10,30 @@ namespace GraphQL.Authorization.Tests
     public class ClaimAuthorizationRequirementTests
     {
         [Fact]
-        public async Task produces_error_when_missing_claim_ignoring_value()
+        public void throw_on_null_claim_type()
+        {
+            Should.Throw<ArgumentNullException>(() => new ClaimsAuthorizationRequirement(null!)).ParamName.ShouldBe("claimType");
+        }
+
+        [Fact]
+        public async Task produces_error_when_missing_claim_ignoring_value1()
         {
             var req = new ClaimsAuthorizationRequirement("Admin");
+            var policy = new AuthorizationPolicy(req);
+            var context = new DefaultAuthorizationContext(policy, ValidationTestBase.CreatePrincipal());
+
+            await req.Authorize(context);
+
+            context.HasSucceeded.ShouldBeFalse();
+            context.HasFailed.ShouldBeFalse();
+            context.PendingRequirements.Single().ShouldBe(req);
+            //context.Errors.Single().ShouldBe("Required claim 'Admin' is not present.");
+        }
+
+        [Fact]
+        public async Task produces_error_when_missing_claim_ignoring_value2()
+        {
+            var req = new ClaimsAuthorizationRequirement("Admin", Enumerable.Empty<string>());
             var policy = new AuthorizationPolicy(req);
             var context = new DefaultAuthorizationContext(policy, ValidationTestBase.CreatePrincipal());
 

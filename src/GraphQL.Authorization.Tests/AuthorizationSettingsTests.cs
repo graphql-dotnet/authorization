@@ -34,12 +34,13 @@ namespace GraphQL.Authorization.Tests
                 .RequireClaim("Admin")
                 .RequireClaim("SuperAdmin", "Super1", "Super2")
                 .RequireClaim("SuperDuperAdmin", new[] { "Super1", "Super2" }, new[] { "Display1", "Display2" })
+                .AddRequirement(new ClaimsAuthorizationRequirement("SuperPlus", Enumerable.Empty<string>()))
             );
 
             _settings.Policies.Count().ShouldBe(1);
 
             var policy = _settings.Policies.Single();
-            policy.Requirements.Count().ShouldBe(3);
+            policy.Requirements.Count().ShouldBe(4);
             policy.Requirements.ToList().ForEach(r => r.ShouldBeOfType<ClaimsAuthorizationRequirement>());
         }
 
@@ -70,16 +71,30 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void get_policies()
         {
-            _settings.AddPolicy("MyPolicy", new AuthorizationPolicy(new DelegatedRequirement(c => Task.CompletedTask)));
+            _settings.AddPolicy("MyPolicy1", new AuthorizationPolicy(new DelegatedRequirement(c => Task.CompletedTask)));
+            _settings.AddPolicy("MyPolicy2", b => b.Require(c => Task.CompletedTask));
 
             _settings.GetPolicies("a").ShouldBeEmpty();
             _settings.GetPolicies("a", "b").ShouldBeEmpty();
             _settings.GetPolicies(Enumerable.Empty<string>()).ShouldBeEmpty();
 
-            _settings.GetPolicies("MyPolicy").Count().ShouldBe(1);
-            _settings.GetPolicies("a", "MyPolicy", "b").Count().ShouldBe(1);
+            _settings.GetPolicies("MyPolicy1").Count().ShouldBe(1);
+            _settings.GetPolicies("a", "MyPolicy1", "b").Count().ShouldBe(1);
+            _settings.GetPolicies("a", "MyPolicy2", "MyPolicy1", "b").Count().ShouldBe(2);
+
+            _settings.Policies.Count().ShouldBe(2);
+        }
+
+        [Fact]
+        public void replace_policy()
+        {
+            _settings.AddPolicy("MyPolicy1", b => b.RequireAuthenticatedUser());
+            _settings.AddPolicy("MyPolicy1", b => b.RequireClaim("claim_777"));
 
             _settings.Policies.Count().ShouldBe(1);
+            var req = _settings.Policies.Single().Requirements.Single().ShouldBeOfType<ClaimsAuthorizationRequirement>();
+            req.ClaimType.ShouldBe("claim_777");
+            req.DisplayValues.ShouldBeNull();
         }
     }
 }
