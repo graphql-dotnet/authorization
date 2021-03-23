@@ -24,7 +24,7 @@ namespace BasicSample
                 .AddSingleton<IAuthorizationPolicyProvider>(provider =>
                 {
                     var authSettings = new AuthorizationSettings();
-                    authSettings.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"));
+                    authSettings.AddPolicy("AdminPolicy", b => b.RequireClaim("role", "Admin"));
                     return new DefaultAuthorizationPolicyProvider(authSettings);
                 })
                 .BuildServiceProvider();

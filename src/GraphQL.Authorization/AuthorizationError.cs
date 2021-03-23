@@ -73,7 +73,7 @@ namespace GraphQL.Authorization
         {
             error.Append("You are not authorized to run this ")
                 .Append(GetOperationType(operationType))
-                .Append(".");
+                .Append('.');
         }
 
         /// <summary>
