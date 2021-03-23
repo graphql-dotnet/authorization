@@ -69,6 +69,14 @@ namespace GraphQL.Authorization.Tests
         }
 
         [Fact]
+        public void throw_if_add_null_requirement_in_policy()
+        {
+            var ex = Should.Throw<ArgumentNullException>(() => _settings.AddPolicy("MyPolicy", new AuthorizationPolicy(null!, new DelegatedRequirement(c => Task.CompletedTask))));
+            ex.ParamName.ShouldBe("requirements");
+            ex.Message.ShouldStartWith("One of the 2 requirements is null");
+        }
+
+        [Fact]
         public void get_policies()
         {
             _settings.AddPolicy("MyPolicy1", new AuthorizationPolicy(new DelegatedRequirement(c => Task.CompletedTask)));

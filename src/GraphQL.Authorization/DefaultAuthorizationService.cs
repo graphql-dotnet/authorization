@@ -15,9 +15,9 @@ namespace GraphQL.Authorization
 
             return context.HasSucceeded
                ? AuthorizationResult.Success()
-                : AuthorizationResult.Failed(context.HasFailed
-                    ? AuthorizationFailure.ExplicitFail()
-                    : AuthorizationFailure.Failed(context.PendingRequirements));
+               : context.HasFailed
+                    ? AuthorizationResult.Failed()
+                    : AuthorizationResult.Failed(AuthorizationFailure.Failed(context.PendingRequirements));
         }
     }
 }
