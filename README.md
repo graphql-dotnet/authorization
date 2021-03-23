@@ -47,13 +47,16 @@ adapted to work within the ASP.NET Core applications.
    - `IAuthorizationService/DefaultAuthorizationService`
    - `IClaimsPrincipalAccessor/DefaultClaimsPrincipalAccessor`
    - `IAuthorizationPolicyProvider/DefaultAuthorizationPolicyProvider`
-2. If you use `DefaultClaimsPrincipalAccessor` then provide a custom `UserContext` class that implements `IProvideClaimsPrincipal`.
+2. If you use `DefaultClaimsPrincipalAccessor` then provide a custom `UserContext`
+class that implements `IProvideClaimsPrincipal`.
 3. Add policies to the `AuthorizationSettings`.
 4. Apply a policy to a `GraphType` or `FieldType` (both implement `IProvideMetadata`):
    - using `AuthorizeWith(string policy)` extension method
    - or with `GraphQLAuthorize` attribute if using Schema + Handler syntax.
-5. The `AuthorizationValidationRule` will run and verify the policies based on the registered policies.
-6. You can write your own `IAuthorizationRequirement` and an extension method to add this requirement to `AuthorizationPolicyBuilder`.
+5. The `AuthorizationValidationRule` will run and verify the policies based on the
+registered policies.
+6. You can write your own `IAuthorizationRequirement` and an extension method to add
+this requirement to `AuthorizationPolicyBuilder`.
 
 ## Examples
 
@@ -146,7 +149,8 @@ unsatisfied requirement, the validation rule will add an authorization error in 
 `ValidationContext`. The text of this error may not suit you, especially if you write
 your own authorization requirements. In this case, you can override the default behavior.
 
-**Option 1.** Create a descendant from `AuthorizationValidationRule` and override `AddValidationError` method.
+**Option 1.** Create a descendant from `AuthorizationValidationRule` and override
+`AddValidationError` method.
 
 ```csharp
 public class CustomAuthorizationValidationRule : AuthorizationValidationRule
@@ -166,10 +170,11 @@ public class CustomAuthorizationValidationRule : AuthorizationValidationRule
 }
 ```
 
-Then register `CustomAuthorizationValidationRule` instead of `AuthorizationValidationRule` in your DI container.
+Then register `CustomAuthorizationValidationRule` instead of `AuthorizationValidationRule`
+in your DI container.
 
-**Option 2.** Implement `IErrorInfoProvider` interface. This is one of the interfaces from the main GraphQL.NET
-repository. For convenience you may use `ErrorInfoProvider` base class. 
+**Option 2.** Implement `IErrorInfoProvider` interface. This is one of the interfaces from
+the main GraphQL.NET repository. For convenience you may use `ErrorInfoProvider` base class. 
 
 ```csharp
 public class CustomErrorInfoProvider : ErrorInfoProvider
