@@ -9,6 +9,6 @@ namespace GraphQL.Authorization
     public class DefaultClaimsPrincipalAccessor : IClaimsPrincipalAccessor
     {
         /// <inheritdoc />
-        public ClaimsPrincipal GetClaimsPrincipal(ValidationContext context) => (context.UserContext as IProvideClaimsPrincipal)?.User;
+        public ClaimsPrincipal? GetClaimsPrincipal(ValidationContext context) => (context.UserContext as IProvideClaimsPrincipal)?.User;
     }
 }

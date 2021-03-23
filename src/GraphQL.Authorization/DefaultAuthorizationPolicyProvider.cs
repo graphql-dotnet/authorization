@@ -18,6 +18,6 @@ namespace GraphQL.Authorization
         }
 
         /// <inheritdoc />
-        public IAuthorizationPolicy GetPolicy(string policyName) => _settings.GetPolicy(policyName);
+        public IAuthorizationPolicy? GetPolicy(string policyName) => _settings.GetPolicy(policyName);
     }
 }

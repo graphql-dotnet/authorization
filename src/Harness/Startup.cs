@@ -1,4 +1,5 @@
 using GraphQL;
+using GraphQL.Authorization;
 using GraphQL.Server;
 using GraphQL.Types;
 using Microsoft.AspNetCore.Builder;

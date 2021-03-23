@@ -18,7 +18,7 @@ namespace GraphQL.Authorization
         /// <summary>
         /// Contains information about why authorization failed.
         /// </summary>
-        public AuthorizationFailure Failure { get; private set; }
+        public AuthorizationFailure? Failure { get; private set; }
 
         /// <summary>
         /// Creates successful authorization result.

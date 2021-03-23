@@ -10,7 +10,7 @@ namespace GraphQL.Authorization
         /// <summary>
         /// The name of policy to apply.
         /// </summary>
-        public string Policy { get; set; }
+        public string Policy { get; set; } = null!;
 
         /// <inheritdoc />
         public override void Modify(TypeConfig type) => type.AuthorizeWith(Policy);

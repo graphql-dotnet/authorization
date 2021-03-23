@@ -20,7 +20,7 @@ namespace GraphQL.Authorization.Tests
 
             schema.Initialize();
 
-            var query = schema.AllTypes["Query"] as IObjectGraphType;
+            var query = (IObjectGraphType)schema.AllTypes["Query"];
             query.RequiresAuthorization().ShouldBeTrue();
             query.GetPolicies().Single().ShouldBe("ClassPolicy");
 

@@ -18,7 +18,7 @@ namespace GraphQL.Authorization
         /// </summary>
         /// <param name="policy">A checked policy for the current authorization processing.</param>
         /// <param name="user">A <see cref="ClaimsPrincipal"/> representing the current user.</param>
-        public DefaultAuthorizationContext(IAuthorizationPolicy policy, ClaimsPrincipal user)
+        public DefaultAuthorizationContext(IAuthorizationPolicy policy, ClaimsPrincipal? user)
         {
             Policy = policy ?? throw new ArgumentNullException(nameof(policy));
             User = user;
@@ -29,13 +29,13 @@ namespace GraphQL.Authorization
         public IAuthorizationPolicy Policy { get; }
 
         /// <inheritdoc />
-        public ClaimsPrincipal User { get; }
+        public ClaimsPrincipal? User { get; }
 
         /// <inheritdoc />
-        public IDictionary<string, object> UserContext { get; set; }
+        public IDictionary<string, object>? UserContext { get; set; }
 
         /// <inheritdoc />
-        public IReadOnlyDictionary<string, object> Inputs { get; set; }
+        public IReadOnlyDictionary<string, object>? Inputs { get; set; }
 
         /// <inheritdoc />
         public virtual IEnumerable<IAuthorizationRequirement> PendingRequirements { get; }

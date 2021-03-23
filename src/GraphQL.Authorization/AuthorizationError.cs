@@ -14,7 +14,7 @@ namespace GraphQL.Authorization
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthorizationError"/> class for a specified authorization result.
         /// </summary>
-        public AuthorizationError(INode node, ValidationContext context, OperationType? operationType, AuthorizationResult result)
+        public AuthorizationError(INode? node, ValidationContext context, OperationType? operationType, AuthorizationResult result)
             : this(node, context, GenerateMessage(operationType, result), result)
         {
             OperationType = operationType;
@@ -23,7 +23,7 @@ namespace GraphQL.Authorization
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthorizationError"/> class for a specified authorization result with a specific error message.
         /// </summary>
-        public AuthorizationError(INode node, ValidationContext context, string message, AuthorizationResult result)
+        public AuthorizationError(INode? node, ValidationContext context, string message, AuthorizationResult result)
             : base(context.Document.OriginalQuery, "6.1.1", message, node == null ? Array.Empty<INode>() : new INode[] { node })
         {
             Code = "authorization";
@@ -45,9 +45,12 @@ namespace GraphQL.Authorization
             var error = new StringBuilder();
             AppendFailureHeader(error, operationType);
 
-            foreach (var failure in result.Failure.FailedRequirements)
+            if (result.Failure != null)
             {
-                AppendFailureLine(error, failure);
+                foreach (var failure in result.Failure.FailedRequirements)
+                {
+                    AppendFailureLine(error, failure);
+                }
             }
 
             return error.ToString();

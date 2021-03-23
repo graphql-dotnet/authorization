@@ -13,6 +13,6 @@ namespace GraphQL.Authorization
         /// </summary>
         /// <param name="context">The <see cref="ValidationContext"/> of the current operation.</param>
         /// <returns></returns>
-        ClaimsPrincipal GetClaimsPrincipal(ValidationContext context);
+        ClaimsPrincipal? GetClaimsPrincipal(ValidationContext context);
     }
 }

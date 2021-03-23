@@ -16,17 +16,17 @@ namespace GraphQL.Authorization
         /// <summary>
         /// Current user.
         /// </summary>
-        ClaimsPrincipal User { get; }
+        ClaimsPrincipal? User { get; }
 
         /// <summary>
         /// Arbitrary user defined context represented as a dictionary.
         /// </summary>
-        IDictionary<string, object> UserContext { get; }
+        IDictionary<string, object>? UserContext { get; }
 
         /// <summary>
         /// Represents a readonly dictionary of variable inputs to an executed document.
         /// </summary>
-        IReadOnlyDictionary<string, object> Inputs { get; }
+        IReadOnlyDictionary<string, object>? Inputs { get; }
 
         /// <summary>
         /// Gets the requirements that have not yet been marked as succeeded.

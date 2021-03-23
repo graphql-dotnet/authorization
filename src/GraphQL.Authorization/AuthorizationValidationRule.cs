@@ -24,9 +24,9 @@ namespace GraphQL.Authorization
         /// </summary>
         public AuthorizationValidationRule(IAuthorizationService authorizationService, IClaimsPrincipalAccessor claimsPrincipalAccessor, IAuthorizationPolicyProvider policyProvider)
         {
-            _authorizationService = authorizationService;
-            _claimsPrincipalAccessor = claimsPrincipalAccessor;
-            _policyProvider = policyProvider;
+            _authorizationService = authorizationService ?? throw new ArgumentNullException(nameof(authorizationService));
+            _claimsPrincipalAccessor = claimsPrincipalAccessor ?? throw new ArgumentNullException(nameof(claimsPrincipalAccessor));
+            _policyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
         }
 
         /// <inheritdoc />
@@ -93,7 +93,7 @@ namespace GraphQL.Authorization
             };
         }
 
-        private async Task AuthorizeAsync(INode node, IProvideMetadata provider, ValidationContext context, OperationType? operationType)
+        private async Task AuthorizeAsync(INode? node, IProvideMetadata provider, ValidationContext context, OperationType? operationType)
         {
             var policyNames = provider?.GetPolicies();
 
@@ -126,7 +126,7 @@ namespace GraphQL.Authorization
         /// <summary>
         /// Adds an authorization failure error to the document response.
         /// </summary>
-        protected virtual void AddValidationError(INode node, ValidationContext context, OperationType? operationType, AuthorizationResult result)
+        protected virtual void AddValidationError(INode? node, ValidationContext context, OperationType? operationType, AuthorizationResult result)
         {
             context.ReportError(new AuthorizationError(node, context, operationType, result));
         }

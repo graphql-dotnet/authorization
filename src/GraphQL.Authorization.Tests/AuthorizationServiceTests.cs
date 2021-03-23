@@ -19,12 +19,12 @@ namespace GraphQL.Authorization.Tests
         }
 
         private IAuthorizationContext CreateAuthorizationContext(
-            ClaimsPrincipal principal,
-            IDictionary<string, object> userContext,
-            IReadOnlyDictionary<string, object> inputs,
-            string requiredPolicy)
+            ClaimsPrincipal? principal,
+            IDictionary<string, object>? userContext,
+            IReadOnlyDictionary<string, object>? inputs,
+            string? requiredPolicy)
         {
-            return new DefaultAuthorizationContext(new DefaultAuthorizationPolicyProvider(_settings).GetPolicy(requiredPolicy), principal)
+            return new DefaultAuthorizationContext(new DefaultAuthorizationPolicyProvider(_settings).GetPolicy(requiredPolicy!)!, principal)
             {
                 UserContext = userContext,
                 Inputs = inputs,

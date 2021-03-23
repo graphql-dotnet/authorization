@@ -230,17 +230,17 @@ namespace GraphQL.Authorization.Tests
         public class NestedQueryWithAttributes
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "test")]
-            public Post Post(string id) => null;
+            public Post? Post(string id) => null;
 
-            public IEnumerable<Post> Posts() => null;
+            public IEnumerable<Post>? Posts() => null;
 
-            public IEnumerable<Post> PostsNonNull() => null;
+            public IEnumerable<Post>? PostsNonNull() => null;
         }
 
         [GraphQLAuthorize(Policy = "PostPolicy")]
         public class Post
         {
-            public string Id { get; set; }
+            public string? Id { get; set; }
         }
 
         public class PostGraphType : ObjectGraphType<Post>
@@ -253,7 +253,7 @@ namespace GraphQL.Authorization.Tests
 
         public class Author
         {
-            public string Name { get; set; }
+            public string? Name { get; set; }
         }
 
         private static ISchema TypedSchema()

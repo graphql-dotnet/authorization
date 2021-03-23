@@ -10,6 +10,6 @@ namespace GraphQL.Authorization
         /// </summary>
         /// <param name="policyName">The policy name to retrieve.</param>
         /// <returns>The named <see cref="AuthorizationPolicy"/>.</returns>
-        IAuthorizationPolicy GetPolicy(string policyName);
+        IAuthorizationPolicy? GetPolicy(string policyName);
     }
 }
