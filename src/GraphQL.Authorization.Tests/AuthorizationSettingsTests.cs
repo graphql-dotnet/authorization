@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Shouldly;
 using Xunit;
 
@@ -12,6 +13,12 @@ namespace GraphQL.Authorization.Tests
         public AuthorizationSettingsTests()
         {
             _settings = new AuthorizationSettings();
+        }
+
+        [Fact]
+        public void throw_if_add_null_delegate()
+        {
+            Should.Throw<ArgumentNullException>(() => _settings.AddPolicy("MyPolicy", (Action<AuthorizationPolicyBuilder>)null!));
         }
 
         [Fact]
@@ -46,6 +53,33 @@ namespace GraphQL.Authorization.Tests
             var policy = _settings.Policies.Single();
             policy.Requirements.Count().ShouldBe(1);
             policy.Requirements.Single().ShouldBeOfType<AuthenticatedUserRequirement>();
+        }
+
+        [Fact]
+        public void can_add_policy_instance()
+        {
+            _settings.AddPolicy("MyPolicy", new AuthorizationPolicy(new DelegatedRequirement(c => Task.CompletedTask)));
+
+            _settings.Policies.Count().ShouldBe(1);
+
+            var policy = _settings.Policies.Single();
+            policy.Requirements.Count().ShouldBe(1);
+            policy.Requirements.Single().ShouldBeOfType<AuthenticatedUserRequirement>();
+        }
+
+        [Fact]
+        public void get_policies()
+        {
+            _settings.AddPolicy("MyPolicy", new AuthorizationPolicy(new DelegatedRequirement(c => Task.CompletedTask)));
+
+            _settings.GetPolicies("a").ShouldBeEmpty();
+            _settings.GetPolicies("a", "b").ShouldBeEmpty();
+            _settings.GetPolicies(Enumerable.Empty<string>()).ShouldBeEmpty();
+
+            _settings.GetPolicies("MyPolicy").Count().ShouldBe(1);
+            _settings.GetPolicies("a", "MyPolicy", "b").Count().ShouldBe(1);
+
+            _settings.Policies.Count().ShouldBe(1);
         }
     }
 }

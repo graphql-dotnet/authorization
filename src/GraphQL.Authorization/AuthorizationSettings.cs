@@ -40,6 +40,13 @@ namespace GraphQL.Authorization
         }
 
         /// <summary>
+        /// Returns policies with the specified names.
+        /// </summary>
+        /// <param name="policies">A set of policies names.</param>
+        /// <returns>Policies with matched names.</returns>
+        public IEnumerable<IAuthorizationPolicy> GetPolicies(params string[] policies) => GetPolicies((IEnumerable<string>)policies);
+
+        /// <summary>
         /// Returns one policy with the specified name.
         /// </summary>
         /// <param name="name">Name of the required policy.</param>
