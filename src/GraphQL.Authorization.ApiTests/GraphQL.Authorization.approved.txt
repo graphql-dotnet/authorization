@@ -100,6 +100,12 @@ namespace GraphQL.Authorization
         public DefaultClaimsPrincipalAccessor() { }
         public System.Security.Claims.ClaimsPrincipal GetClaimsPrincipal(GraphQL.Validation.ValidationContext context) { }
     }
+    public class DefinedPolicyRequirement : GraphQL.Authorization.IAuthorizationRequirement
+    {
+        public DefinedPolicyRequirement(string policyName) { }
+        public string PolicyName { get; }
+        public System.Threading.Tasks.Task Authorize(GraphQL.Authorization.IAuthorizationContext context) { }
+    }
     public class GraphQLAuthorizeAttribute : GraphQL.GraphQLAttribute
     {
         public GraphQLAuthorizeAttribute() { }
@@ -142,11 +148,5 @@ namespace GraphQL.Authorization
     public interface IProvideClaimsPrincipal
     {
         System.Security.Claims.ClaimsPrincipal User { get; }
-    }
-    public class PolicyDefinedRequirement : GraphQL.Authorization.IAuthorizationRequirement
-    {
-        public PolicyDefinedRequirement(string policyName) { }
-        public string PolicyName { get; }
-        public System.Threading.Tasks.Task Authorize(GraphQL.Authorization.IAuthorizationContext context) { }
     }
 }

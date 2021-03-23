@@ -6,13 +6,13 @@ namespace GraphQL.Authorization
     /// Implements an <see cref="IAuthorizationRequirement"/> which requires that
     /// the specified policy must be defined.
     /// </summary>
-    public class PolicyDefinedRequirement : IAuthorizationRequirement
+    public class DefinedPolicyRequirement : IAuthorizationRequirement
     {
         /// <summary>
-        /// Creates a new instance of <see cref="PolicyDefinedRequirement"/> with
+        /// Creates a new instance of <see cref="DefinedPolicyRequirement"/> with
         /// the specified (undefined) policy name.
         /// </summary>
-        public PolicyDefinedRequirement(string policyName)
+        public DefinedPolicyRequirement(string policyName)
         {
             PolicyName = policyName;
         }

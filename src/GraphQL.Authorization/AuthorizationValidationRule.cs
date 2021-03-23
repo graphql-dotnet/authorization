@@ -85,7 +85,7 @@ namespace GraphQL.Authorization
                 throw new ArgumentNullException(nameof(policyName));
 
             return new DefaultAuthorizationContext(
-                _policyProvider.GetPolicy(policyName) ?? new AuthorizationPolicy(new PolicyDefinedRequirement(policyName)),
+                _policyProvider.GetPolicy(policyName) ?? new AuthorizationPolicy(new DefinedPolicyRequirement(policyName)),
                 _claimsPrincipalAccessor.GetClaimsPrincipal(context) ?? new ClaimsPrincipal(new ClaimsIdentity()))
             {
                 UserContext = context.UserContext,

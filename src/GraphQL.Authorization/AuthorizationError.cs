@@ -87,8 +87,8 @@ namespace GraphQL.Authorization
 
             switch (authorizationRequirement)
             {
-                case PolicyDefinedRequirement policyExistsRequirement:
-                    error.Append($"Required policy '{policyExistsRequirement.PolicyName}' is not present.");
+                case DefinedPolicyRequirement definedPolicyRequirement:
+                    error.Append($"Required policy '{definedPolicyRequirement.PolicyName}' is not present.");
                     break;
 
                 case AuthenticatedUserRequirement _:
