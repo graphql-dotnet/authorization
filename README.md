@@ -150,7 +150,7 @@ unsatisfied requirement, the validation rule will add an authorization error in 
 your own authorization requirements. In this case, you can override the default behavior.
 
 **Option 1.** Create a descendant from `AuthorizationValidationRule` and override
-`AddValidationError` method.
+`AddValidationError` method passing a message built manually.
 
 ```csharp
 public class CustomAuthorizationValidationRule : AuthorizationValidationRule
@@ -173,12 +173,63 @@ public class CustomAuthorizationValidationRule : AuthorizationValidationRule
 Then register `CustomAuthorizationValidationRule` instead of `AuthorizationValidationRule`
 in your DI container.
 
-**Option 2.** Implement `IErrorInfoProvider` interface. This is one of the interfaces from
+**Option 2.** The same as above + custom `AuthorizationError/AuthorizationErrorMessageBuilder`.
+
+```csharp
+public class CustomAuthorizationValidationRule : AuthorizationValidationRule
+{
+    public CustomAuthorizationValidationRule(IAuthorizationService authorizationService, IClaimsPrincipalAccessor claimsPrincipalAccessor, IAuthorizationPolicyProvider policyProvider)
+        : base(authorizationService, claimsPrincipalAccessor, policyProvider)
+    {
+    }
+
+    protected override void AddValidationError(INode node, ValidationContext context, OperationType? operationType, AuthorizationResult result)
+    {
+        // no message built here, now it's built inside a custom message builder called from MyAuthorizationError constructor
+        context.ReportError(new MyAuthorizationError(node, context, operationType, result));
+    }
+}
+
+public class MyAuthorizationError : ValidationError
+{
+    private static readonly MyAuthorizationErrorMessageBuilder _builder = new MyAuthorizationErrorMessageBuilder();
+
+    public MyAuthorizationError(INode? node, ValidationContext context, OperationType? operationType, AuthorizationResult result)
+        : this(node, context, _builder.Build(operationType, result), result)
+    {
+        OperationType = operationType;
+    }
+}
+
+public class MyAuthorizationErrorMessageBuilder : AuthorizationErrorMessageBuilder
+{
+    public override void AppendFailureLine(StringBuilder error, IAuthorizationRequirement authorizationRequirement)
+    {
+        switch (authorizationRequirement)
+        {
+            case MySpecialRequirement special:
+                error.Append("My special error message");
+                break;
+
+            default:
+               base.AppendFailureLine(error, authorizationRequirement);
+        }
+    }
+}
+```
+
+This approach allows you to separate the code for building an error message from the error
+class itself while continue to handle known authorization requirements. It can be convenient
+if you have many custom authorization requirements.
+
+**Option 3.** Implement `IErrorInfoProvider` interface. This is one of the interfaces from
 the main GraphQL.NET repository. For convenience you may use `ErrorInfoProvider` base class. 
 
 ```csharp
 public class CustomErrorInfoProvider : ErrorInfoProvider
 {
+    private static readonly AuthorizationErrorMessageBuilder _builder = new AuthorizationErrorMessageBuilder();
+
     public override ErrorInfo GetInfo(ExecutionError executionError)
     {
         var info = base.GetInfo(executionError);
@@ -193,7 +244,7 @@ public class CustomErrorInfoProvider : ErrorInfoProvider
     private string GetAuthorizationErrorMessage(AuthorizationError error)
     {
         var errorMessage = new StringBuilder();
-        AuthorizationError.AppendFailureHeader(errorMessage, error.OperationType);
+        _builder.AppendFailureHeader(errorMessage, error.OperationType);
 
         foreach (var failedRequirement in error.AuthorizationResult.Failure.FailedRequirements)
         {
@@ -204,7 +255,7 @@ public class CustomErrorInfoProvider : ErrorInfoProvider
                     errorMessage.Append("Access is allowed only on Mondays.");
                     break;
                 default:
-                    AuthorizationError.AppendFailureLine(errorMessage, failedRequirement);
+                    _builder.AppendFailureLine(errorMessage, failedRequirement);
                     break;
             }
         }
