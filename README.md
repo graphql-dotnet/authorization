@@ -223,7 +223,7 @@ class itself while continue to handle known authorization requirements. It can b
 if you have many custom authorization requirements.
 
 **Option 3.** Implement `IErrorInfoProvider` interface. This is one of the interfaces from
-the main GraphQL.NET repository. For convenience you may use `ErrorInfoProvider` base class. 
+the main GraphQL.NET repository. For convenience you may use the `ErrorInfoProvider` base class. 
 
 ```csharp
 public class CustomErrorInfoProvider : ErrorInfoProvider
