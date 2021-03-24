@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using GraphQL.Language.AST;
 using GraphQL.Types;
@@ -128,7 +129,44 @@ namespace GraphQL.Authorization
         /// </summary>
         protected virtual void AddValidationError(INode? node, ValidationContext context, OperationType? operationType, AuthorizationResult result)
         {
-            context.ReportError(new AuthorizationError(node, context, operationType, result));
+            context.ReportError(new AuthorizationError(node, context, operationType, BuildErrorMessage(operationType, result), result));
+        }
+
+        /// <summary>
+        /// Builds error message for the specified operation type and authorization result.
+        /// </summary>
+        protected virtual string BuildErrorMessage(OperationType? operationType, AuthorizationResult result)
+        {
+            static string GetOperationType(OperationType? operationType)
+            {
+                return operationType switch
+                {
+                    OperationType.Query => "query",
+                    OperationType.Mutation => "mutation",
+                    OperationType.Subscription => "subscription",
+                    _ => "operation",
+                };
+            }
+
+            var error = new StringBuilder();
+
+            error.Append("You are not authorized to run this ")
+                .Append(GetOperationType(operationType))
+                .Append('.');
+
+            if (result.Failure != null)
+            {
+                foreach (var failure in result.Failure.FailedRequirements)
+                {
+                    if (failure is IAuthorizationRequirementWithErrorMessage requirementWitErrorMessage)
+                    {
+                        error.AppendLine();
+                        error.Append(requirementWitErrorMessage.ErrorMessage);
+                    }
+                }
+            }
+
+            return error.ToString();
         }
     }
 }

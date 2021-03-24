@@ -7,7 +7,7 @@ namespace GraphQL.Authorization
     /// Implements an <see cref="IAuthorizationRequirement"/> which requires that
     /// current user from <see cref="IAuthorizationContext.User"/> must be authenticated.
     /// </summary>
-    public class AuthenticatedUserRequirement : IAuthorizationRequirement
+    public class AuthenticatedUserRequirement : IAuthorizationRequirementWithErrorMessage
     {
         internal static readonly AuthenticatedUserRequirement Instance = new AuthenticatedUserRequirement();
 
@@ -19,5 +19,8 @@ namespace GraphQL.Authorization
 
             return Task.CompletedTask;
         }
+
+        /// <inheritdoc />
+        public string ErrorMessage => "An authenticated user is required.";
     }
 }

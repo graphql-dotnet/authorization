@@ -6,7 +6,7 @@ namespace GraphQL.Authorization
     /// Implements an <see cref="IAuthorizationRequirement"/> which requires that
     /// the specified policy must be defined.
     /// </summary>
-    public class DefinedPolicyRequirement : IAuthorizationRequirement
+    public class DefinedPolicyRequirement : IAuthorizationRequirementWithErrorMessage
     {
         /// <summary>
         /// Creates a new instance of <see cref="DefinedPolicyRequirement"/> with
@@ -25,6 +25,9 @@ namespace GraphQL.Authorization
         /// <summary>
         /// Execute requirement. This requirement always isn't met by design.
         /// </summary>
-        public Task Authorize(IAuthorizationContext context) => Task.CompletedTask;
+        public Task Authorize(IAuthorizationContext _) => Task.CompletedTask;
+
+        /// <inheritdoc />
+        public string ErrorMessage => $"Required policy '{PolicyName}' is not present.";
     }
 }

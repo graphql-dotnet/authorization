@@ -1,5 +1,7 @@
 # GraphQL Authorization
 
+![License](https://img.shields.io/github/license/graphql-dotnet/authorization)
+
 [![Join the chat at https://gitter.im/graphql-dotnet/graphql-dotnet](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/graphql-dotnet/graphql-dotnet?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 [![Run code tests](https://github.com/graphql-dotnet/authorization/actions/workflows/test.yml/badge.svg)](https://github.com/graphql-dotnet/authorization/actions/workflows/test.yml)
@@ -141,126 +143,54 @@ public static void ConfigureAuthorizationServices(ServiceCollection services)
 
 #### How to change error messages
 
-All authorization requirements (built-in or custom ones) only check the compliance of
-the current execution state to their criteria. If the requirement is satisfied, then
+Authorization requirement (`IAuthorizationRequirement`) only checks the compliance of
+the current execution state to some criteria. If the requirement is satisfied, then
 it is marked as 'passed' and the next requirement is checked. If all requirements are
 satisfied, then the validation rule returns a successful result. Otherwise for each
 unsatisfied requirement, the validation rule will add an authorization error in the
 `ValidationContext`. The text of this error may not suit you, especially if you write
-your own authorization requirements. In this case, you can override the default behavior.
+your own authorization requirements because by default you will see only _You are not
+authorized to run this query_ text which does not contain any details about your
+requirement. This is done for security reasons but you can override the default behavior.
 
-**Option 1.** Create a descendant from `AuthorizationValidationRule` and override
-`AddValidationError` method passing a message built manually.
+**Option 1.** If you are satisfied with the existing error messages and you only want
+to add error message for your own authorization requirement, then inherit your authorization
+requirement from `IAuthorizationRequirementWithErrorMessage` interface.
 
 ```csharp
-public class CustomAuthorizationValidationRule : AuthorizationValidationRule
+public class OnlyMondayRequirement : IAuthorizationRequirementWithErrorMessage
 {
-    public CustomAuthorizationValidationRule(IAuthorizationService authorizationService, IClaimsPrincipalAccessor claimsPrincipalAccessor, IAuthorizationPolicyProvider policyProvider)
-        : base(authorizationService, claimsPrincipalAccessor, policyProvider)
+    public Task Authorize(IAuthorizationContext context)
     {
+        if (DateTime.Now.DayOfWeek == DayOfWeek.Monday)
+            context.Succeed(this);
     }
 
-    protected override void AddValidationError(INode node, ValidationContext context, OperationType? operationType, AuthorizationResult result)
-    {
-        if (result.Failure.FailedRequirements.Any(r => r is MySpecialRequirement))
-            context.ReportError(new AuthorizationError(node, context, "My special error message", result));
-        else
-            base.AddValidationError(node, context, operationType, result);
-    }
+    public string ErrorMessage => "Access is allowed only on Mondays.";
 }
 ```
 
-Then register `CustomAuthorizationValidationRule` instead of `AuthorizationValidationRule`
-in your DI container.
+**Option 2.** If you want to get full control over the whole error message for authorization
+process then inherit from `AuthorizationValidationRule` and override `AddValidationError`
+or `BuildErrorMessage` methods. Then register `CustomAuthorizationValidationRule` class
+instead of `AuthorizationValidationRule` class in your DI container.
 
-**Option 2.** The same as above + custom `AuthorizationError/AuthorizationErrorMessageBuilder`.
-
-```csharp
-public class CustomAuthorizationValidationRule : AuthorizationValidationRule
-{
-    public CustomAuthorizationValidationRule(IAuthorizationService authorizationService, IClaimsPrincipalAccessor claimsPrincipalAccessor, IAuthorizationPolicyProvider policyProvider)
-        : base(authorizationService, claimsPrincipalAccessor, policyProvider)
-    {
-    }
-
-    protected override void AddValidationError(INode node, ValidationContext context, OperationType? operationType, AuthorizationResult result)
-    {
-        // no message built here, now it's built inside a custom message builder called from MyAuthorizationError constructor
-        context.ReportError(new MyAuthorizationError(node, context, operationType, result));
-    }
-}
-
-public class MyAuthorizationError : ValidationError
-{
-    private static readonly MyAuthorizationErrorMessageBuilder _builder = new MyAuthorizationErrorMessageBuilder();
-
-    public MyAuthorizationError(INode? node, ValidationContext context, OperationType? operationType, AuthorizationResult result)
-        : this(node, context, _builder.Build(operationType, result), result)
-    {
-        OperationType = operationType;
-    }
-}
-
-public class MyAuthorizationErrorMessageBuilder : AuthorizationErrorMessageBuilder
-{
-    public override void AppendFailureLine(StringBuilder error, IAuthorizationRequirement authorizationRequirement)
-    {
-        switch (authorizationRequirement)
-        {
-            case MySpecialRequirement special:
-                error.Append("My special error message");
-                break;
-
-            default:
-               base.AppendFailureLine(error, authorizationRequirement);
-        }
-    }
-}
-```
-
-This approach allows you to separate the code for building an error message from the error
-class itself while continue to handle known authorization requirements. It can be convenient
-if you have many custom authorization requirements.
-
-**Option 3.** Implement `IErrorInfoProvider` interface. This is one of the interfaces from
-the main GraphQL.NET repository. For convenience you may use the `ErrorInfoProvider` base class. 
+**Option 3.** Another way to get full control over the whole error message sent to client
+is to implement `IErrorInfoProvider` interface. This is one of the interfaces from the
+main GraphQL.NET repository. For convenience you may use the `ErrorInfoProvider` base class. 
 
 ```csharp
 public class CustomErrorInfoProvider : ErrorInfoProvider
 {
-    private static readonly AuthorizationErrorMessageBuilder _builder = new AuthorizationErrorMessageBuilder();
-
     public override ErrorInfo GetInfo(ExecutionError executionError)
     {
         var info = base.GetInfo(executionError);
         info.Message = executionError switch
         {
-            AuthorizationError authorizationError => GetAuthorizationErrorMessage(authorizationError),
+            AuthorizationError authorizationError => "You shall not pass!",
             _ => info.Message,
         };
         return info;
-    }
-
-    private string GetAuthorizationErrorMessage(AuthorizationError error)
-    {
-        var errorMessage = new StringBuilder();
-        _builder.AppendFailureHeader(errorMessage, error.OperationType);
-
-        foreach (var failedRequirement in error.AuthorizationResult.Failure.FailedRequirements)
-        {
-            switch (failedRequirement)
-            {
-                case OnlyMondayRequirement onlyMondayRequirement:
-                    errorMessage.AppendLine();
-                    errorMessage.Append("Access is allowed only on Mondays.");
-                    break;
-                default:
-                    _builder.AppendFailureLine(errorMessage, failedRequirement);
-                    break;
-            }
-        }
-
-        return errorMessage.ToString();
     }
 }
 ```

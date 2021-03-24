@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace GraphQL.Authorization
@@ -9,7 +10,7 @@ namespace GraphQL.Authorization
     /// Implements an <see cref="IAuthorizationRequirement"/> which requires an instance of the specified
     /// claim type, and, if allowed values are specified, the claim value must be any of the allowed values.
     /// </summary>
-    public class ClaimsAuthorizationRequirement : IAuthorizationRequirement
+    public class ClaimsAuthorizationRequirement : IAuthorizationRequirementWithErrorMessage
     {
         /// <summary>
         /// Creates a new instance of <see cref="ClaimsAuthorizationRequirement"/> with
@@ -94,6 +95,30 @@ namespace GraphQL.Authorization
                 context.Succeed(this);
 
             return Task.CompletedTask;
+        }
+
+        /// <inheritdoc />
+        public string ErrorMessage
+        {
+            get
+            {
+                var error = new StringBuilder();
+
+                error.Append("Required claim '");
+                error.Append(ClaimType);
+                if (AllowedValues == null || !AllowedValues.Any())
+                {
+                    error.Append("' is not present.");
+                }
+                else
+                {
+                    error.Append("' with any value of '");
+                    error.Append(string.Join(", ", AllowedValues ?? DisplayValues));
+                    error.Append("' is not present.");
+                }
+
+                return error.ToString();
+            }
         }
     }
 }

@@ -1,23 +1,16 @@
 namespace GraphQL.Authorization
 {
-    public class AuthenticatedUserRequirement : GraphQL.Authorization.IAuthorizationRequirement
+    public class AuthenticatedUserRequirement : GraphQL.Authorization.IAuthorizationRequirement, GraphQL.Authorization.IAuthorizationRequirementWithErrorMessage
     {
         public AuthenticatedUserRequirement() { }
+        public string ErrorMessage { get; }
         public System.Threading.Tasks.Task Authorize(GraphQL.Authorization.IAuthorizationContext context) { }
     }
     public class AuthorizationError : GraphQL.Validation.ValidationError
     {
-        public AuthorizationError(GraphQL.Language.AST.INode? node, GraphQL.Validation.ValidationContext context, GraphQL.Language.AST.OperationType? operationType, GraphQL.Authorization.AuthorizationResult result) { }
-        public AuthorizationError(GraphQL.Language.AST.INode? node, GraphQL.Validation.ValidationContext context, string message, GraphQL.Authorization.AuthorizationResult result) { }
+        public AuthorizationError(GraphQL.Language.AST.INode? node, GraphQL.Validation.ValidationContext context, GraphQL.Language.AST.OperationType? operationType, string message, GraphQL.Authorization.AuthorizationResult result) { }
         public virtual GraphQL.Authorization.AuthorizationResult AuthorizationResult { get; }
         public GraphQL.Language.AST.OperationType? OperationType { get; }
-    }
-    public class AuthorizationErrorMessageBuilder
-    {
-        public AuthorizationErrorMessageBuilder() { }
-        public virtual void AppendFailureHeader(System.Text.StringBuilder error, GraphQL.Language.AST.OperationType? operationType) { }
-        public virtual void AppendFailureLine(System.Text.StringBuilder error, GraphQL.Authorization.IAuthorizationRequirement authorizationRequirement) { }
-        public virtual string Build(GraphQL.Language.AST.OperationType? operationType, GraphQL.Authorization.AuthorizationResult result) { }
     }
     public class AuthorizationFailure
     {
@@ -69,10 +62,11 @@ namespace GraphQL.Authorization
     {
         public AuthorizationValidationRule(GraphQL.Authorization.IAuthorizationService authorizationService, GraphQL.Authorization.IClaimsPrincipalAccessor claimsPrincipalAccessor, GraphQL.Authorization.IAuthorizationPolicyProvider policyProvider) { }
         protected virtual void AddValidationError(GraphQL.Language.AST.INode? node, GraphQL.Validation.ValidationContext context, GraphQL.Language.AST.OperationType? operationType, GraphQL.Authorization.AuthorizationResult result) { }
+        protected virtual string BuildErrorMessage(GraphQL.Language.AST.OperationType? operationType, GraphQL.Authorization.AuthorizationResult result) { }
         protected virtual GraphQL.Authorization.IAuthorizationContext CreateAuthorizationContext(GraphQL.Validation.ValidationContext context, string policyName) { }
         public System.Threading.Tasks.Task<GraphQL.Validation.INodeVisitor> ValidateAsync(GraphQL.Validation.ValidationContext context) { }
     }
-    public class ClaimsAuthorizationRequirement : GraphQL.Authorization.IAuthorizationRequirement
+    public class ClaimsAuthorizationRequirement : GraphQL.Authorization.IAuthorizationRequirement, GraphQL.Authorization.IAuthorizationRequirementWithErrorMessage
     {
         public ClaimsAuthorizationRequirement(string claimType) { }
         public ClaimsAuthorizationRequirement(string claimType, System.Collections.Generic.IEnumerable<string> allowedValues) { }
@@ -81,6 +75,7 @@ namespace GraphQL.Authorization
         public System.Collections.Generic.IEnumerable<string>? AllowedValues { get; }
         public string ClaimType { get; }
         public System.Collections.Generic.IEnumerable<string>? DisplayValues { get; }
+        public string ErrorMessage { get; }
         public System.Threading.Tasks.Task Authorize(GraphQL.Authorization.IAuthorizationContext context) { }
     }
     public class DefaultAuthorizationContext : GraphQL.Authorization.IAuthorizationContext
@@ -111,11 +106,12 @@ namespace GraphQL.Authorization
         public DefaultClaimsPrincipalAccessor() { }
         public System.Security.Claims.ClaimsPrincipal? GetClaimsPrincipal(GraphQL.Validation.ValidationContext context) { }
     }
-    public class DefinedPolicyRequirement : GraphQL.Authorization.IAuthorizationRequirement
+    public class DefinedPolicyRequirement : GraphQL.Authorization.IAuthorizationRequirement, GraphQL.Authorization.IAuthorizationRequirementWithErrorMessage
     {
         public DefinedPolicyRequirement(string policyName) { }
+        public string ErrorMessage { get; }
         public string PolicyName { get; }
-        public System.Threading.Tasks.Task Authorize(GraphQL.Authorization.IAuthorizationContext context) { }
+        public System.Threading.Tasks.Task Authorize(GraphQL.Authorization.IAuthorizationContext _) { }
     }
     public class DelegatedRequirement : GraphQL.Authorization.IAuthorizationRequirement
     {
@@ -152,6 +148,10 @@ namespace GraphQL.Authorization
     public interface IAuthorizationRequirement
     {
         System.Threading.Tasks.Task Authorize(GraphQL.Authorization.IAuthorizationContext context);
+    }
+    public interface IAuthorizationRequirementWithErrorMessage : GraphQL.Authorization.IAuthorizationRequirement
+    {
+        string ErrorMessage { get; }
     }
     public interface IAuthorizationService
     {

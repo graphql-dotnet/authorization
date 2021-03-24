@@ -9,24 +9,14 @@ namespace GraphQL.Authorization
     /// </summary>
     public class AuthorizationError : ValidationError
     {
-        private static readonly AuthorizationErrorMessageBuilder _builder = new AuthorizationErrorMessageBuilder();
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="AuthorizationError"/> class for a specified authorization result.
+        /// Initializes a new instance of the <see cref="AuthorizationError"/> class with the specified parameters.
         /// </summary>
-        public AuthorizationError(INode? node, ValidationContext context, OperationType? operationType, AuthorizationResult result)
-            : this(node, context, _builder.Build(operationType, result), result)
-        {
-            OperationType = operationType;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AuthorizationError"/> class for a specified authorization result with a specific error message.
-        /// </summary>
-        public AuthorizationError(INode? node, ValidationContext context, string message, AuthorizationResult result)
+        public AuthorizationError(INode? node, ValidationContext context, OperationType? operationType, string message, AuthorizationResult result)
             : base(context.Document.OriginalQuery, "6.1.1", message, node == null ? Array.Empty<INode>() : new INode[] { node })
         {
             Code = "authorization";
+            OperationType = operationType;
             AuthorizationResult = result;
         }
 
