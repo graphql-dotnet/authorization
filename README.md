@@ -21,23 +21,23 @@ A toolset for authorizing access to graph types for [GraphQL.NET](https://github
 
 Provides the following packages:
 
-| Package               | Downloads                                                                                                               | NuGet Latest                                                                                                             |
-|-----------------------|-------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
-| GraphQL.Authorization | [![Nuget](https://img.shields.io/nuget/dt/GraphQL.Authorization)](https://www.nuget.org/packages/GraphQL.Authorization) | [![Nuget](https://img.shields.io/nuget/v/GraphQL.Authorization)](https://www.nuget.org/packages/GraphQL.Authorization)   |
+| Package               | Downloads                                                                                                               | NuGet Latest                                                                                                           |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| GraphQL.Authorization | [![Nuget](https://img.shields.io/nuget/dt/GraphQL.Authorization)](https://www.nuget.org/packages/GraphQL.Authorization) | [![Nuget](https://img.shields.io/nuget/v/GraphQL.Authorization)](https://www.nuget.org/packages/GraphQL.Authorization) |
 
 You can get all preview versions from [GitHub Packages](https://github.com/orgs/graphql-dotnet/packages?repo_name=authorization).
 Note that GitHub requires authentication to consume the feed. See [here](https://docs.github.com/en/free-pro-team@latest/packages/publishing-and-managing-packages/about-github-packages#authenticating-to-github-packages).
 
 # Usage
 
-* Register the authorization classes in your DI container - `IAuthorizationEvaluator`, `AuthorizationSettings`, and the `AuthorizationValidationRule`.
-* Provide a custom `UserContext` class that implements `IProvideClaimsPrincipal`.
-* Add policies to the `AuthorizationSettings`.
-* Apply a policy to a GraphType or Field (both implement `IProvideMetadata`):
+- Register the authorization classes in your DI container - `IAuthorizationEvaluator`, `AuthorizationSettings`, and the `AuthorizationValidationRule`.
+- Provide a custom `UserContext` class that implements `IProvideClaimsPrincipal`.
+- Add policies to the `AuthorizationSettings`.
+- Apply a policy to a GraphType or Field (both implement `IProvideMetadata`):
   - using `AuthorizeWith(string policy)` extension method
   - or with `GraphQLAuthorize` attribute if using Schema + Handler syntax.
-* The `AuthorizationValidationRule` will run and verify the policies based on the registered policies.
-* You can write your own `IAuthorizationRequirement`.
+- The `AuthorizationValidationRule` will run and verify the policies based on the registered policies.
+- You can write your own `IAuthorizationRequirement`.
 
 # Examples
 
@@ -61,20 +61,20 @@ public class MyType : ObjectGraphType
 4. Schema first syntax - use `GraphQLAuthorize` attribute on type, method or property.
 
 ```csharp
-[GraphQLAuthorize(Policy = "MyPolicy")]
+[GraphQLAuthorize("MyPolicy")]
 public class MutationType
 {
-    [GraphQLAuthorize(Policy = "AnotherPolicy")]
+    [GraphQLAuthorize("AnotherPolicy")]
     public async Task<string> CreateSomething(MyInput input)
     {
         return await SomeMethodAsync(input);
     }
 
-    [GraphQLAuthorize(Policy = "SuperPolicy")]
+    [GraphQLAuthorize("SuperPolicy")]
     public string SomeProperty => Guid.NewGuid().ToString();
 }
 ```
 
 # Known Issues
 
-* It is currently not possible to add a policy to Input objects using Schema first approach.
+- It is currently not possible to add a policy to Input objects using Schema first approach.

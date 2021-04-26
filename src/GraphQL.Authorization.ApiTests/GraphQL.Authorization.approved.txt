@@ -65,13 +65,6 @@ namespace GraphQL.Authorization
         public ClaimAuthorizationRequirement(string claimType, System.Collections.Generic.IEnumerable<string> allowedValues, System.Collections.Generic.IEnumerable<string> displayValues) { }
         public System.Threading.Tasks.Task Authorize(GraphQL.Authorization.AuthorizationContext context) { }
     }
-    public class GraphQLAuthorizeAttribute : GraphQL.GraphQLAttribute
-    {
-        public GraphQLAuthorizeAttribute() { }
-        public string Policy { get; set; }
-        public override void Modify(GraphQL.Utilities.FieldConfig field) { }
-        public override void Modify(GraphQL.Utilities.TypeConfig type) { }
-    }
     public interface IAuthorizationEvaluator
     {
         System.Threading.Tasks.Task<GraphQL.Authorization.AuthorizationResult> Evaluate(System.Security.Claims.ClaimsPrincipal principal, System.Collections.Generic.IDictionary<string, object> userContext, System.Collections.Generic.IReadOnlyDictionary<string, object> inputs, System.Collections.Generic.IEnumerable<string> requiredPolicies);
