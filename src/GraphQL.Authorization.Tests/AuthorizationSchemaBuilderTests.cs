@@ -30,10 +30,10 @@ namespace GraphQL.Authorization.Tests
         }
 
         [GraphQLMetadata("Query")]
-        [GraphQLAuthorize(Policy = "ClassPolicy")]
+        [GraphQLAuthorize("ClassPolicy")]
         public class QueryWithAttributes
         {
-            [GraphQLAuthorize(Policy = "FieldPolicy")]
+            [GraphQLAuthorize("FieldPolicy")]
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "test")]
             public string Post(string id) => "";
         }
