@@ -16,6 +16,7 @@
     <DebugType>embedded</DebugType>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <GraphQLTestVersion>4.2.0</GraphQLTestVersion>
   </PropertyGroup>
 
   <ItemGroup>
