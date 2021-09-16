@@ -11,9 +11,7 @@ namespace GraphQL.Authorization
     /// </summary>
     public class ClaimAuthorizationRequirement : IAuthorizationRequirement
     {
-        private readonly string _claimType;
         private readonly IEnumerable<string> _displayValues;
-        private readonly IEnumerable<string> _allowedValues;
 
         /// <summary>
         /// Creates a new instance of <see cref="ClaimAuthorizationRequirement"/> with
@@ -53,10 +51,21 @@ namespace GraphQL.Authorization
         /// </summary>
         public ClaimAuthorizationRequirement(string claimType, IEnumerable<string> allowedValues, IEnumerable<string> displayValues)
         {
-            _claimType = claimType ?? throw new ArgumentNullException(nameof(claimType));
-            _allowedValues = allowedValues ?? Enumerable.Empty<string>();
+            ClaimType = claimType ?? throw new ArgumentNullException(nameof(claimType));
+            AllowedValues = allowedValues ?? Enumerable.Empty<string>();
             _displayValues = displayValues;
         }
+
+        /// <summary>
+        ///  The specified claim type
+        /// </summary>
+        public string ClaimType { get; }
+
+        /// <summary>
+        /// The specified values of claim type.
+        /// </summary>
+        public IEnumerable<string> AllowedValues { get; }
+
 
         /// <inheritdoc />
         public Task Authorize(AuthorizationContext context)
@@ -65,29 +74,29 @@ namespace GraphQL.Authorization
 
             if (context.User != null)
             {
-                if (_allowedValues == null || !_allowedValues.Any())
+                if (AllowedValues == null || !AllowedValues.Any())
                 {
                     found = context.User.Claims.Any(
-                        claim => string.Equals(claim.Type, _claimType, StringComparison.OrdinalIgnoreCase));
+                        claim => string.Equals(claim.Type, ClaimType, StringComparison.OrdinalIgnoreCase));
                 }
                 else
                 {
                     found = context.User.Claims.Any(
-                        claim => string.Equals(claim.Type, _claimType, StringComparison.OrdinalIgnoreCase)
-                             && _allowedValues.Contains(claim.Value, StringComparer.Ordinal));
+                        claim => string.Equals(claim.Type, ClaimType, StringComparison.OrdinalIgnoreCase)
+                             && AllowedValues.Contains(claim.Value, StringComparer.Ordinal));
                 }
             }
 
             if (!found)
             {
-                if (_allowedValues != null && _allowedValues.Any())
+                if (AllowedValues != null && AllowedValues.Any())
                 {
-                    string values = string.Join(", ", _displayValues ?? _allowedValues);
-                    context.ReportError($"Required claim '{_claimType}' with any value of '{values}' is not present.");
+                    string values = string.Join(", ", _displayValues ?? AllowedValues);
+                    context.ReportError($"Required claim '{ClaimType}' with any value of '{values}' is not present.");
                 }
                 else
                 {
-                    context.ReportError($"Required claim '{_claimType}' is not present.");
+                    context.ReportError($"Required claim '{ClaimType}' is not present.");
                 }
             }
 
