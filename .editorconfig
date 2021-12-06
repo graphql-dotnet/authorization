@@ -32,6 +32,9 @@ insert_final_newline = false
 [*.cs]
 indent_size = 4
 
+[*.txt]
+insert_final_newline = false
+
 # Code files
 [*.{cs,vb}]
 

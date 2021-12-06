@@ -26,9 +26,9 @@ applied to them and evaluates these policies if any.
 
 Provides the following packages:
 
-| Package               | Downloads                                                                                                               | NuGet Latest                                                                                                             |
-|-----------------------|-------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
-| GraphQL.Authorization | [![Nuget](https://img.shields.io/nuget/dt/GraphQL.Authorization)](https://www.nuget.org/packages/GraphQL.Authorization) | [![Nuget](https://img.shields.io/nuget/v/GraphQL.Authorization)](https://www.nuget.org/packages/GraphQL.Authorization)   |
+| Package               | Downloads                                                                                                               | NuGet Latest                                                                                                           |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| GraphQL.Authorization | [![Nuget](https://img.shields.io/nuget/dt/GraphQL.Authorization)](https://www.nuget.org/packages/GraphQL.Authorization) | [![Nuget](https://img.shields.io/nuget/v/GraphQL.Authorization)](https://www.nuget.org/packages/GraphQL.Authorization) |
 
 You can get all preview versions from [GitHub Packages](https://github.com/orgs/graphql-dotnet/packages?repo_name=authorization).
 Note that GitHub requires authentication to consume the feed. See [here](https://docs.github.com/en/free-pro-team@latest/packages/publishing-and-managing-packages/about-github-packages#authenticating-to-github-packages).
@@ -88,16 +88,16 @@ public class MyType : ObjectGraphType
 Use `GraphQLAuthorize` attribute on type, method or property.
 
 ```csharp
-[GraphQLAuthorize(Policy = "MyPolicy")]
+[GraphQLAuthorize("MyPolicy")]
 public class MutationType
 {
-    [GraphQLAuthorize(Policy = "AnotherPolicy")]
+    [GraphQLAuthorize("AnotherPolicy")]
     public async Task<string> CreateSomething(MyInput input)
     {
         return await SomeMethodAsync(input);
     }
 
-    [GraphQLAuthorize(Policy = "SuperPolicy")]
+    [GraphQLAuthorize("SuperPolicy")]
     public string SomeProperty => Guid.NewGuid().ToString();
 }
 ```
@@ -203,4 +203,4 @@ services.AddSingleton<IErrorInfoProvider, CustomErrorInfoProvider>();
 
 ## Known Issues
 
-* It is currently not possible to add a policy to Input objects using Schema first approach.
+- It is currently not possible to add a policy to Input objects using Schema first approach.
