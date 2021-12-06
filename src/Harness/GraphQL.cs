@@ -22,7 +22,7 @@ namespace Harness
         /// <summary>
         /// Resolver for 'Query.viewer' field.
         /// </summary>
-        [GraphQLAuthorize(Policy = "AdminPolicy")]
+        [GraphQLAuthorize("AdminPolicy")]
         public User Viewer() => new User { Id = Guid.NewGuid().ToString(), Name = "Quinn" };
 
         /// <summary>

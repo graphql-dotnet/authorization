@@ -8,9 +8,19 @@ namespace GraphQL.Authorization
     public class GraphQLAuthorizeAttribute : GraphQLAttribute
     {
         /// <summary>
+        /// Creates an instance of <see cref="GraphQLAuthorizeAttribute"/>
+        /// with the specified policy name.
+        /// </summary>
+        /// <param name="policy"></param>
+        public GraphQLAuthorizeAttribute(string policy)
+        {
+            Policy = policy;
+        }
+
+        /// <summary>
         /// The name of policy to apply.
         /// </summary>
-        public string Policy { get; set; } = null!;
+        public string Policy { get; }
 
         /// <inheritdoc />
         public override void Modify(TypeConfig type) => type.AuthorizeWith(Policy);
