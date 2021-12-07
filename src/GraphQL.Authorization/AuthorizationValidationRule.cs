@@ -1,4 +1,6 @@
+using System.Linq;
 using System.Threading.Tasks;
+using GraphQL.Execution;
 using GraphQL.Language.AST;
 using GraphQL.Types;
 using GraphQL.Validation;
@@ -56,7 +58,7 @@ namespace GraphQL.Authorization
                 {
                     var fieldDef = context.TypeInfo.GetFieldDef();
 
-                    if (fieldDef == null)
+                    if (fieldDef == null || SkipAuthCheck(fieldAst, context))
                         return;
 
                     // check target field
@@ -65,6 +67,46 @@ namespace GraphQL.Authorization
                     CheckAuth(fieldAst, fieldDef.ResolvedType.GetNamedType(), userContext, context, operationType);
                 })
             ));
+        }
+
+        private bool SkipAuthCheck(Field field, ValidationContext context)
+        {
+            if (field.Directives == null || !field.Directives.Any())
+                return false;
+
+            var operationName = context.OperationName;
+            var documentOperations = context.Document.Operations;
+            var operation = !string.IsNullOrWhiteSpace(operationName)
+                ? documentOperations.WithName(operationName)
+                : documentOperations.FirstOrDefault();
+            var variables = ExecutionHelper.GetVariableValues(context.Document, context.Schema,
+                operation?.Variables, context.Inputs);
+
+            var includeField = GetDirectiveValue(context, field.Directives, DirectiveGraphType.Include, variables);
+            if (includeField.HasValue)
+                return !includeField.Value;
+
+            var skipField = GetDirectiveValue(context, field.Directives, DirectiveGraphType.Skip, variables);
+            if (skipField.HasValue)
+                return skipField.Value;
+
+            return false;
+        }
+
+        private static bool? GetDirectiveValue(ValidationContext context, Directives directives, DirectiveGraphType directiveType, Variables variables)
+        {
+            var directive = directives.Find(directiveType.Name);
+            if (directive == null)
+                return null;
+
+            var argumentValues = ExecutionHelper.GetArgumentValues(
+                context.Schema,
+                directiveType.Arguments,
+                directive.Arguments,
+                variables);
+
+            argumentValues.TryGetValue("if", out object ifObj);
+            return bool.TryParse(ifObj?.ToString() ?? string.Empty, out bool ifVal) && ifVal;
         }
 
         private void CheckAuth(
