@@ -31,12 +31,7 @@ namespace GraphQL.Authorization
                 return false;
             }
 
-            var actualOperation = context.Document.Operations.FirstOrDefault(x => x.Name == context.OperationName);
-
-            if (actualOperation == null)
-            {
-                return false;
-            }
+            var actualOperation = context.Document.Operations.FirstOrDefault(x => x.Name == context.OperationName) ?? context.Document.Operations.FirstOrDefault();
 
             var i = 0;
             do

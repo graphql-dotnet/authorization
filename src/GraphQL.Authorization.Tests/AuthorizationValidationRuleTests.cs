@@ -106,15 +106,17 @@ namespace GraphQL.Authorization.Tests
         }
 
         // https://github.com/graphql-dotnet/authorization/issues/5
-        [Fact]
-        public void issue5()
+        [Theory]
+        [InlineData("c", "query p { posts } query c { comment }")]
+        [InlineData(null, "query c { comment } query p { posts }")]
+        public void issue5(string operationName, string query)
         {
             Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
 
             ShouldPassRule(config =>
             {
-                config.OperationName = "c";
-                config.Query = @"query p { posts } query c { comment }";
+                config.OperationName = operationName;
+                config.Query = query;
                 config.Schema = NestedSchema();
             });
         }
