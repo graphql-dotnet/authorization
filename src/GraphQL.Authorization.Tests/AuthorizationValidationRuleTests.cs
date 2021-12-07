@@ -105,8 +105,8 @@ namespace GraphQL.Authorization.Tests
             });
         }
 
-        [Fact]
         // https://github.com/graphql-dotnet/authorization/issues/5
+        [Fact]
         public void issue5()
         {
             Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
