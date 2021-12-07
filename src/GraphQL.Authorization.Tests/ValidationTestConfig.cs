@@ -8,6 +8,8 @@ namespace GraphQL.Authorization.Tests
 {
     public class ValidationTestConfig
     {
+        public string OperationName { get; set; }
+
         public string Query { get; set; }
 
         public ISchema Schema { get; set; }

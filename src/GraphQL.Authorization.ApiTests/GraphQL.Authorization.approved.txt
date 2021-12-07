@@ -55,7 +55,7 @@ namespace GraphQL.Authorization
     public class AuthorizationValidationRule : GraphQL.Validation.IValidationRule
     {
         public AuthorizationValidationRule(GraphQL.Authorization.IAuthorizationEvaluator evaluator) { }
-        public System.Threading.Tasks.Task<GraphQL.Validation.INodeVisitor> ValidateAsync(GraphQL.Validation.ValidationContext context) { }
+        public System.Threading.Tasks.ValueTask<GraphQL.Validation.INodeVisitor> ValidateAsync(GraphQL.Validation.ValidationContext context) { }
     }
     public class ClaimAuthorizationRequirement : GraphQL.Authorization.IAuthorizationRequirement
     {

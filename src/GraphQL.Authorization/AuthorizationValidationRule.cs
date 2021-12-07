@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using GraphQL.Language.AST;
 using GraphQL.Types;
@@ -22,8 +24,39 @@ namespace GraphQL.Authorization
             _evaluator = evaluator;
         }
 
+        private bool ShouldBeSkipped(ValidationContext context)
+        {
+            if (context.Document.Operations.Count <= 1)
+            {
+                return false;
+            }
+
+            var actualOperation = context.Document.Operations.FirstOrDefault(x => x.Name == context.OperationName);
+
+            if (actualOperation == null)
+            {
+                return false;
+            }
+
+            var i = 0;
+            do
+            {
+                try
+                {
+                    if (context.TypeInfo.GetAncestor(i++) == actualOperation)
+                    {
+                        return false;
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    return true;
+                }
+            } while (true);
+        }
+
         /// <inheritdoc />
-        public Task<INodeVisitor> ValidateAsync(ValidationContext context)
+        public ValueTask<INodeVisitor> ValidateAsync(ValidationContext context)
         {
             var userContext = context.UserContext as IProvideClaimsPrincipal;
             var operationType = OperationType.Query;
@@ -33,10 +66,14 @@ namespace GraphQL.Authorization
             // acts as if they just don't exist vs. an auth denied error
             // - filtering the Schema is not currently supported
             // TODO: apply ISchemaFilter - context.Schema.Filter.AllowXXX
-
-            return Task.FromResult((INodeVisitor)new NodeVisitors(
+            return new ValueTask<INodeVisitor>(new NodeVisitors(
                 new MatchingNodeVisitor<Operation>((astType, context) =>
                 {
+                    if (context.Document.Operations.Count > 1 && astType.Name != context.OperationName)
+                    {
+                        return;
+                    }
+
                     operationType = astType.OperationType;
 
                     var type = context.TypeInfo.GetLastType();
@@ -45,7 +82,7 @@ namespace GraphQL.Authorization
 
                 new MatchingNodeVisitor<ObjectField>((objectFieldAst, context) =>
                 {
-                    if (context.TypeInfo.GetArgument()?.ResolvedType.GetNamedType() is IComplexGraphType argumentType)
+                    if (context.TypeInfo.GetArgument()?.ResolvedType.GetNamedType() is IComplexGraphType argumentType && !ShouldBeSkipped(context))
                     {
                         var fieldType = argumentType.GetField(objectFieldAst.Name);
                         CheckAuth(objectFieldAst, fieldType, userContext, context, operationType);
@@ -56,7 +93,7 @@ namespace GraphQL.Authorization
                 {
                     var fieldDef = context.TypeInfo.GetFieldDef();
 
-                    if (fieldDef == null)
+                    if (fieldDef == null || ShouldBeSkipped(context))
                         return;
 
                     // check target field
