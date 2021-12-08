@@ -128,7 +128,7 @@ namespace GraphQL.Authorization.Tests
         [InlineData("query a { article { ...frag1 author } } query b { article { ...frag2 } } fragment frag1 on Article { id } fragment frag2 on Article { content }")]
         public void issue5_with_fragment_should_pass(string query)
         {
-            Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
+            Settings.AddPolicy("AdminPolicy", builder => builder.RequireClaim("admin"));
 
             ShouldPassRule(config =>
             {
@@ -141,13 +141,13 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void issue5_with_fragment_should_fail()
         {
-            Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
+            Settings.AddPolicy("AdminPolicy", builder => builder.RequireClaim("admin"));
 
             ShouldFailRule(config =>
             {
                 config.Query = "query a { article { ...frag } } query b { article { ...frag } } fragment frag on Article { content }";
                 config.Schema = TypedSchema();
-                config.ValidateResult = result => result.Errors.Single(x => x.Message == $"You are not authorized to run this query.\nRequired policy 'AdminPolicy' is not present.");
+                config.ValidateResult = result => result.Errors.Single(x => x.Message == $"You are not authorized to run this query.\nRequired claim 'admin' is not present.");
             });
         }
 
