@@ -13,12 +13,12 @@ namespace GraphQL.Authorization.Tests
         public ValidationTestBase()
         {
             Settings = new AuthorizationSettings();
-            Rule = new AuthorizationValidationRule(new AuthorizationEvaluator(Settings));
+            Rule = new AuthorizationValidationRule(new DefaultAuthorizationService(), new DefaultClaimsPrincipalAccessor(), new DefaultAuthorizationPolicyProvider(Settings));
         }
 
-        protected AuthorizationValidationRule Rule { get; }
-
         protected AuthorizationSettings Settings { get; }
+
+        protected AuthorizationValidationRule Rule { get; }
 
         protected void ShouldPassRule(Action<ValidationTestConfig> configure)
         {
@@ -66,7 +66,7 @@ namespace GraphQL.Authorization.Tests
             return validator.ValidateAsync(config.Schema, document, document.Operations.First().Variables, config.Rules, userContext, config.Inputs).GetAwaiter().GetResult().validationResult;
         }
 
-        internal static ClaimsPrincipal CreatePrincipal(string authenticationType = null, IDictionary<string, string> claims = null)
+        internal static ClaimsPrincipal CreatePrincipal(string? authenticationType = null, IDictionary<string, string>? claims = null)
         {
             var claimsList = new List<Claim>();
 

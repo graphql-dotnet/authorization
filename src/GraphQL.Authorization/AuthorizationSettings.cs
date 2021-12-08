@@ -24,7 +24,7 @@ namespace GraphQL.Authorization
         /// <returns>Policies with matched names.</returns>
         public IEnumerable<IAuthorizationPolicy> GetPolicies(IEnumerable<string> policies)
         {
-            List<IAuthorizationPolicy> found = null;
+            List<IAuthorizationPolicy>? found = null;
 
             if (policies != null)
             {
@@ -40,11 +40,18 @@ namespace GraphQL.Authorization
         }
 
         /// <summary>
+        /// Returns policies with the specified names.
+        /// </summary>
+        /// <param name="policies">A set of policies names.</param>
+        /// <returns>Policies with matched names.</returns>
+        public IEnumerable<IAuthorizationPolicy> GetPolicies(params string[] policies) => GetPolicies((IEnumerable<string>)policies);
+
+        /// <summary>
         /// Returns one policy with the specified name.
         /// </summary>
         /// <param name="name">Name of the required policy.</param>
         /// <returns>Required policy if exists, otherwise <see langword="null"/>.</returns>
-        public IAuthorizationPolicy GetPolicy(string name) => _policies.TryGetValue(name, out var policy) ? policy : null;
+        public IAuthorizationPolicy? GetPolicy(string name) => name == null ? null : _policies.TryGetValue(name, out var policy) ? policy : null;
 
         /// <summary>
         /// Adds a policy with the specified name. If a policy with that name already exists then it will be replaced.

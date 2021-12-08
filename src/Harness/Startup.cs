@@ -1,4 +1,5 @@
 using GraphQL;
+using GraphQL.Authorization;
 using GraphQL.Server;
 using GraphQL.Types;
 using Microsoft.AspNetCore.Builder;
@@ -40,7 +41,7 @@ namespace Harness
             });
 
             // extension method defined in this project
-            services.AddGraphQLAuth((settings, provider) => settings.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin")));
+            services.AddGraphQLAuth((settings, provider) => settings.AddPolicy("AdminPolicy", b => b.RequireClaim("role", "Admin")));
 
             // claims principal must look something like this to allow access
             // var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Admin") }));

@@ -1,12 +1,23 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using GraphQL.Types;
 using GraphQL.Types.Relay.DataObjects;
+using Shouldly;
 using Xunit;
 
 namespace GraphQL.Authorization.Tests
 {
     public class AuthorizationValidationRuleTests : ValidationTestBase
     {
+        [Fact]
+        public void throw_on_null_arguments()
+        {
+            Should.Throw<ArgumentNullException>(() => new AuthorizationValidationRule(null!, new DefaultClaimsPrincipalAccessor(), new DefaultAuthorizationPolicyProvider(new AuthorizationSettings()))).ParamName.ShouldBe("authorizationService");
+            Should.Throw<ArgumentNullException>(() => new AuthorizationValidationRule(new DefaultAuthorizationService(), null!, new DefaultAuthorizationPolicyProvider(new AuthorizationSettings()))).ParamName.ShouldBe("claimsPrincipalAccessor");
+            Should.Throw<ArgumentNullException>(() => new AuthorizationValidationRule(new DefaultAuthorizationService(), new DefaultClaimsPrincipalAccessor(), null!)).ParamName.ShouldBe("policyProvider");
+        }
+
         [Fact]
         public void class_policy_success()
         {
@@ -17,10 +28,7 @@ namespace GraphQL.Authorization.Tests
             {
                 _.Query = @"query { post }";
                 _.Schema = BasicSchema();
-                _.User = CreatePrincipal(claims: new Dictionary<string, string>
-                    {
-                        { "Admin", "true" }
-                    });
+                _.User = CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "true" } });
             });
         }
 
@@ -46,10 +54,7 @@ namespace GraphQL.Authorization.Tests
             {
                 _.Query = @"query { post }";
                 _.Schema = BasicSchema();
-                _.User = CreatePrincipal(claims: new Dictionary<string, string>
-                    {
-                        { "Admin", "true" }
-                    });
+                _.User = CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "true" } });
             });
         }
 
@@ -74,10 +79,7 @@ namespace GraphQL.Authorization.Tests
             {
                 _.Query = @"query { post }";
                 _.Schema = NestedSchema();
-                _.User = CreatePrincipal(claims: new Dictionary<string, string>
-                    {
-                        { "Admin", "true" }
-                    });
+                _.User = CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "true" } });
             });
         }
 
@@ -126,10 +128,7 @@ namespace GraphQL.Authorization.Tests
             {
                 _.Query = @"query { author(input: { name: ""Quinn"" }) }";
                 _.Schema = TypedSchema();
-                _.User = CreatePrincipal(claims: new Dictionary<string, string>
-                    {
-                        { "Admin", "true" }
-                    });
+                _.User = CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "true" } });
             });
         }
 
@@ -156,10 +155,7 @@ namespace GraphQL.Authorization.Tests
             {
                 _.Query = @"query { author(input: { name: ""Quinn"" }) project(input: { name: ""TEST"" }) }";
                 _.Schema = TypedSchema();
-                _.User = CreatePrincipal(claims: new Dictionary<string, string>
-                {
-                    { "Admin", "true" }
-                });
+                _.User = CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "true" } });
             });
         }
 
@@ -170,10 +166,7 @@ namespace GraphQL.Authorization.Tests
             {
                 _.Query = @"query { unknown(obj: {id: 7}) }";
                 _.Schema = TypedSchema();
-                _.User = CreatePrincipal(claims: new Dictionary<string, string>
-                {
-                    { "Admin", "true" }
-                });
+                _.User = CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "true" } });
             });
         }
 
@@ -186,10 +179,7 @@ namespace GraphQL.Authorization.Tests
             {
                 _.Query = @"query { posts { items { id } } }";
                 _.Schema = TypedSchema();
-                _.User = CreatePrincipal(claims: new Dictionary<string, string>
-                {
-                    { "Admin", "true" }
-                });
+                _.User = CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "true" } });
             });
         }
 
@@ -203,6 +193,20 @@ namespace GraphQL.Authorization.Tests
                 _.Query = @"query { posts { items { id } } }";
                 _.Schema = TypedSchema();
                 _.User = CreatePrincipal();
+            });
+        }
+
+        [Fact]
+        public void fails_on_explicitly_called_fail()
+        {
+            Settings.AddPolicy("FailedPolicy", _ => _.Require(c => c.Fail()));
+
+            ShouldFailRule(_ =>
+            {
+                _.Query = @"query { failed }";
+                _.Schema = TypedSchema();
+                _.User = CreatePrincipal();
+                _.ValidateResult = r => r.Errors.Single().Message.ShouldBe("You are not authorized to run this query.");
             });
         }
 
@@ -251,17 +255,17 @@ namespace GraphQL.Authorization.Tests
         public class NestedQueryWithAttributes
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "test")]
-            public Post Post(string id) => null;
+            public Post? Post(string id) => null;
 
-            public IEnumerable<Post> Posts() => null;
+            public IEnumerable<Post>? Posts() => null;
 
-            public IEnumerable<Post> PostsNonNull() => null;
+            public IEnumerable<Post>? PostsNonNull() => null;
         }
 
         [GraphQLAuthorize("PostPolicy")]
         public class Post
         {
-            public string Id { get; set; }
+            public string? Id { get; set; }
         }
 
         public class PostGraphType : ObjectGraphType<Post>
@@ -274,7 +278,7 @@ namespace GraphQL.Authorization.Tests
 
         public class Author
         {
-            public string Name { get; set; }
+            public string? Name { get; set; }
         }
 
         private static ISchema TypedSchema()
@@ -296,6 +300,11 @@ namespace GraphQL.Authorization.Tests
                 arguments: new QueryArguments(new QueryArgument<AuthorInputType> { Name = "input" }),
                 resolve: context => "testing"
             ).AuthorizeWith("AdminPolicy").AuthorizeWith("ConfidentialPolicy");
+
+            query.Field<StringGraphType>(
+               "failed",
+               resolve: context => throw new NotSupportedException("Should never called")
+           ).AuthorizeWith("FailedPolicy");
 
             return new Schema { Query = query };
         }

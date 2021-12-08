@@ -22,9 +22,18 @@ namespace GraphQL.Authorization
                 _requirements.ForEach(req =>
                 {
                     if (req == null)
-                        throw new ArgumentNullException(nameof(requirements), $"One of the ({_requirements.Count}) requirements is null");
+                        throw new ArgumentNullException(nameof(requirements), $"One of the {_requirements.Count} requirements is null");
                 });
             }
+        }
+
+        /// <summary>
+        /// Creates a policy with a set of specified requirements.
+        /// </summary>
+        /// <param name="requirements">Specified requirements.</param>
+        public AuthorizationPolicy(params IAuthorizationRequirement[] requirements)
+            : this((IEnumerable<IAuthorizationRequirement>)requirements)
+        {
         }
 
         /// <inheritdoc />

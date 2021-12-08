@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using GraphQL.Language.AST;
 using GraphQL.Types;
@@ -11,21 +15,25 @@ namespace GraphQL.Authorization
     /// </summary>
     public class AuthorizationValidationRule : IValidationRule
     {
-        private readonly IAuthorizationEvaluator _evaluator;
+        private readonly IAuthorizationService _authorizationService;
+        private readonly IClaimsPrincipalAccessor _claimsPrincipalAccessor;
+        private readonly IAuthorizationPolicyProvider _policyProvider;
 
         /// <summary>
         /// Creates an instance of <see cref="AuthorizationValidationRule"/> with
-        /// the specified authorization evaluator.
+        /// the specified values.
         /// </summary>
-        public AuthorizationValidationRule(IAuthorizationEvaluator evaluator)
+        public AuthorizationValidationRule(IAuthorizationService authorizationService, IClaimsPrincipalAccessor claimsPrincipalAccessor, IAuthorizationPolicyProvider policyProvider)
         {
-            _evaluator = evaluator;
+            _authorizationService = authorizationService ?? throw new ArgumentNullException(nameof(authorizationService));
+            _claimsPrincipalAccessor = claimsPrincipalAccessor ?? throw new ArgumentNullException(nameof(claimsPrincipalAccessor));
+            _policyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
         }
 
         /// <inheritdoc />
-        public Task<INodeVisitor> ValidateAsync(ValidationContext context)
+        public async Task<INodeVisitor> ValidateAsync(ValidationContext context)
         {
-            var userContext = context.UserContext as IProvideClaimsPrincipal;
+            await AuthorizeAsync(null, context.Schema, context, null);
             var operationType = OperationType.Query;
 
             // this could leak info about hidden fields or types in error messages
@@ -34,13 +42,13 @@ namespace GraphQL.Authorization
             // - filtering the Schema is not currently supported
             // TODO: apply ISchemaFilter - context.Schema.Filter.AllowXXX
 
-            return Task.FromResult((INodeVisitor)new NodeVisitors(
+            return new NodeVisitors(
                 new MatchingNodeVisitor<Operation>((astType, context) =>
                 {
                     operationType = astType.OperationType;
 
                     var type = context.TypeInfo.GetLastType();
-                    CheckAuth(astType, type, userContext, context, operationType);
+                    AuthorizeAsync(astType, type, context, operationType).GetAwaiter().GetResult(); // TODO: need to think of something to avoid this;
                 }),
 
                 new MatchingNodeVisitor<ObjectField>((objectFieldAst, context) =>
@@ -48,7 +56,7 @@ namespace GraphQL.Authorization
                     if (context.TypeInfo.GetArgument()?.ResolvedType.GetNamedType() is IComplexGraphType argumentType)
                     {
                         var fieldType = argumentType.GetField(objectFieldAst.Name);
-                        CheckAuth(objectFieldAst, fieldType, userContext, context, operationType);
+                        AuthorizeAsync(objectFieldAst, fieldType, context, operationType).GetAwaiter().GetResult(); // TODO: need to think of something to avoid this;
                     }
                 }),
 
@@ -60,39 +68,105 @@ namespace GraphQL.Authorization
                         return;
 
                     // check target field
-                    CheckAuth(fieldAst, fieldDef, userContext, context, operationType);
+                    AuthorizeAsync(fieldAst, fieldDef, context, operationType).GetAwaiter().GetResult(); // TODO: need to think of something to avoid this;
                     // check returned graph type
-                    CheckAuth(fieldAst, fieldDef.ResolvedType.GetNamedType(), userContext, context, operationType);
+                    AuthorizeAsync(fieldAst, fieldDef.ResolvedType.GetNamedType(), context, operationType).GetAwaiter().GetResult(); // TODO: need to think of something to avoid this;
                 })
-            ));
+            );
         }
 
-        private void CheckAuth(
-            INode node,
-            IProvideMetadata provider,
-            IProvideClaimsPrincipal userContext,
-            ValidationContext context,
-            OperationType? operationType)
+        /// <summary>
+        /// Creates authorization context to pass to <see cref="IAuthorizationService.AuthorizeAsync(IAuthorizationContext)"/>.
+        /// </summary>
+        /// <param name="context">GraphQL validation context.</param>
+        /// <param name="policyName">Name of checked policy for the current authorization processing.</param>
+        protected virtual IAuthorizationContext CreateAuthorizationContext(ValidationContext context, string policyName)
         {
-            if (provider == null || !provider.RequiresAuthorization())
-                return;
+            if (policyName == null)
+                throw new ArgumentNullException(nameof(policyName));
 
-            // TODO: async -> sync transition
-            var result = _evaluator
-                .Evaluate(userContext?.User, context.UserContext, context.Inputs, provider.GetPolicies())
-                .GetAwaiter()
-                .GetResult();
+            return new DefaultAuthorizationContext(
+                _policyProvider.GetPolicy(policyName) ?? new AuthorizationPolicy(new DefinedPolicyRequirement(policyName)),
+                _claimsPrincipalAccessor.GetClaimsPrincipal(context) ?? new ClaimsPrincipal(new ClaimsIdentity()))
+            {
+                UserContext = context.UserContext,
+                Inputs = context.Inputs,
+            };
+        }
 
-            if (result.Succeeded)
-                return;
+        private async Task AuthorizeAsync(INode? node, IProvideMetadata provider, ValidationContext context, OperationType? operationType)
+        {
+            var policyNames = provider?.GetPolicies();
 
-            string errors = string.Join("\n", result.Errors);
+            if (policyNames?.Count == 1)
+            {
+                // small optimization for the single policy - no 'new List<>()', no 'await Task.WhenAll()'
+                var authorizationResult = await _authorizationService.AuthorizeAsync(CreateAuthorizationContext(context, policyNames[0]));
+                if (!authorizationResult.Succeeded)
+                    AddValidationError(node, context, operationType, authorizationResult);
+            }
+            else if (policyNames?.Count > 1)
+            {
+                var tasks = new List<Task<AuthorizationResult>>(policyNames.Count);
+                foreach (string policyName in policyNames)
+                {
+                    var task = _authorizationService.AuthorizeAsync(CreateAuthorizationContext(context, policyName));
+                    tasks.Add(task);
+                }
 
-            context.ReportError(new ValidationError(
-                context.Document.OriginalQuery,
-                "authorization",
-                $"You are not authorized to run this {operationType.ToString().ToLower()}.\n{errors}",
-                node));
+                var authorizationResults = await Task.WhenAll(tasks);
+
+                foreach (var result in authorizationResults)
+                {
+                    if (!result.Succeeded)
+                        AddValidationError(node, context, operationType, result);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds an authorization failure error to the document response.
+        /// </summary>
+        protected virtual void AddValidationError(INode? node, ValidationContext context, OperationType? operationType, AuthorizationResult result)
+        {
+            context.ReportError(new AuthorizationError(node, context, operationType, BuildErrorMessage(operationType, result), result));
+        }
+
+        /// <summary>
+        /// Builds error message for the specified operation type and authorization result.
+        /// </summary>
+        protected virtual string BuildErrorMessage(OperationType? operationType, AuthorizationResult result)
+        {
+            static string GetOperationType(OperationType? operationType)
+            {
+                return operationType switch
+                {
+                    OperationType.Query => "query",
+                    OperationType.Mutation => "mutation",
+                    OperationType.Subscription => "subscription",
+                    _ => "operation",
+                };
+            }
+
+            var error = new StringBuilder();
+
+            error.Append("You are not authorized to run this ")
+                .Append(GetOperationType(operationType))
+                .Append('.');
+
+            if (result.Failure != null)
+            {
+                foreach (var failure in result.Failure.FailedRequirements)
+                {
+                    if (failure is IAuthorizationRequirementWithErrorMessage requirementWitErrorMessage)
+                    {
+                        error.AppendLine();
+                        error.Append(requirementWitErrorMessage.ErrorMessage);
+                    }
+                }
+            }
+
+            return error.ToString();
         }
     }
 }

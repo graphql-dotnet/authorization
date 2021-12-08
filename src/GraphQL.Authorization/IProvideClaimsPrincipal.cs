@@ -11,6 +11,6 @@ namespace GraphQL.Authorization
         /// <summary>
         /// Gets the current user.
         /// </summary>
-        ClaimsPrincipal User { get; }
+        ClaimsPrincipal? User { get; }
     }
 }

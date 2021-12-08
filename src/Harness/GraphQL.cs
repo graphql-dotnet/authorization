@@ -12,7 +12,7 @@ namespace Harness
     public class GraphQLUserContext : Dictionary<string, object>, IProvideClaimsPrincipal
     {
         /// <inheritdoc />
-        public ClaimsPrincipal User { get; set; }
+        public ClaimsPrincipal? User { get; set; }
     }
 
     /// <summary>
@@ -40,11 +40,11 @@ namespace Harness
         /// <summary>
         /// Resolver for 'User.id' field. Just a simple property.
         /// </summary>
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         /// <summary>
         /// Resolver for 'User.name' field. Just a simple property.
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }

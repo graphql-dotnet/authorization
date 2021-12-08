@@ -18,13 +18,14 @@ namespace BasicSample
         private static async Task Main()
         {
             using var serviceProvider = new ServiceCollection()
-                .AddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>()
-                .AddTransient<IValidationRule, AuthorizationValidationRule>()
-                .AddTransient(s =>
+                .AddSingleton<IValidationRule, AuthorizationValidationRule>()
+                .AddSingleton<IAuthorizationService, DefaultAuthorizationService>()
+                .AddSingleton<IClaimsPrincipalAccessor, DefaultClaimsPrincipalAccessor>()
+                .AddSingleton<IAuthorizationPolicyProvider>(provider =>
                 {
                     var authSettings = new AuthorizationSettings();
-                    authSettings.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"));
-                    return authSettings;
+                    authSettings.AddPolicy("AdminPolicy", b => b.RequireClaim("role", "Admin"));
+                    return new DefaultAuthorizationPolicyProvider(authSettings);
                 })
                 .BuildServiceProvider();
 
@@ -41,20 +42,24 @@ namespace BasicSample
             ";
             var schema = Schema.For(definitions, builder => builder.Types.Include<Query>());
 
-            // remove claims to see the failure
             var authorizedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Admin") }));
+            var nonAuthorizedUser = new ClaimsPrincipal(new ClaimsIdentity());
 
-            string json = await schema.ExecuteAsync(_ =>
+            foreach (var principal in new[] { authorizedUser, nonAuthorizedUser })
             {
-                _.Query = "{ viewer { id name } }";
-                _.ValidationRules = serviceProvider
-                    .GetServices<IValidationRule>()
-                    .Concat(DocumentValidator.CoreRules);
-                _.RequestServices = serviceProvider;
-                _.UserContext = new GraphQLUserContext { User = authorizedUser };
-            });
+                string json = await schema.ExecuteAsync(options =>
+                {
+                    options.Query = "{ viewer { id name } }";
+                    options.ValidationRules = serviceProvider
+                        .GetServices<IValidationRule>()
+                        .Concat(DocumentValidator.CoreRules);
+                    options.RequestServices = serviceProvider;
+                    options.UserContext = new GraphQLUserContext { User = principal };
+                });
 
-            Console.WriteLine(json);
+                Console.WriteLine(json);
+                Console.WriteLine();
+            }
         }
     }
 
@@ -64,7 +69,7 @@ namespace BasicSample
     public class GraphQLUserContext : Dictionary<string, object>, IProvideClaimsPrincipal
     {
         /// <inheritdoc />
-        public ClaimsPrincipal User { get; set; }
+        public ClaimsPrincipal? User { get; set; }
     }
 
     /// <summary>
@@ -92,11 +97,11 @@ namespace BasicSample
         /// <summary>
         /// Resolver for 'User.id' field. Just a simple property.
         /// </summary>
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         /// <summary>
         /// Resolver for 'User.name' field. Just a simple property.
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }

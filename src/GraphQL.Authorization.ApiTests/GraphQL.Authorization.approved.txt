@@ -1,27 +1,27 @@
 namespace GraphQL.Authorization
 {
-    public class AuthenticatedUserRequirement : GraphQL.Authorization.IAuthorizationRequirement
+    public class AuthenticatedUserRequirement : GraphQL.Authorization.IAuthorizationRequirement, GraphQL.Authorization.IAuthorizationRequirementWithErrorMessage
     {
         public AuthenticatedUserRequirement() { }
-        public System.Threading.Tasks.Task Authorize(GraphQL.Authorization.AuthorizationContext context) { }
+        public string ErrorMessage { get; }
+        public System.Threading.Tasks.Task Authorize(GraphQL.Authorization.IAuthorizationContext context) { }
     }
-    public class AuthorizationContext
+    public class AuthorizationError : GraphQL.Validation.ValidationError
     {
-        public AuthorizationContext() { }
-        public System.Collections.Generic.IEnumerable<string> Errors { get; }
-        public bool HasErrors { get; }
-        public System.Collections.Generic.IReadOnlyDictionary<string, object> Inputs { get; set; }
-        public System.Security.Claims.ClaimsPrincipal User { get; set; }
-        public System.Collections.Generic.IDictionary<string, object> UserContext { get; set; }
-        public void ReportError(string error) { }
+        public AuthorizationError(GraphQL.Language.AST.INode? node, GraphQL.Validation.ValidationContext context, GraphQL.Language.AST.OperationType? operationType, string message, GraphQL.Authorization.AuthorizationResult result) { }
+        public virtual GraphQL.Authorization.AuthorizationResult AuthorizationResult { get; }
+        public GraphQL.Language.AST.OperationType? OperationType { get; }
     }
-    public class AuthorizationEvaluator : GraphQL.Authorization.IAuthorizationEvaluator
+    public class AuthorizationFailure
     {
-        public AuthorizationEvaluator(GraphQL.Authorization.AuthorizationSettings settings) { }
-        public System.Threading.Tasks.Task<GraphQL.Authorization.AuthorizationResult> Evaluate(System.Security.Claims.ClaimsPrincipal principal, System.Collections.Generic.IDictionary<string, object> userContext, System.Collections.Generic.IReadOnlyDictionary<string, object> inputs, System.Collections.Generic.IEnumerable<string> requiredPolicies) { }
+        public bool FailCalled { get; }
+        public System.Collections.Generic.IEnumerable<GraphQL.Authorization.IAuthorizationRequirement> FailedRequirements { get; }
+        public static GraphQL.Authorization.AuthorizationFailure ExplicitFail() { }
+        public static GraphQL.Authorization.AuthorizationFailure Failed(System.Collections.Generic.IEnumerable<GraphQL.Authorization.IAuthorizationRequirement> failed) { }
     }
     public class AuthorizationPolicy : GraphQL.Authorization.IAuthorizationPolicy
     {
+        public AuthorizationPolicy(params GraphQL.Authorization.IAuthorizationRequirement[] requirements) { }
         public AuthorizationPolicy(System.Collections.Generic.IEnumerable<GraphQL.Authorization.IAuthorizationRequirement> requirements) { }
         public System.Collections.Generic.IEnumerable<GraphQL.Authorization.IAuthorizationRequirement> Requirements { get; }
     }
@@ -30,17 +30,22 @@ namespace GraphQL.Authorization
         public AuthorizationPolicyBuilder() { }
         public GraphQL.Authorization.AuthorizationPolicyBuilder AddRequirement(GraphQL.Authorization.IAuthorizationRequirement requirement) { }
         public GraphQL.Authorization.AuthorizationPolicy Build() { }
-        public GraphQL.Authorization.AuthorizationPolicyBuilder RequireAuthenticatedUser() { }
-        public GraphQL.Authorization.AuthorizationPolicyBuilder RequireClaim(string claimType) { }
-        public GraphQL.Authorization.AuthorizationPolicyBuilder RequireClaim(string claimType, params string[] allowedValues) { }
-        public GraphQL.Authorization.AuthorizationPolicyBuilder RequireClaim(string claimType, System.Collections.Generic.IEnumerable<string> allowedValues, System.Collections.Generic.IEnumerable<string> displayValues) { }
+    }
+    public static class AuthorizationPolicyBuilderExtensions
+    {
+        public static GraphQL.Authorization.AuthorizationPolicyBuilder Require(this GraphQL.Authorization.AuthorizationPolicyBuilder builder, System.Action<GraphQL.Authorization.IAuthorizationContext> action) { }
+        public static GraphQL.Authorization.AuthorizationPolicyBuilder Require(this GraphQL.Authorization.AuthorizationPolicyBuilder builder, System.Func<GraphQL.Authorization.IAuthorizationContext, System.Threading.Tasks.Task> action) { }
+        public static GraphQL.Authorization.AuthorizationPolicyBuilder RequireAuthenticatedUser(this GraphQL.Authorization.AuthorizationPolicyBuilder builder) { }
+        public static GraphQL.Authorization.AuthorizationPolicyBuilder RequireClaim(this GraphQL.Authorization.AuthorizationPolicyBuilder builder, string claimType) { }
+        public static GraphQL.Authorization.AuthorizationPolicyBuilder RequireClaim(this GraphQL.Authorization.AuthorizationPolicyBuilder builder, string claimType, params string[] allowedValues) { }
+        public static GraphQL.Authorization.AuthorizationPolicyBuilder RequireClaim(this GraphQL.Authorization.AuthorizationPolicyBuilder builder, string claimType, System.Collections.Generic.IEnumerable<string> allowedValues, System.Collections.Generic.IEnumerable<string> displayValues) { }
     }
     public class AuthorizationResult
     {
-        public AuthorizationResult() { }
-        public System.Collections.Generic.IEnumerable<string> Errors { get; }
+        public GraphQL.Authorization.AuthorizationFailure? Failure { get; }
         public bool Succeeded { get; }
-        public static GraphQL.Authorization.AuthorizationResult Fail(System.Collections.Generic.IEnumerable<string> errors) { }
+        public static GraphQL.Authorization.AuthorizationResult Failed() { }
+        public static GraphQL.Authorization.AuthorizationResult Failed(GraphQL.Authorization.AuthorizationFailure failure) { }
         public static GraphQL.Authorization.AuthorizationResult Success() { }
     }
     public class AuthorizationSettings
@@ -50,35 +55,114 @@ namespace GraphQL.Authorization
         public void AddPolicy(string name, GraphQL.Authorization.IAuthorizationPolicy policy) { }
         public void AddPolicy(string name, System.Action<GraphQL.Authorization.AuthorizationPolicyBuilder> configure) { }
         public System.Collections.Generic.IEnumerable<GraphQL.Authorization.IAuthorizationPolicy> GetPolicies(System.Collections.Generic.IEnumerable<string> policies) { }
-        public GraphQL.Authorization.IAuthorizationPolicy GetPolicy(string name) { }
+        public System.Collections.Generic.IEnumerable<GraphQL.Authorization.IAuthorizationPolicy> GetPolicies(params string[] policies) { }
+        public GraphQL.Authorization.IAuthorizationPolicy? GetPolicy(string name) { }
     }
     public class AuthorizationValidationRule : GraphQL.Validation.IValidationRule
     {
-        public AuthorizationValidationRule(GraphQL.Authorization.IAuthorizationEvaluator evaluator) { }
+        public AuthorizationValidationRule(GraphQL.Authorization.IAuthorizationService authorizationService, GraphQL.Authorization.IClaimsPrincipalAccessor claimsPrincipalAccessor, GraphQL.Authorization.IAuthorizationPolicyProvider policyProvider) { }
+        protected virtual void AddValidationError(GraphQL.Language.AST.INode? node, GraphQL.Validation.ValidationContext context, GraphQL.Language.AST.OperationType? operationType, GraphQL.Authorization.AuthorizationResult result) { }
+        protected virtual string BuildErrorMessage(GraphQL.Language.AST.OperationType? operationType, GraphQL.Authorization.AuthorizationResult result) { }
+        protected virtual GraphQL.Authorization.IAuthorizationContext CreateAuthorizationContext(GraphQL.Validation.ValidationContext context, string policyName) { }
         public System.Threading.Tasks.Task<GraphQL.Validation.INodeVisitor> ValidateAsync(GraphQL.Validation.ValidationContext context) { }
     }
-    public class ClaimAuthorizationRequirement : GraphQL.Authorization.IAuthorizationRequirement
+    public class ClaimsAuthorizationRequirement : GraphQL.Authorization.IAuthorizationRequirement, GraphQL.Authorization.IAuthorizationRequirementWithErrorMessage
     {
-        public ClaimAuthorizationRequirement(string claimType) { }
-        public ClaimAuthorizationRequirement(string claimType, System.Collections.Generic.IEnumerable<string> allowedValues) { }
-        public ClaimAuthorizationRequirement(string claimType, params string[] allowedValues) { }
-        public ClaimAuthorizationRequirement(string claimType, System.Collections.Generic.IEnumerable<string> allowedValues, System.Collections.Generic.IEnumerable<string> displayValues) { }
-        public System.Threading.Tasks.Task Authorize(GraphQL.Authorization.AuthorizationContext context) { }
+        public ClaimsAuthorizationRequirement(string claimType) { }
+        public ClaimsAuthorizationRequirement(string claimType, System.Collections.Generic.IEnumerable<string> allowedValues) { }
+        public ClaimsAuthorizationRequirement(string claimType, params string[] allowedValues) { }
+        public ClaimsAuthorizationRequirement(string claimType, System.Collections.Generic.IEnumerable<string>? allowedValues, System.Collections.Generic.IEnumerable<string>? displayValues) { }
+        public System.Collections.Generic.IEnumerable<string>? AllowedValues { get; }
+        public string ClaimType { get; }
+        public System.Collections.Generic.IEnumerable<string>? DisplayValues { get; }
+        public string ErrorMessage { get; }
+        public System.Threading.Tasks.Task Authorize(GraphQL.Authorization.IAuthorizationContext context) { }
     }
-    public interface IAuthorizationEvaluator
+    public class DefaultAuthorizationContext : GraphQL.Authorization.IAuthorizationContext
     {
-        System.Threading.Tasks.Task<GraphQL.Authorization.AuthorizationResult> Evaluate(System.Security.Claims.ClaimsPrincipal principal, System.Collections.Generic.IDictionary<string, object> userContext, System.Collections.Generic.IReadOnlyDictionary<string, object> inputs, System.Collections.Generic.IEnumerable<string> requiredPolicies);
+        public DefaultAuthorizationContext(GraphQL.Authorization.IAuthorizationPolicy policy, System.Security.Claims.ClaimsPrincipal? user) { }
+        public virtual bool HasFailed { get; }
+        public virtual bool HasSucceeded { get; }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object>? Inputs { get; set; }
+        public virtual System.Collections.Generic.IEnumerable<GraphQL.Authorization.IAuthorizationRequirement> PendingRequirements { get; }
+        public GraphQL.Authorization.IAuthorizationPolicy Policy { get; }
+        public System.Security.Claims.ClaimsPrincipal? User { get; }
+        public System.Collections.Generic.IDictionary<string, object>? UserContext { get; set; }
+        public virtual void Fail() { }
+        public virtual void Succeed(GraphQL.Authorization.IAuthorizationRequirement requirement) { }
+    }
+    public class DefaultAuthorizationPolicyProvider : GraphQL.Authorization.IAuthorizationPolicyProvider
+    {
+        public DefaultAuthorizationPolicyProvider(GraphQL.Authorization.AuthorizationSettings settings) { }
+        public GraphQL.Authorization.IAuthorizationPolicy? GetPolicy(string policyName) { }
+    }
+    public class DefaultAuthorizationService : GraphQL.Authorization.IAuthorizationService
+    {
+        public DefaultAuthorizationService() { }
+        public System.Threading.Tasks.Task<GraphQL.Authorization.AuthorizationResult> AuthorizeAsync(GraphQL.Authorization.IAuthorizationContext context) { }
+    }
+    public class DefaultClaimsPrincipalAccessor : GraphQL.Authorization.IClaimsPrincipalAccessor
+    {
+        public DefaultClaimsPrincipalAccessor() { }
+        public System.Security.Claims.ClaimsPrincipal? GetClaimsPrincipal(GraphQL.Validation.ValidationContext context) { }
+    }
+    public class DefinedPolicyRequirement : GraphQL.Authorization.IAuthorizationRequirement, GraphQL.Authorization.IAuthorizationRequirementWithErrorMessage
+    {
+        public DefinedPolicyRequirement(string policyName) { }
+        public string ErrorMessage { get; }
+        public string PolicyName { get; }
+        public System.Threading.Tasks.Task Authorize(GraphQL.Authorization.IAuthorizationContext _) { }
+    }
+    public class DelegatedRequirement : GraphQL.Authorization.IAuthorizationRequirement
+    {
+        public DelegatedRequirement(System.Func<GraphQL.Authorization.IAuthorizationContext, System.Threading.Tasks.Task> action) { }
+        public System.Threading.Tasks.Task Authorize(GraphQL.Authorization.IAuthorizationContext context) { }
+    }
+    public class GraphQLAuthorizeAttribute : GraphQL.GraphQLAttribute
+    {
+        public GraphQLAuthorizeAttribute(string policy) { }
+        public string Policy { get; }
+        public override void Modify(GraphQL.Utilities.FieldConfig field) { }
+        public override void Modify(GraphQL.Utilities.TypeConfig type) { }
+    }
+    public interface IAuthorizationContext
+    {
+        bool HasFailed { get; }
+        bool HasSucceeded { get; }
+        System.Collections.Generic.IReadOnlyDictionary<string, object>? Inputs { get; }
+        System.Collections.Generic.IEnumerable<GraphQL.Authorization.IAuthorizationRequirement> PendingRequirements { get; }
+        GraphQL.Authorization.IAuthorizationPolicy Policy { get; }
+        System.Security.Claims.ClaimsPrincipal? User { get; }
+        System.Collections.Generic.IDictionary<string, object>? UserContext { get; }
+        void Fail();
+        void Succeed(GraphQL.Authorization.IAuthorizationRequirement requirement);
     }
     public interface IAuthorizationPolicy
     {
         System.Collections.Generic.IEnumerable<GraphQL.Authorization.IAuthorizationRequirement> Requirements { get; }
     }
+    public interface IAuthorizationPolicyProvider
+    {
+        GraphQL.Authorization.IAuthorizationPolicy? GetPolicy(string policyName);
+    }
     public interface IAuthorizationRequirement
     {
-        System.Threading.Tasks.Task Authorize(GraphQL.Authorization.AuthorizationContext context);
+        System.Threading.Tasks.Task Authorize(GraphQL.Authorization.IAuthorizationContext context);
+    }
+    public interface IAuthorizationRequirementWithErrorMessage : GraphQL.Authorization.IAuthorizationRequirement
+    {
+        string ErrorMessage { get; }
+    }
+    public interface IAuthorizationService
+    {
+        System.Threading.Tasks.Task<GraphQL.Authorization.AuthorizationResult> AuthorizeAsync(GraphQL.Authorization.IAuthorizationContext context);
+    }
+    public interface IClaimsPrincipalAccessor
+    {
+        System.Security.Claims.ClaimsPrincipal? GetClaimsPrincipal(GraphQL.Validation.ValidationContext context);
     }
     public interface IProvideClaimsPrincipal
     {
-        System.Security.Claims.ClaimsPrincipal User { get; }
+        System.Security.Claims.ClaimsPrincipal? User { get; }
     }
 }
