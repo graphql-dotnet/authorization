@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using GraphQL.Types;
 using GraphQL.Types.Relay.DataObjects;
 using Xunit;
@@ -109,7 +110,7 @@ namespace GraphQL.Authorization.Tests
         [Theory]
         [InlineData("c", "query p { posts } query c { comment }")]
         [InlineData(null, "query c { comment } query p { posts }")]
-        public void issue5(string operationName, string query)
+        public void issue5_should_pass(string operationName, string query)
         {
             Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
 
@@ -118,6 +119,33 @@ namespace GraphQL.Authorization.Tests
                 config.OperationName = operationName;
                 config.Query = query;
                 config.Schema = NestedSchema();
+            });
+        }
+
+        // https://github.com/graphql-dotnet/authorization/issues/5
+        [Fact]
+        public void issue5_with_fragment_should_pass()
+        {
+            Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
+
+            ShouldPassRule(config =>
+            {
+                config.Query = "query a { article { id } } query b { article { ...frag } } fragment frag on Article { content }";
+                config.Schema = TypedSchema();
+            });
+        }
+
+        // https://github.com/graphql-dotnet/authorization/issues/5
+        [Fact]
+        public void issue5_with_fragment_should_fail()
+        {
+            Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
+
+            ShouldFailRule(config =>
+            {
+                config.Query = "query a { article { ...frag } } query b { article { ...frag } } fragment frag on Article { content }";
+                config.Schema = TypedSchema();
+                config.ValidateResult = result => result.Errors.Single(x => x.Message == $"You are not authorized to run this query.\nRequired policy 'AdminPolicy' is not present.");
             });
         }
 
@@ -291,6 +319,22 @@ namespace GraphQL.Authorization.Tests
             }
         }
 
+        public class Article
+        {
+            public string Id { get; set; }
+
+            public string Content { get; set; }
+        }
+
+        public class ArticleGraphType : ObjectGraphType<Article>
+        {
+            public ArticleGraphType()
+            {
+                Field(p => p.Id);
+                Field(p => p.Content).AuthorizeWith("AdminPolicy");
+            }
+        }
+
         public class Author
         {
             public string Name { get; set; }
@@ -315,6 +359,11 @@ namespace GraphQL.Authorization.Tests
                 arguments: new QueryArguments(new QueryArgument<AuthorInputType> { Name = "input" }),
                 resolve: context => "testing"
             ).AuthorizeWith("AdminPolicy").AuthorizeWith("ConfidentialPolicy");
+
+            query.Field<ArticleGraphType>(
+                "article",
+                resolve: context => null
+            );
 
             return new Schema { Query = query };
         }

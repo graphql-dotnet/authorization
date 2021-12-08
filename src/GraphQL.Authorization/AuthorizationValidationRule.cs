@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphQL.Language.AST;
@@ -36,19 +35,46 @@ namespace GraphQL.Authorization
             var i = 0;
             do
             {
-                try
+                var ancestor = context.TypeInfo.GetAncestor(i++);
+
+                if (ancestor == actualOperation)
                 {
-                    // TODO: rewrite
-                    if (context.TypeInfo.GetAncestor(i++) == actualOperation)
-                    {
-                        return false;
-                    }
+                    return false;
                 }
-                catch (InvalidOperationException)
+
+                if (ancestor == context.Document)
                 {
                     return true;
                 }
+
+                if (ancestor is FragmentDefinition fragment)
+                {
+                    return !FragmentBelongsToOperation(fragment, actualOperation);
+                }
             } while (true);
+        }
+
+        private bool FragmentBelongsToOperation(FragmentDefinition fragment, Operation operation)
+        {
+            var belongs = false;
+            void Visit(INode node, int _)
+            {
+                if (belongs)
+                {
+                    return;
+                }
+
+                belongs = node is FragmentSpread fragmentSpread && fragmentSpread.Name == fragment.Name;
+
+                if (node != null)
+                {
+                    node.Visit(Visit, 0);
+                }
+            }
+
+            operation.Visit(Visit, 0);
+
+            return belongs;
         }
 
         /// <inheritdoc />
