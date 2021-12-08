@@ -23,14 +23,12 @@ namespace GraphQL.Authorization
             _evaluator = evaluator;
         }
 
-        private bool ShouldBeSkipped(ValidationContext context)
+        private bool ShouldBeSkipped(Operation actualOperation, ValidationContext context)
         {
             if (context.Document.Operations.Count <= 1)
             {
                 return false;
             }
-
-            var actualOperation = context.Document.Operations.FirstOrDefault(x => x.Name == context.OperationName) ?? context.Document.Operations.FirstOrDefault();
 
             var i = 0;
             do
@@ -82,6 +80,7 @@ namespace GraphQL.Authorization
         {
             var userContext = context.UserContext as IProvideClaimsPrincipal;
             var operationType = OperationType.Query;
+            var actualOperation = context.Document.Operations.FirstOrDefault(x => x.Name == context.OperationName) ?? context.Document.Operations.FirstOrDefault();
 
             // this could leak info about hidden fields or types in error messages
             // it would be better to implement a filter on the Schema so it
@@ -104,7 +103,7 @@ namespace GraphQL.Authorization
 
                 new MatchingNodeVisitor<ObjectField>((objectFieldAst, context) =>
                 {
-                    if (context.TypeInfo.GetArgument()?.ResolvedType.GetNamedType() is IComplexGraphType argumentType && !ShouldBeSkipped(context))
+                    if (context.TypeInfo.GetArgument()?.ResolvedType.GetNamedType() is IComplexGraphType argumentType && !ShouldBeSkipped(actualOperation, context))
                     {
                         var fieldType = argumentType.GetField(objectFieldAst.Name);
                         CheckAuth(objectFieldAst, fieldType, userContext, context, operationType);
@@ -115,7 +114,7 @@ namespace GraphQL.Authorization
                 {
                     var fieldDef = context.TypeInfo.GetFieldDef();
 
-                    if (fieldDef == null || ShouldBeSkipped(context))
+                    if (fieldDef == null || ShouldBeSkipped(actualOperation, context))
                         return;
 
                     // check target field
