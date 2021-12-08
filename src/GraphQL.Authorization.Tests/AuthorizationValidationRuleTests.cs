@@ -123,14 +123,16 @@ namespace GraphQL.Authorization.Tests
         }
 
         // https://github.com/graphql-dotnet/authorization/issues/5
-        [Fact]
-        public void issue5_with_fragment_should_pass()
+        [Theory]
+        [InlineData("query a { article { id } } query b { article { ...frag } } fragment frag on Article { content }")]
+        [InlineData("query a { article { ...frag1 author } } query b { article { ...frag2 } } fragment frag1 on Article { id } fragment frag2 on Article { content }")]
+        public void issue5_with_fragment_should_pass(string query)
         {
             Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
 
             ShouldPassRule(config =>
             {
-                config.Query = "query a { article { id } } query b { article { ...frag } } fragment frag on Article { content }";
+                config.Query = query;
                 config.Schema = TypedSchema();
             });
         }
@@ -323,6 +325,8 @@ namespace GraphQL.Authorization.Tests
         {
             public string Id { get; set; }
 
+            public string Author { get; set; }
+
             public string Content { get; set; }
         }
 
@@ -331,6 +335,7 @@ namespace GraphQL.Authorization.Tests
             public ArticleGraphType()
             {
                 Field(p => p.Id);
+                Field(p => p.Author);
                 Field(p => p.Content).AuthorizeWith("AdminPolicy");
             }
         }
