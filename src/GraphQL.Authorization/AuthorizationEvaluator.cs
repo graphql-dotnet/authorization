@@ -22,10 +22,10 @@ namespace GraphQL.Authorization
 
         /// <inheritdoc />
         public async Task<AuthorizationResult> Evaluate(
-            ClaimsPrincipal principal,
-            IDictionary<string, object> userContext,
-            IReadOnlyDictionary<string, object> inputs,
-            IEnumerable<string> requiredPolicies)
+            ClaimsPrincipal? principal,
+            IDictionary<string, object?>? userContext,
+            IReadOnlyDictionary<string, object>? inputs,
+            IEnumerable<string>? requiredPolicies)
         {
             if (requiredPolicies == null)
                 return AuthorizationResult.Success();

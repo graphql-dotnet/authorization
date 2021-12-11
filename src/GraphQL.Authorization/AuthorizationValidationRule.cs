@@ -31,7 +31,7 @@ namespace GraphQL.Authorization
                 return false;
             }
 
-            var i = 0;
+            int i = 0;
             do
             {
                 var ancestor = context.TypeInfo.GetAncestor(i++);
@@ -55,7 +55,7 @@ namespace GraphQL.Authorization
 
         private bool FragmentBelongsToOperation(FragmentDefinition fragment, Operation operation)
         {
-            var belongs = false;
+            bool belongs = false;
             void Visit(INode node, int _)
             {
                 if (belongs)
@@ -77,7 +77,7 @@ namespace GraphQL.Authorization
         }
 
         /// <inheritdoc />
-        public ValueTask<INodeVisitor> ValidateAsync(ValidationContext context)
+        public ValueTask<INodeVisitor?> ValidateAsync(ValidationContext context)
         {
             var userContext = context.UserContext as IProvideClaimsPrincipal;
             var operationType = OperationType.Query;
@@ -88,7 +88,7 @@ namespace GraphQL.Authorization
             // acts as if they just don't exist vs. an auth denied error
             // - filtering the Schema is not currently supported
             // TODO: apply ISchemaFilter - context.Schema.Filter.AllowXXX
-            return new ValueTask<INodeVisitor>(new NodeVisitors(
+            return new ValueTask<INodeVisitor?>(new NodeVisitors(
                 new MatchingNodeVisitor<Operation>((astType, context) =>
                 {
                     if (context.Document.Operations.Count > 1 && astType.Name != context.OperationName)
@@ -104,7 +104,7 @@ namespace GraphQL.Authorization
 
                 new MatchingNodeVisitor<ObjectField>((objectFieldAst, context) =>
                 {
-                    if (context.TypeInfo.GetArgument()?.ResolvedType.GetNamedType() is IComplexGraphType argumentType && !ShouldBeSkipped(actualOperation, context))
+                    if (context.TypeInfo.GetArgument()?.ResolvedType?.GetNamedType() is IComplexGraphType argumentType && !ShouldBeSkipped(actualOperation, context))
                     {
                         var fieldType = argumentType.GetField(objectFieldAst.Name);
                         CheckAuth(objectFieldAst, fieldType, userContext, context, operationType);
@@ -121,12 +121,12 @@ namespace GraphQL.Authorization
                     // check target field
                     CheckAuth(fieldAst, fieldDef, userContext, context, operationType);
                     // check returned graph type
-                    CheckAuth(fieldAst, fieldDef.ResolvedType.GetNamedType(), userContext, context, operationType);
+                    CheckAuth(fieldAst, fieldDef.ResolvedType?.GetNamedType(), userContext, context, operationType);
                 }),
 
                 new MatchingNodeVisitor<VariableReference>((variableRef, context) =>
                 {
-                    if (!(context.TypeInfo.GetArgument().ResolvedType.GetNamedType() is IComplexGraphType variableType))
+                    if (!(context.TypeInfo.GetArgument()?.ResolvedType?.GetNamedType() is IComplexGraphType variableType))
                         return;
 
                     CheckAuth(variableRef, variableType, userContext, context, operationType);
@@ -135,7 +135,8 @@ namespace GraphQL.Authorization
                     // If some supplied field does not exist in the variable type then some other
                     // validation rule should check that but here we should just ignore that
                     // "unknown" field.
-                    if (context.Inputs.TryGetValue(variableRef.Name, out object input) &&
+                    if (context.Inputs != null &&
+                        context.Inputs.TryGetValue(variableRef.Name, out object input) &&
                         input is Dictionary<string, object> fieldsValues)
                     {
                         foreach (var field in variableType.Fields)
@@ -152,8 +153,8 @@ namespace GraphQL.Authorization
 
         private void CheckAuth(
             INode node,
-            IProvideMetadata provider,
-            IProvideClaimsPrincipal userContext,
+            IProvideMetadata? provider,
+            IProvideClaimsPrincipal? userContext,
             ValidationContext context,
             OperationType? operationType)
         {
@@ -172,7 +173,7 @@ namespace GraphQL.Authorization
             string errors = string.Join("\n", result.Errors);
 
             context.ReportError(new ValidationError(
-                context.Document.OriginalQuery,
+                context.Document.OriginalQuery!, // TODO: ???
                 "authorization",
                 $"You are not authorized to run this {operationType.ToString().ToLower()}.\n{errors}",
                 node));

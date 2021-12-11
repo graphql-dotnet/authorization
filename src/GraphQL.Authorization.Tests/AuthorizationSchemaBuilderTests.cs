@@ -20,13 +20,13 @@ namespace GraphQL.Authorization.Tests
 
             schema.Initialize();
 
-            var query = schema.AllTypes["Query"] as IObjectGraphType;
+            var query = (IObjectGraphType)schema.AllTypes["Query"]!;
             query.RequiresAuthorization().ShouldBeTrue();
-            query.GetPolicies().Single().ShouldBe("ClassPolicy");
+            query.GetPolicies()!.Single().ShouldBe("ClassPolicy");
 
             var field = query.Fields.Single(x => x.Name == "post");
             field.RequiresAuthorization().ShouldBeTrue();
-            field.GetPolicies().Single().ShouldBe("FieldPolicy");
+            field.GetPolicies()!.Single().ShouldBe("FieldPolicy");
         }
 
         [GraphQLMetadata("Query")]

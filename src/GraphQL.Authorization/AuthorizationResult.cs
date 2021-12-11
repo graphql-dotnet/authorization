@@ -18,7 +18,7 @@ namespace GraphQL.Authorization
         /// <summary>
         /// Returns a set of authorization errors if the authorization result is unsuccessful.
         /// </summary>
-        public IEnumerable<string> Errors { get; private set; }
+        public IEnumerable<string>? Errors { get; private set; }
 
         /// <summary>
         /// Creates successful authorization result.

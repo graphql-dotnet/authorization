@@ -35,7 +35,7 @@ namespace Harness
                   }
                 ";
                 var schema = Schema.For(definitions, builder => builder.Types.Include<Query>());
-                schema.AllTypes["User"].AuthorizeWith("AdminPolicy");
+                schema.AllTypes["User"]!.AuthorizeWith("AdminPolicy");
                 return schema;
             });
 

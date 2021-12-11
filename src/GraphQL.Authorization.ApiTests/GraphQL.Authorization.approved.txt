@@ -10,15 +10,15 @@ namespace GraphQL.Authorization
         public AuthorizationContext() { }
         public System.Collections.Generic.IEnumerable<string> Errors { get; }
         public bool HasErrors { get; }
-        public System.Collections.Generic.IReadOnlyDictionary<string, object> Inputs { get; set; }
-        public System.Security.Claims.ClaimsPrincipal User { get; set; }
-        public System.Collections.Generic.IDictionary<string, object> UserContext { get; set; }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object>? Inputs { get; set; }
+        public System.Security.Claims.ClaimsPrincipal? User { get; set; }
+        public System.Collections.Generic.IDictionary<string, object?>? UserContext { get; set; }
         public void ReportError(string error) { }
     }
     public class AuthorizationEvaluator : GraphQL.Authorization.IAuthorizationEvaluator
     {
         public AuthorizationEvaluator(GraphQL.Authorization.AuthorizationSettings settings) { }
-        public System.Threading.Tasks.Task<GraphQL.Authorization.AuthorizationResult> Evaluate(System.Security.Claims.ClaimsPrincipal principal, System.Collections.Generic.IDictionary<string, object> userContext, System.Collections.Generic.IReadOnlyDictionary<string, object> inputs, System.Collections.Generic.IEnumerable<string> requiredPolicies) { }
+        public System.Threading.Tasks.Task<GraphQL.Authorization.AuthorizationResult> Evaluate(System.Security.Claims.ClaimsPrincipal? principal, System.Collections.Generic.IDictionary<string, object?>? userContext, System.Collections.Generic.IReadOnlyDictionary<string, object>? inputs, System.Collections.Generic.IEnumerable<string>? requiredPolicies) { }
     }
     public class AuthorizationPolicy : GraphQL.Authorization.IAuthorizationPolicy
     {
@@ -33,12 +33,12 @@ namespace GraphQL.Authorization
         public GraphQL.Authorization.AuthorizationPolicyBuilder RequireAuthenticatedUser() { }
         public GraphQL.Authorization.AuthorizationPolicyBuilder RequireClaim(string claimType) { }
         public GraphQL.Authorization.AuthorizationPolicyBuilder RequireClaim(string claimType, params string[] allowedValues) { }
-        public GraphQL.Authorization.AuthorizationPolicyBuilder RequireClaim(string claimType, System.Collections.Generic.IEnumerable<string> allowedValues, System.Collections.Generic.IEnumerable<string> displayValues) { }
+        public GraphQL.Authorization.AuthorizationPolicyBuilder RequireClaim(string claimType, System.Collections.Generic.IEnumerable<string>? allowedValues, System.Collections.Generic.IEnumerable<string>? displayValues) { }
     }
     public class AuthorizationResult
     {
         public AuthorizationResult() { }
-        public System.Collections.Generic.IEnumerable<string> Errors { get; }
+        public System.Collections.Generic.IEnumerable<string>? Errors { get; }
         public bool Succeeded { get; }
         public static GraphQL.Authorization.AuthorizationResult Fail(System.Collections.Generic.IEnumerable<string> errors) { }
         public static GraphQL.Authorization.AuthorizationResult Success() { }
@@ -50,27 +50,27 @@ namespace GraphQL.Authorization
         public void AddPolicy(string name, GraphQL.Authorization.IAuthorizationPolicy policy) { }
         public void AddPolicy(string name, System.Action<GraphQL.Authorization.AuthorizationPolicyBuilder> configure) { }
         public System.Collections.Generic.IEnumerable<GraphQL.Authorization.IAuthorizationPolicy> GetPolicies(System.Collections.Generic.IEnumerable<string> policies) { }
-        public GraphQL.Authorization.IAuthorizationPolicy GetPolicy(string name) { }
+        public GraphQL.Authorization.IAuthorizationPolicy? GetPolicy(string name) { }
     }
     public class AuthorizationValidationRule : GraphQL.Validation.IValidationRule
     {
         public AuthorizationValidationRule(GraphQL.Authorization.IAuthorizationEvaluator evaluator) { }
-        public System.Threading.Tasks.ValueTask<GraphQL.Validation.INodeVisitor> ValidateAsync(GraphQL.Validation.ValidationContext context) { }
+        public System.Threading.Tasks.ValueTask<GraphQL.Validation.INodeVisitor?> ValidateAsync(GraphQL.Validation.ValidationContext context) { }
     }
     public class ClaimAuthorizationRequirement : GraphQL.Authorization.IAuthorizationRequirement
     {
         public ClaimAuthorizationRequirement(string claimType) { }
         public ClaimAuthorizationRequirement(string claimType, System.Collections.Generic.IEnumerable<string> allowedValues) { }
         public ClaimAuthorizationRequirement(string claimType, params string[] allowedValues) { }
-        public ClaimAuthorizationRequirement(string claimType, System.Collections.Generic.IEnumerable<string> allowedValues, System.Collections.Generic.IEnumerable<string> displayValues) { }
+        public ClaimAuthorizationRequirement(string claimType, System.Collections.Generic.IEnumerable<string>? allowedValues, System.Collections.Generic.IEnumerable<string>? displayValues) { }
         public System.Collections.Generic.IEnumerable<string> AllowedValues { get; }
         public string ClaimType { get; }
-        public System.Collections.Generic.IEnumerable<string> DisplayValues { get; }
+        public System.Collections.Generic.IEnumerable<string>? DisplayValues { get; }
         public System.Threading.Tasks.Task Authorize(GraphQL.Authorization.AuthorizationContext context) { }
     }
     public interface IAuthorizationEvaluator
     {
-        System.Threading.Tasks.Task<GraphQL.Authorization.AuthorizationResult> Evaluate(System.Security.Claims.ClaimsPrincipal principal, System.Collections.Generic.IDictionary<string, object> userContext, System.Collections.Generic.IReadOnlyDictionary<string, object> inputs, System.Collections.Generic.IEnumerable<string> requiredPolicies);
+        System.Threading.Tasks.Task<GraphQL.Authorization.AuthorizationResult> Evaluate(System.Security.Claims.ClaimsPrincipal? principal, System.Collections.Generic.IDictionary<string, object?>? userContext, System.Collections.Generic.IReadOnlyDictionary<string, object>? inputs, System.Collections.Generic.IEnumerable<string>? requiredPolicies);
     }
     public interface IAuthorizationPolicy
     {
@@ -82,6 +82,6 @@ namespace GraphQL.Authorization
     }
     public interface IProvideClaimsPrincipal
     {
-        System.Security.Claims.ClaimsPrincipal User { get; }
+        System.Security.Claims.ClaimsPrincipal? User { get; }
     }
 }
