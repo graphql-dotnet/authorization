@@ -9,22 +9,22 @@ namespace GraphQL.Authorization
     /// </summary>
     public class AuthorizationContext
     {
-        private List<string> _errors;
+        private List<string>? _errors;
 
         /// <summary>
         /// Current user.
         /// </summary>
-        public ClaimsPrincipal User { get; set; }
+        public ClaimsPrincipal? User { get; set; }
 
         /// <summary>
         /// Arbitrary user defined context represented as dictionary.
         /// </summary>
-        public IDictionary<string, object> UserContext { get; set; }
+        public IDictionary<string, object?>? UserContext { get; set; }
 
         /// <summary>
         /// Represents a readonly dictionary of variable inputs to an executed document.
         /// </summary>
-        public IReadOnlyDictionary<string, object> Inputs { get; set; }
+        public IReadOnlyDictionary<string, object>? Inputs { get; set; }
 
         /// <summary>
         /// Returns a set of authorization errors.

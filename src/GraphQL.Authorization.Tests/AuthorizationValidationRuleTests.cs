@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using GraphQL.Types;
 using GraphQL.Types.Relay.DataObjects;
+using Shouldly;
 using Xunit;
 
 namespace GraphQL.Authorization.Tests
@@ -247,6 +248,30 @@ namespace GraphQL.Authorization.Tests
         }
 
         [Fact]
+        public void passes_with_claim_on_variable_type_without_inputs_but_fails_later_either()
+        {
+            Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
+
+            ShouldFailRule(config =>
+            {
+                config.ValidateResult = result =>
+                {
+                    // no auth error on null inputs, only INVALID_VALUE
+                    result.Errors.Count.ShouldBe(1);
+                    result.Errors[0].Code.ShouldBe("INVALID_VALUE");
+                    result.Errors[0].Message.ShouldBe("Variable '$input' is invalid. No value provided for a non-null variable.");
+                };
+                config.Query = @"query Author($input: AuthorInputType!) { author(input: $input) }";
+                config.Schema = TypedSchema();
+                config.Inputs = null;
+                config.User = CreatePrincipal(claims: new Dictionary<string, string>
+                {
+                    { "Admin", "true" }
+                });
+            });
+        }
+
+        [Fact]
         public void fails_on_missing_claim_on_variable_type()
         {
             Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
@@ -340,19 +365,19 @@ namespace GraphQL.Authorization.Tests
         public class NestedQueryWithAttributes
         {
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "test")]
-            public Post Post(string id) => null;
+            public Post? Post(string id) => null;
 
-            public IEnumerable<Post> Posts() => null;
+            public IEnumerable<Post>? Posts() => null;
 
-            public IEnumerable<Post> PostsNonNull() => null;
+            public IEnumerable<Post>? PostsNonNull() => null;
 
-            public string Comment() => null;
+            public string? Comment() => null;
         }
 
         [GraphQLAuthorize("PostPolicy")]
         public class Post
         {
-            public string Id { get; set; }
+            public string? Id { get; set; }
         }
 
         public class PostGraphType : ObjectGraphType<Post>
@@ -365,11 +390,11 @@ namespace GraphQL.Authorization.Tests
 
         public class Article
         {
-            public string Id { get; set; }
+            public string? Id { get; set; }
 
-            public string Author { get; set; }
+            public string? Author { get; set; }
 
-            public string Content { get; set; }
+            public string? Content { get; set; }
         }
 
         public class ArticleGraphType : ObjectGraphType<Article>
@@ -384,7 +409,7 @@ namespace GraphQL.Authorization.Tests
 
         public class Author
         {
-            public string Name { get; set; }
+            public string? Name { get; set; }
         }
 
         private static ISchema TypedSchema()

@@ -50,7 +50,7 @@ namespace GraphQL.Authorization
         /// an error message for <see cref="AuthorizationContext.Errors"/>.
         /// </param>
         /// <returns>Reference to the same builder.</returns>
-        public AuthorizationPolicyBuilder RequireClaim(string claimType, IEnumerable<string> allowedValues, IEnumerable<string> displayValues)
+        public AuthorizationPolicyBuilder RequireClaim(string claimType, IEnumerable<string>? allowedValues, IEnumerable<string>? displayValues)
         {
             _requirements.Add(new ClaimAuthorizationRequirement(claimType, allowedValues, displayValues));
             return this;

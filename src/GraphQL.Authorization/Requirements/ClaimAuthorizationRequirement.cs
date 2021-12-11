@@ -16,7 +16,7 @@ namespace GraphQL.Authorization
         /// the specified claim type.
         /// </summary>
         public ClaimAuthorizationRequirement(string claimType)
-            : this(claimType, (IEnumerable<string>)null, null)
+            : this(claimType, (IEnumerable<string>?)null, null)
         {
         }
 
@@ -47,7 +47,7 @@ namespace GraphQL.Authorization
         /// specifies the set of displayed claim values that will be used to generate an
         /// error message if the requirement is not met.
         /// </summary>
-        public ClaimAuthorizationRequirement(string claimType, IEnumerable<string> allowedValues, IEnumerable<string> displayValues)
+        public ClaimAuthorizationRequirement(string claimType, IEnumerable<string>? allowedValues, IEnumerable<string>? displayValues)
         {
             ClaimType = claimType ?? throw new ArgumentNullException(nameof(claimType));
             AllowedValues = allowedValues ?? Enumerable.Empty<string>();
@@ -69,7 +69,7 @@ namespace GraphQL.Authorization
         /// to generate an error message if the requirement is not met.
         /// If null then values from <see cref="AllowedValues"/> are used.
         /// </summary>
-        public IEnumerable<string> DisplayValues { get; }
+        public IEnumerable<string>? DisplayValues { get; }
 
         /// <inheritdoc />
         public Task Authorize(AuthorizationContext context)

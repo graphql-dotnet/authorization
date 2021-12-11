@@ -18,9 +18,9 @@ namespace GraphQL.Authorization
         /// <param name="requiredPolicies">A set of policies names to authorize.</param>
         /// <returns></returns>
         Task<AuthorizationResult> Evaluate(
-            ClaimsPrincipal principal,
-            IDictionary<string, object> userContext,
-            IReadOnlyDictionary<string, object> inputs,
-            IEnumerable<string> requiredPolicies);
+            ClaimsPrincipal? principal,
+            IDictionary<string, object?>? userContext,
+            IReadOnlyDictionary<string, object>? inputs,
+            IEnumerable<string>? requiredPolicies);
     }
 }
