@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphQL.Language.AST;
@@ -121,6 +122,30 @@ namespace GraphQL.Authorization
                     CheckAuth(fieldAst, fieldDef, userContext, context, operationType);
                     // check returned graph type
                     CheckAuth(fieldAst, fieldDef.ResolvedType.GetNamedType(), userContext, context, operationType);
+                }),
+
+                new MatchingNodeVisitor<VariableReference>((variableRef, context) =>
+                {
+                    if (!(context.TypeInfo.GetArgument().ResolvedType.GetNamedType() is IComplexGraphType variableType))
+                        return;
+
+                    CheckAuth(variableRef, variableType, userContext, context, operationType);
+
+                    // Check each supplied field in the variable that exists in the variable type.
+                    // If some supplied field does not exist in the variable type then some other
+                    // validation rule should check that but here we should just ignore that
+                    // "unknown" field.
+                    if (context.Inputs.TryGetValue(variableRef.Name, out object input) &&
+                        input is Dictionary<string, object> fieldsValues)
+                    {
+                        foreach (var field in variableType.Fields)
+                        {
+                            if (fieldsValues.ContainsKey(field.Name))
+                            {
+                                CheckAuth(variableRef, field, userContext, context, operationType);
+                            }
+                        }
+                    }
                 })
             ));
         }

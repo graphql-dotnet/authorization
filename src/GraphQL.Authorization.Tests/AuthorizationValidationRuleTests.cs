@@ -224,6 +224,48 @@ namespace GraphQL.Authorization.Tests
         }
 
         [Fact]
+        public void passes_with_claim_on_variable_type()
+        {
+            Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
+
+            ShouldPassRule(config =>
+            {
+                config.Query = @"query Author($input: AuthorInputType!) { author(input: $input) }";
+                config.Schema = TypedSchema();
+                config.Inputs = new Inputs(new Dictionary<string, object>()
+                {
+                    {
+                      "input",
+                      new Dictionary<string,object>{ { "name","Quinn" } }
+                    }
+                });
+                config.User = CreatePrincipal(claims: new Dictionary<string, string>
+                    {
+                        { "Admin", "true" }
+                    });
+            });
+        }
+
+        [Fact]
+        public void fails_on_missing_claim_on_variable_type()
+        {
+            Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
+
+            ShouldFailRule(config =>
+            {
+                config.Query = @"query Author($input: AuthorInputType!) { author(input: $input) }";
+                config.Schema = TypedSchema();
+                config.Inputs = new Inputs(new Dictionary<string, object>()
+                {
+                    {
+                      "input",
+                      new Dictionary<string,object>{ { "name","Quinn" } }
+                    }
+                });
+            });
+        }
+
+        [Fact]
         public void passes_with_policy_on_connection_type()
         {
             Settings.AddPolicy("ConnectionPolicy", _ => _.RequireClaim("admin"));
