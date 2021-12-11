@@ -173,7 +173,7 @@ namespace GraphQL.Authorization
             string errors = string.Join("\n", result.Errors);
 
             context.ReportError(new ValidationError(
-                context.Document.OriginalQuery!, // TODO: ???
+                context.Document.OriginalQuery!,
                 "authorization",
                 $"You are not authorized to run this {operationType.ToString().ToLower()}.\n{errors}",
                 node));
