@@ -44,14 +44,14 @@ namespace BasicSample
             // remove claims to see the failure
             var authorizedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Admin") }));
 
-            string json = await schema.ExecuteAsync(_ =>
+            string json = await schema.ExecuteAsync(options =>
             {
-                _.Query = "{ viewer { id name } }";
-                _.ValidationRules = serviceProvider
+                options.Query = "{ viewer { id name } }";
+                options.ValidationRules = serviceProvider
                     .GetServices<IValidationRule>()
                     .Concat(DocumentValidator.CoreRules);
-                _.RequestServices = serviceProvider;
-                _.UserContext = new GraphQLUserContext { User = authorizedUser };
+                options.RequestServices = serviceProvider;
+                options.UserContext = new GraphQLUserContext { User = authorizedUser };
             });
 
             Console.WriteLine(json);
