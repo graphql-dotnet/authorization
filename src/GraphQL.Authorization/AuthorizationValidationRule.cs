@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading.Tasks;
 using GraphQL.Language.AST;
 using GraphQL.Types;
@@ -22,21 +23,78 @@ namespace GraphQL.Authorization
             _evaluator = evaluator;
         }
 
+        private bool ShouldBeSkipped(Operation actualOperation, ValidationContext context)
+        {
+            if (context.Document.Operations.Count <= 1)
+            {
+                return false;
+            }
+
+            var i = 0;
+            do
+            {
+                var ancestor = context.TypeInfo.GetAncestor(i++);
+
+                if (ancestor == actualOperation)
+                {
+                    return false;
+                }
+
+                if (ancestor == context.Document)
+                {
+                    return true;
+                }
+
+                if (ancestor is FragmentDefinition fragment)
+                {
+                    return !FragmentBelongsToOperation(fragment, actualOperation);
+                }
+            } while (true);
+        }
+
+        private bool FragmentBelongsToOperation(FragmentDefinition fragment, Operation operation)
+        {
+            var belongs = false;
+            void Visit(INode node, int _)
+            {
+                if (belongs)
+                {
+                    return;
+                }
+
+                belongs = node is FragmentSpread fragmentSpread && fragmentSpread.Name == fragment.Name;
+
+                if (node != null)
+                {
+                    node.Visit(Visit, 0);
+                }
+            }
+
+            operation.Visit(Visit, 0);
+
+            return belongs;
+        }
+
         /// <inheritdoc />
-        public Task<INodeVisitor> ValidateAsync(ValidationContext context)
+        public ValueTask<INodeVisitor> ValidateAsync(ValidationContext context)
         {
             var userContext = context.UserContext as IProvideClaimsPrincipal;
             var operationType = OperationType.Query;
+            var actualOperation = context.Document.Operations.FirstOrDefault(x => x.Name == context.OperationName) ?? context.Document.Operations.FirstOrDefault();
 
             // this could leak info about hidden fields or types in error messages
             // it would be better to implement a filter on the Schema so it
             // acts as if they just don't exist vs. an auth denied error
             // - filtering the Schema is not currently supported
             // TODO: apply ISchemaFilter - context.Schema.Filter.AllowXXX
-
-            return Task.FromResult((INodeVisitor)new NodeVisitors(
+            return new ValueTask<INodeVisitor>(new NodeVisitors(
                 new MatchingNodeVisitor<Operation>((astType, context) =>
                 {
+                    if (context.Document.Operations.Count > 1 && astType.Name != context.OperationName)
+                    {
+                        return;
+                    }
+
                     operationType = astType.OperationType;
 
                     var type = context.TypeInfo.GetLastType();
@@ -45,7 +103,7 @@ namespace GraphQL.Authorization
 
                 new MatchingNodeVisitor<ObjectField>((objectFieldAst, context) =>
                 {
-                    if (context.TypeInfo.GetArgument()?.ResolvedType.GetNamedType() is IComplexGraphType argumentType)
+                    if (context.TypeInfo.GetArgument()?.ResolvedType.GetNamedType() is IComplexGraphType argumentType && !ShouldBeSkipped(actualOperation, context))
                     {
                         var fieldType = argumentType.GetField(objectFieldAst.Name);
                         CheckAuth(objectFieldAst, fieldType, userContext, context, operationType);
@@ -56,7 +114,7 @@ namespace GraphQL.Authorization
                 {
                     var fieldDef = context.TypeInfo.GetFieldDef();
 
-                    if (fieldDef == null)
+                    if (fieldDef == null || ShouldBeSkipped(actualOperation, context))
                         return;
 
                     // check target field

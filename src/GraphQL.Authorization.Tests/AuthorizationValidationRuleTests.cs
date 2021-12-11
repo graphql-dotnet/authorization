@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using GraphQL.Types;
 using GraphQL.Types.Relay.DataObjects;
 using Xunit;
@@ -13,11 +14,11 @@ namespace GraphQL.Authorization.Tests
             Settings.AddPolicy("ClassPolicy", builder => builder.RequireClaim("admin"));
             Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldPassRule(_ =>
+            ShouldPassRule(config =>
             {
-                _.Query = @"query { post }";
-                _.Schema = BasicSchema();
-                _.User = CreatePrincipal(claims: new Dictionary<string, string>
+                config.Query = @"query { post }";
+                config.Schema = BasicSchema();
+                config.User = CreatePrincipal(claims: new Dictionary<string, string>
                     {
                         { "Admin", "true" }
                     });
@@ -29,10 +30,10 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("ClassPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldFailRule(_ =>
+            ShouldFailRule(config =>
             {
-                _.Query = @"query { post }";
-                _.Schema = BasicSchema();
+                config.Query = @"query { post }";
+                config.Schema = BasicSchema();
             });
         }
 
@@ -42,11 +43,11 @@ namespace GraphQL.Authorization.Tests
             Settings.AddPolicy("ClassPolicy", builder => builder.RequireClaim("admin"));
             Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldPassRule(_ =>
+            ShouldPassRule(config =>
             {
-                _.Query = @"query { post }";
-                _.Schema = BasicSchema();
-                _.User = CreatePrincipal(claims: new Dictionary<string, string>
+                config.Query = @"query { post }";
+                config.Schema = BasicSchema();
+                config.User = CreatePrincipal(claims: new Dictionary<string, string>
                     {
                         { "Admin", "true" }
                     });
@@ -58,10 +59,10 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldFailRule(_ =>
+            ShouldFailRule(config =>
             {
-                _.Query = @"query { post }";
-                _.Schema = BasicSchema();
+                config.Query = @"query { post }";
+                config.Schema = BasicSchema();
             });
         }
 
@@ -70,11 +71,11 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldPassRule(_ =>
+            ShouldPassRule(config =>
             {
-                _.Query = @"query { post }";
-                _.Schema = NestedSchema();
-                _.User = CreatePrincipal(claims: new Dictionary<string, string>
+                config.Query = @"query { post }";
+                config.Schema = NestedSchema();
+                config.User = CreatePrincipal(claims: new Dictionary<string, string>
                     {
                         { "Admin", "true" }
                     });
@@ -86,10 +87,10 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldFailRule(_ =>
+            ShouldFailRule(config =>
             {
-                _.Query = @"query { post }";
-                _.Schema = NestedSchema();
+                config.Query = @"query { post }";
+                config.Schema = NestedSchema();
             });
         }
 
@@ -98,10 +99,55 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldFailRule(_ =>
+            ShouldFailRule(config =>
             {
-                _.Query = @"query { posts }";
-                _.Schema = NestedSchema();
+                config.Query = @"query { posts }";
+                config.Schema = NestedSchema();
+            });
+        }
+
+        // https://github.com/graphql-dotnet/authorization/issues/5
+        [Theory]
+        [InlineData("c", "query p { posts } query c { comment }")]
+        [InlineData(null, "query c { comment } query p { posts }")]
+        public void issue5_should_pass(string operationName, string query)
+        {
+            Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
+
+            ShouldPassRule(config =>
+            {
+                config.OperationName = operationName;
+                config.Query = query;
+                config.Schema = NestedSchema();
+            });
+        }
+
+        // https://github.com/graphql-dotnet/authorization/issues/5
+        [Theory]
+        [InlineData("query a { article { id } } query b { article { ...frag } } fragment frag on Article { content }")]
+        [InlineData("query a { article { ...frag1 author } } query b { article { ...frag2 } } fragment frag1 on Article { id } fragment frag2 on Article { content }")]
+        public void issue5_with_fragment_should_pass(string query)
+        {
+            Settings.AddPolicy("AdminPolicy", builder => builder.RequireClaim("admin"));
+
+            ShouldPassRule(config =>
+            {
+                config.Query = query;
+                config.Schema = TypedSchema();
+            });
+        }
+
+        // https://github.com/graphql-dotnet/authorization/issues/5
+        [Fact]
+        public void issue5_with_fragment_should_fail()
+        {
+            Settings.AddPolicy("AdminPolicy", builder => builder.RequireClaim("admin"));
+
+            ShouldFailRule(config =>
+            {
+                config.Query = "query a { article { ...frag } } query b { article { ...frag } } fragment frag on Article { content }";
+                config.Schema = TypedSchema();
+                config.ValidateResult = result => result.Errors.Single(x => x.Message == $"You are not authorized to run this query.\nRequired claim 'admin' is not present.");
             });
         }
 
@@ -110,10 +156,10 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("PostPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldFailRule(_ =>
+            ShouldFailRule(config =>
             {
-                _.Query = @"query { postsNonNull }";
-                _.Schema = NestedSchema();
+                config.Query = @"query { postsNonNull }";
+                config.Schema = NestedSchema();
             });
         }
 
@@ -122,11 +168,11 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldPassRule(_ =>
+            ShouldPassRule(config =>
             {
-                _.Query = @"query { author(input: { name: ""Quinn"" }) }";
-                _.Schema = TypedSchema();
-                _.User = CreatePrincipal(claims: new Dictionary<string, string>
+                config.Query = @"query { author(input: { name: ""Quinn"" }) }";
+                config.Schema = TypedSchema();
+                config.User = CreatePrincipal(claims: new Dictionary<string, string>
                     {
                         { "Admin", "true" }
                     });
@@ -138,10 +184,10 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("FieldPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldFailRule(_ =>
+            ShouldFailRule(config =>
             {
-                _.Query = @"query { author(input: { name: ""Quinn"" }) }";
-                _.Schema = TypedSchema();
+                config.Query = @"query { author(input: { name: ""Quinn"" }) }";
+                config.Schema = TypedSchema();
             });
         }
 
@@ -152,11 +198,11 @@ namespace GraphQL.Authorization.Tests
             Settings.AddPolicy("AdminPolicy", builder => builder.RequireClaim("admin"));
             Settings.AddPolicy("ConfidentialPolicy", builder => builder.RequireClaim("admin"));
 
-            ShouldPassRule(_ =>
+            ShouldPassRule(config =>
             {
-                _.Query = @"query { author(input: { name: ""Quinn"" }) project(input: { name: ""TEST"" }) }";
-                _.Schema = TypedSchema();
-                _.User = CreatePrincipal(claims: new Dictionary<string, string>
+                config.Query = @"query { author(input: { name: ""Quinn"" }) project(input: { name: ""TEST"" }) }";
+                config.Schema = TypedSchema();
+                config.User = CreatePrincipal(claims: new Dictionary<string, string>
                 {
                     { "Admin", "true" }
                 });
@@ -166,11 +212,11 @@ namespace GraphQL.Authorization.Tests
         [Fact]
         public void Issue61()
         {
-            ShouldPassRule(_ =>
+            ShouldPassRule(config =>
             {
-                _.Query = @"query { unknown(obj: {id: 7}) }";
-                _.Schema = TypedSchema();
-                _.User = CreatePrincipal(claims: new Dictionary<string, string>
+                config.Query = @"query { unknown(obj: {id: 7}) }";
+                config.Schema = TypedSchema();
+                config.User = CreatePrincipal(claims: new Dictionary<string, string>
                 {
                     { "Admin", "true" }
                 });
@@ -182,11 +228,11 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("ConnectionPolicy", _ => _.RequireClaim("admin"));
 
-            ShouldPassRule(_ =>
+            ShouldPassRule(config =>
             {
-                _.Query = @"query { posts { items { id } } }";
-                _.Schema = TypedSchema();
-                _.User = CreatePrincipal(claims: new Dictionary<string, string>
+                config.Query = @"query { posts { items { id } } }";
+                config.Schema = TypedSchema();
+                config.User = CreatePrincipal(claims: new Dictionary<string, string>
                 {
                     { "Admin", "true" }
                 });
@@ -198,11 +244,11 @@ namespace GraphQL.Authorization.Tests
         {
             Settings.AddPolicy("ConnectionPolicy", _ => _.RequireClaim("admin"));
 
-            ShouldFailRule(_ =>
+            ShouldFailRule(config =>
             {
-                _.Query = @"query { posts { items { id } } }";
-                _.Schema = TypedSchema();
-                _.User = CreatePrincipal();
+                config.Query = @"query { posts { items { id } } }";
+                config.Schema = TypedSchema();
+                config.User = CreatePrincipal();
             });
         }
 
@@ -233,6 +279,7 @@ namespace GraphQL.Authorization.Tests
                     post(id: ID!): Post
                     posts: [Post]
                     postsNonNull: [Post!]!
+                    comment: String
                 }
 
                 type Post {
@@ -256,6 +303,8 @@ namespace GraphQL.Authorization.Tests
             public IEnumerable<Post> Posts() => null;
 
             public IEnumerable<Post> PostsNonNull() => null;
+
+            public string Comment() => null;
         }
 
         [GraphQLAuthorize("PostPolicy")]
@@ -269,6 +318,25 @@ namespace GraphQL.Authorization.Tests
             public PostGraphType()
             {
                 Field(p => p.Id);
+            }
+        }
+
+        public class Article
+        {
+            public string Id { get; set; }
+
+            public string Author { get; set; }
+
+            public string Content { get; set; }
+        }
+
+        public class ArticleGraphType : ObjectGraphType<Article>
+        {
+            public ArticleGraphType()
+            {
+                Field(p => p.Id);
+                Field(p => p.Author);
+                Field(p => p.Content).AuthorizeWith("AdminPolicy");
             }
         }
 
@@ -296,6 +364,11 @@ namespace GraphQL.Authorization.Tests
                 arguments: new QueryArguments(new QueryArgument<AuthorInputType> { Name = "input" }),
                 resolve: context => "testing"
             ).AuthorizeWith("AdminPolicy").AuthorizeWith("ConfidentialPolicy");
+
+            query.Field<ArticleGraphType>(
+                "article",
+                resolve: context => null
+            );
 
             return new Schema { Query = query };
         }

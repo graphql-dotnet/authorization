@@ -32,7 +32,7 @@ jobs:
 
     - name: Install dependencies
       working-directory: src
-      run: dotnet restore -p:GraphQLTestVersion=4.4.0
+      run: dotnet restore -p:GraphQLTestVersion=5.0.0-preview-362
 
     - name: Build solution
       working-directory: src
