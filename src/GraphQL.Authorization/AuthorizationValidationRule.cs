@@ -77,7 +77,8 @@ namespace GraphQL.Authorization
                     // If some supplied field does not exist in the variable type then some other
                     // validation rule should check that but here we should just ignore that
                     // "unknown" field.
-                    if (context.Inputs.TryGetValue(variableRef.Name, out object input) &&
+                    if (context.Inputs != null &&
+                        context.Inputs.TryGetValue(variableRef.Name, out object input) &&
                         input is Dictionary<string, object> fieldsValues)
                     {
                         foreach (var field in variableType.Fields)
