@@ -8,7 +8,7 @@ namespace GraphQL.Authorization
     public class AuthorizationResult
     {
         // allocation optimization for green path
-        private static readonly AuthorizationResult _success = new AuthorizationResult { Succeeded = true };
+        private static readonly AuthorizationResult _success = new() { Succeeded = true };
 
         /// <summary>
         /// Is the authorization result successful?
@@ -31,6 +31,6 @@ namespace GraphQL.Authorization
         /// </summary>
         /// <param name="errors">A set of authorization errors.</param>
         /// <returns>Instance of <see cref="AuthorizationResult"/>.</returns>
-        public static AuthorizationResult Fail(IEnumerable<string> errors) => new AuthorizationResult { Errors = errors };
+        public static AuthorizationResult Fail(IEnumerable<string> errors) => new() { Errors = errors };
     }
 }

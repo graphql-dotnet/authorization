@@ -24,12 +24,12 @@ namespace Harness
         /// Resolver for 'Query.viewer' field.
         /// </summary>
         [GraphQLAuthorize("AdminPolicy")]
-        public User Viewer() => new User { Id = Guid.NewGuid().ToString(), Name = "Quinn" };
+        public User Viewer() => new() { Id = Guid.NewGuid().ToString(), Name = "Quinn" };
 
         /// <summary>
         /// Resolver for 'Query.users' field.
         /// </summary>
-        public List<User> Users() => new List<User> { new User { Id = Guid.NewGuid().ToString(), Name = "Quinn" } };
+        public List<User> Users() => new() { new User { Id = Guid.NewGuid().ToString(), Name = "Quinn" } };
     }
 
     /// <summary>

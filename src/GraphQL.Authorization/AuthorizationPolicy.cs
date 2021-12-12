@@ -8,7 +8,7 @@ namespace GraphQL.Authorization
     /// </summary>
     public class AuthorizationPolicy : IAuthorizationPolicy
     {
-        private readonly List<IAuthorizationRequirement> _requirements = new List<IAuthorizationRequirement>();
+        private readonly List<IAuthorizationRequirement> _requirements = new();
 
         /// <summary>
         /// Creates a policy with a set of specified requirements.
