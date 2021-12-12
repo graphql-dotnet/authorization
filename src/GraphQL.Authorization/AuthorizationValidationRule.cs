@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,14 +15,25 @@ namespace GraphQL.Authorization
     public class AuthorizationValidationRule : IValidationRule
     {
         private readonly IAuthorizationEvaluator _evaluator;
+        private readonly IAuthorizationSkipCondition[] _skipConditions;
 
         /// <summary>
         /// Creates an instance of <see cref="AuthorizationValidationRule"/> with
         /// the specified authorization evaluator.
         /// </summary>
         public AuthorizationValidationRule(IAuthorizationEvaluator evaluator)
+            : this(evaluator, null!)
+        {
+        }
+
+        /// <summary>
+        /// Creates an instance of <see cref="AuthorizationValidationRule"/> with
+        /// the specified authorization evaluator and authorization skip conditions.
+        /// </summary>
+        public AuthorizationValidationRule(IAuthorizationEvaluator evaluator, IEnumerable<IAuthorizationSkipCondition> skipConditions)
         {
             _evaluator = evaluator;
+            _skipConditions = skipConditions?.ToArray() ?? Array.Empty<IAuthorizationSkipCondition>();
         }
 
         private bool ShouldBeSkipped(Operation actualOperation, ValidationContext context)
@@ -77,8 +89,25 @@ namespace GraphQL.Authorization
         }
 
         /// <inheritdoc />
-        public ValueTask<INodeVisitor?> ValidateAsync(ValidationContext context)
+        public async ValueTask<INodeVisitor?> ValidateAsync(ValidationContext context)
         {
+            async ValueTask<bool> ShouldSkipAuthorization(ValidationContext context)
+            {
+                if (_skipConditions.Length == 0)
+                    return false;
+
+                foreach (var skipCondition in _skipConditions)
+                {
+                    if (!await skipCondition.ShouldSkip(context))
+                        return false;
+                }
+
+                return true;
+            }
+
+            if (await ShouldSkipAuthorization(context))
+                return null;
+
             var userContext = context.UserContext as IProvideClaimsPrincipal;
             var operationType = OperationType.Query;
             var actualOperation = context.Document.Operations.FirstOrDefault(x => x.Name == context.OperationName) ?? context.Document.Operations.FirstOrDefault();
@@ -88,7 +117,7 @@ namespace GraphQL.Authorization
             // acts as if they just don't exist vs. an auth denied error
             // - filtering the Schema is not currently supported
             // TODO: apply ISchemaFilter - context.Schema.Filter.AllowXXX
-            return new ValueTask<INodeVisitor?>(new NodeVisitors(
+            return new NodeVisitors(
                 new MatchingNodeVisitor<Operation>((astType, context) =>
                 {
                     if (context.Document.Operations.Count > 1 && astType.Name != context.OperationName)
@@ -96,6 +125,7 @@ namespace GraphQL.Authorization
                         return;
                     }
 
+                    // Actually, astType always equals actualOperation
                     operationType = astType.OperationType;
 
                     var type = context.TypeInfo.GetLastType();
@@ -148,7 +178,7 @@ namespace GraphQL.Authorization
                         }
                     }
                 })
-            ));
+            );
         }
 
         private void CheckAuth(

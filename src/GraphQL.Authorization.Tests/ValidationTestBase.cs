@@ -16,7 +16,7 @@ namespace GraphQL.Authorization.Tests
             Rule = new AuthorizationValidationRule(new AuthorizationEvaluator(Settings));
         }
 
-        protected AuthorizationValidationRule Rule { get; }
+        protected AuthorizationValidationRule Rule { get; set; }
 
         protected AuthorizationSettings Settings { get; }
 
