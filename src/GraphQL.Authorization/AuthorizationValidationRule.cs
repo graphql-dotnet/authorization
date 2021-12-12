@@ -126,7 +126,7 @@ namespace GraphQL.Authorization
 
                 new MatchingNodeVisitor<VariableReference>((variableRef, context) =>
                 {
-                    if (!(context.TypeInfo.GetArgument()?.ResolvedType?.GetNamedType() is IComplexGraphType variableType))
+                    if (context.TypeInfo.GetArgument()?.ResolvedType?.GetNamedType() is not IComplexGraphType variableType || ShouldBeSkipped(actualOperation, context))
                         return;
 
                     CheckAuth(variableRef, variableType, userContext, context, operationType);

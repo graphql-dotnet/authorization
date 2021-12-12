@@ -9,7 +9,7 @@ namespace GraphQL.Authorization
     /// </summary>
     public class AuthenticatedUserRequirement : IAuthorizationRequirement
     {
-        internal static readonly AuthenticatedUserRequirement Instance = new AuthenticatedUserRequirement();
+        internal static readonly AuthenticatedUserRequirement Instance = new();
 
         /// <inheritdoc />
         public Task Authorize(AuthorizationContext context)

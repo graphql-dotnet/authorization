@@ -148,7 +148,7 @@ namespace GraphQL.Authorization.Tests
             {
                 config.Query = "query a { article { ...frag } } query b { article { ...frag } } fragment frag on Article { content }";
                 config.Schema = TypedSchema();
-                config.ValidateResult = result => result.Errors.Single(x => x.Message == $"You are not authorized to run this query.\nRequired claim 'admin' is not present.");
+                config.ValidateResult = result => _ = result.Errors.Single(x => x.Message == $"You are not authorized to run this query.\nRequired claim 'admin' is not present.");
             });
         }
 

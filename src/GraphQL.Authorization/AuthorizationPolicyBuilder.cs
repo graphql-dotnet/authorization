@@ -9,13 +9,13 @@ namespace GraphQL.Authorization
     /// </summary>
     public class AuthorizationPolicyBuilder
     {
-        private readonly List<IAuthorizationRequirement> _requirements = new List<IAuthorizationRequirement>();
+        private readonly List<IAuthorizationRequirement> _requirements = new();
 
         /// <summary>
         /// Build authorization policy.
         /// </summary>
         /// <returns>Created policy.</returns>
-        public AuthorizationPolicy Build() => new AuthorizationPolicy(_requirements);
+        public AuthorizationPolicy Build() => new(_requirements);
 
         /// <summary>
         /// Adds <see cref="ClaimAuthorizationRequirement"/> with the specified claim type.
