@@ -10,15 +10,15 @@ namespace GraphQL.Authorization
         public AuthorizationContext() { }
         public System.Collections.Generic.IEnumerable<string> Errors { get; }
         public bool HasErrors { get; }
-        public System.Collections.Generic.IReadOnlyDictionary<string, object>? Inputs { get; set; }
         public System.Security.Claims.ClaimsPrincipal? User { get; set; }
         public System.Collections.Generic.IDictionary<string, object?>? UserContext { get; set; }
+        public GraphQL.Inputs? Variables { get; set; }
         public void ReportError(string error) { }
     }
     public class AuthorizationEvaluator : GraphQL.Authorization.IAuthorizationEvaluator
     {
         public AuthorizationEvaluator(GraphQL.Authorization.AuthorizationSettings settings) { }
-        public System.Threading.Tasks.Task<GraphQL.Authorization.AuthorizationResult> Evaluate(System.Security.Claims.ClaimsPrincipal? principal, System.Collections.Generic.IDictionary<string, object?>? userContext, System.Collections.Generic.IReadOnlyDictionary<string, object>? inputs, System.Collections.Generic.IEnumerable<string>? requiredPolicies) { }
+        public System.Threading.Tasks.Task<GraphQL.Authorization.AuthorizationResult> Evaluate(System.Security.Claims.ClaimsPrincipal? principal, System.Collections.Generic.IDictionary<string, object?>? userContext, GraphQL.Inputs? variables, System.Collections.Generic.IEnumerable<string>? requiredPolicies) { }
     }
     public class AuthorizationPolicy : GraphQL.Authorization.IAuthorizationPolicy
     {
@@ -70,12 +70,12 @@ namespace GraphQL.Authorization
     }
     public static class GraphQLBuilderExtensions
     {
-        public static void AddAuthorization(this GraphQL.DI.IGraphQLBuilder builder, System.Action<GraphQL.Authorization.AuthorizationSettings> configure) { }
-        public static void AddAuthorization(this GraphQL.DI.IGraphQLBuilder builder, System.Action<GraphQL.Authorization.AuthorizationSettings, System.IServiceProvider> configure) { }
+        public static GraphQL.DI.IGraphQLBuilder AddAuthorization(this GraphQL.DI.IGraphQLBuilder builder, System.Action<GraphQL.Authorization.AuthorizationSettings> configure) { }
+        public static GraphQL.DI.IGraphQLBuilder AddAuthorization(this GraphQL.DI.IGraphQLBuilder builder, System.Action<GraphQL.Authorization.AuthorizationSettings, System.IServiceProvider> configure) { }
     }
     public interface IAuthorizationEvaluator
     {
-        System.Threading.Tasks.Task<GraphQL.Authorization.AuthorizationResult> Evaluate(System.Security.Claims.ClaimsPrincipal? principal, System.Collections.Generic.IDictionary<string, object?>? userContext, System.Collections.Generic.IReadOnlyDictionary<string, object>? inputs, System.Collections.Generic.IEnumerable<string>? requiredPolicies);
+        System.Threading.Tasks.Task<GraphQL.Authorization.AuthorizationResult> Evaluate(System.Security.Claims.ClaimsPrincipal? principal, System.Collections.Generic.IDictionary<string, object?>? userContext, GraphQL.Inputs? variables, System.Collections.Generic.IEnumerable<string>? requiredPolicies);
     }
     public interface IAuthorizationPolicy
     {

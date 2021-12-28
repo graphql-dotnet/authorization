@@ -135,8 +135,8 @@ namespace GraphQL.Authorization
                     // If some supplied field does not exist in the variable type then some other
                     // validation rule should check that but here we should just ignore that
                     // "unknown" field.
-                    if (context.Inputs != null &&
-                        context.Inputs.TryGetValue(variableRef.Name, out object input) &&
+                    if (context.Variables != null &&
+                        context.Variables.TryGetValue(variableRef.Name, out object? input) &&
                         input is Dictionary<string, object> fieldsValues)
                     {
                         foreach (var field in variableType.Fields)
@@ -163,7 +163,7 @@ namespace GraphQL.Authorization
 
             // TODO: async -> sync transition
             var result = _evaluator
-                .Evaluate(userContext?.User, context.UserContext, context.Inputs, provider.GetPolicies())
+                .Evaluate(userContext?.User, context.UserContext, context.Variables, provider.GetPolicies())
                 .GetAwaiter()
                 .GetResult();
 

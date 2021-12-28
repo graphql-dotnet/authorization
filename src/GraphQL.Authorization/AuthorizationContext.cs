@@ -22,9 +22,9 @@ namespace GraphQL.Authorization
         public IDictionary<string, object?>? UserContext { get; set; }
 
         /// <summary>
-        /// Represents a readonly dictionary of variable inputs to an executed document.
+        /// Represents a readonly dictionary of variables to an executed document.
         /// </summary>
-        public IReadOnlyDictionary<string, object>? Inputs { get; set; }
+        public Inputs? Variables { get; set; }
 
         /// <summary>
         /// Returns a set of authorization errors.

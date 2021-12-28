@@ -63,7 +63,7 @@ namespace GraphQL.Authorization.Tests
             var documentBuilder = new GraphQLDocumentBuilder();
             var document = documentBuilder.Build(config.Query);
             var validator = new DocumentValidator();
-            return validator.ValidateAsync(config.Schema, document, document.Operations.First().Variables, config.Rules, userContext, config.Inputs, config.OperationName).GetAwaiter().GetResult().validationResult;
+            return validator.ValidateAsync(config.Schema, document, document.Operations.First().Variables, config.Rules, userContext, config.Variables, config.OperationName).GetAwaiter().GetResult().validationResult;
         }
 
         internal static ClaimsPrincipal CreatePrincipal(string? authenticationType = null, IDictionary<string, string>? claims = null)

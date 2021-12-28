@@ -12,19 +12,21 @@ namespace GraphQL.Authorization
         /// within <see cref="ExecutionOptions.ValidationRules"/> and <see cref="ExecutionOptions.CachedDocumentValidationRules"/>
         /// upon document execution. Configures authorization settings with the specified configuration delegate.
         /// </summary>
-        public static void AddAuthorization(this IGraphQLBuilder builder, Action<AuthorizationSettings, IServiceProvider> configure)
+        public static IGraphQLBuilder AddAuthorization(this IGraphQLBuilder builder, Action<AuthorizationSettings, IServiceProvider> configure)
         {
-            builder.TryRegister<IAuthorizationEvaluator, AuthorizationEvaluator>(ServiceLifetime.Singleton);
+            builder.Services.TryRegister<IAuthorizationEvaluator, AuthorizationEvaluator>(ServiceLifetime.Singleton);
             builder.AddValidationRule<AuthorizationValidationRule>(true);
-            builder.Configure(configure);
+            builder.Services.Configure(configure);
+            return builder;
         }
 
         /// <inheritdoc cref="AddAuthorization(IGraphQLBuilder, Action{AuthorizationSettings, IServiceProvider})"/>
-        public static void AddAuthorization(this IGraphQLBuilder builder, Action<AuthorizationSettings> configure)
+        public static IGraphQLBuilder AddAuthorization(this IGraphQLBuilder builder, Action<AuthorizationSettings> configure)
         {
-            builder.TryRegister<IAuthorizationEvaluator, AuthorizationEvaluator>(ServiceLifetime.Singleton);
+            builder.Services.TryRegister<IAuthorizationEvaluator, AuthorizationEvaluator>(ServiceLifetime.Singleton);
             builder.AddValidationRule<AuthorizationValidationRule>(true);
-            builder.Configure(configure);
+            builder.Services.Configure(configure);
+            return builder;
         }
     }
 }
