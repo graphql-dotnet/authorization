@@ -39,6 +39,7 @@ namespace Harness
                 return schema;
             });
 
+            // TODO: change to IGraphQLBuilder
             // extension method defined in this project
             services.AddGraphQLAuth((settings, provider) => settings.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin")));
 

@@ -9,7 +9,7 @@ namespace Harness
     /// <summary>
     /// Extension methods to add GraphQL authorization into DI container.
     /// </summary>
-    public static class GraphQLAuthExtensions
+    public static class GraphQLAuthExtensions // TODO: remove soon
     {
         /// <summary>
         /// Adds all necessary classes into provided <paramref name="services"/>

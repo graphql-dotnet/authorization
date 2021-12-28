@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GraphQL.SystemTextJson" Version="5.0.0-preview-362" />
+    <PackageReference Include="GraphQL.SystemTextJson" Version="5.0.0-preview-411" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
   </ItemGroup>
 
