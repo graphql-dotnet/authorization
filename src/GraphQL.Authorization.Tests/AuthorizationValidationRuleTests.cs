@@ -20,9 +20,9 @@ namespace GraphQL.Authorization.Tests
                 config.Query = @"query { post }";
                 config.Schema = BasicSchema();
                 config.User = CreatePrincipal(claims: new Dictionary<string, string>
-                    {
-                        { "Admin", "true" }
-                    });
+                {
+                    { "Admin", "true" }
+                });
             });
         }
 
@@ -77,9 +77,9 @@ namespace GraphQL.Authorization.Tests
                 config.Query = @"query { post }";
                 config.Schema = NestedSchema();
                 config.User = CreatePrincipal(claims: new Dictionary<string, string>
-                    {
-                        { "Admin", "true" }
-                    });
+                {
+                    { "Admin", "true" }
+                });
             });
         }
 
@@ -174,9 +174,9 @@ namespace GraphQL.Authorization.Tests
                 config.Query = @"query { author(input: { name: ""Quinn"" }) }";
                 config.Schema = TypedSchema();
                 config.User = CreatePrincipal(claims: new Dictionary<string, string>
-                    {
-                        { "Admin", "true" }
-                    });
+                {
+                    { "Admin", "true" }
+                });
             });
         }
 
@@ -233,17 +233,17 @@ namespace GraphQL.Authorization.Tests
             {
                 config.Query = @"query Author($input: AuthorInputType!) { author(input: $input) }";
                 config.Schema = TypedSchema();
-                config.Inputs = new Inputs(new Dictionary<string, object>()
+                config.Variables = new Inputs(new Dictionary<string, object?>()
                 {
                     {
-                      "input",
-                      new Dictionary<string,object>{ { "name","Quinn" } }
+                        "input",
+                        new Dictionary<string,object>{ { "name","Quinn" } }
                     }
                 });
                 config.User = CreatePrincipal(claims: new Dictionary<string, string>
-                    {
-                        { "Admin", "true" }
-                    });
+                {
+                    { "Admin", "true" }
+                });
             });
         }
 
@@ -263,7 +263,7 @@ namespace GraphQL.Authorization.Tests
                 };
                 config.Query = @"query Author($input: AuthorInputType!) { author(input: $input) }";
                 config.Schema = TypedSchema();
-                config.Inputs = null;
+                config.Variables = null;
                 config.User = CreatePrincipal(claims: new Dictionary<string, string>
                 {
                     { "Admin", "true" }
@@ -280,11 +280,11 @@ namespace GraphQL.Authorization.Tests
             {
                 config.Query = @"query Author($input: AuthorInputType!) { author(input: $input) }";
                 config.Schema = TypedSchema();
-                config.Inputs = new Inputs(new Dictionary<string, object>()
+                config.Variables = new Inputs(new Dictionary<string, object?>()
                 {
                     {
-                      "input",
-                      new Dictionary<string,object>{ { "name","Quinn" } }
+                        "input",
+                        new Dictionary<string,object>{ { "name","Quinn" } }
                     }
                 });
             });
