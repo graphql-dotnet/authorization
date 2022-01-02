@@ -55,6 +55,7 @@ namespace GraphQL.Authorization
     public class AuthorizationValidationRule : GraphQL.Validation.IValidationRule
     {
         public AuthorizationValidationRule(GraphQL.Authorization.IAuthorizationEvaluator evaluator) { }
+        public AuthorizationValidationRule(GraphQL.Authorization.IAuthorizationEvaluator evaluator, System.Collections.Generic.IEnumerable<GraphQL.Authorization.IAuthorizationSkipCondition> skipConditions) { }
         public System.Threading.Tasks.ValueTask<GraphQL.Validation.INodeVisitor?> ValidateAsync(GraphQL.Validation.ValidationContext context) { }
     }
     public class ClaimAuthorizationRequirement : GraphQL.Authorization.IAuthorizationRequirement
@@ -85,8 +86,17 @@ namespace GraphQL.Authorization
     {
         System.Threading.Tasks.Task Authorize(GraphQL.Authorization.AuthorizationContext context);
     }
+    public interface IAuthorizationSkipCondition
+    {
+        System.Threading.Tasks.ValueTask<bool> ShouldSkip(GraphQL.Validation.ValidationContext context);
+    }
     public interface IProvideClaimsPrincipal
     {
         System.Security.Claims.ClaimsPrincipal? User { get; }
+    }
+    public class IntrospectionSkipCondition : GraphQL.Authorization.IAuthorizationSkipCondition
+    {
+        public IntrospectionSkipCondition() { }
+        public System.Threading.Tasks.ValueTask<bool> ShouldSkip(GraphQL.Validation.ValidationContext context) { }
     }
 }
