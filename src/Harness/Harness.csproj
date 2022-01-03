@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GraphQL.Server.Transports.AspNetCore.SystemTextJson" Version="5.0.1" />
+    <PackageReference Include="GraphQL.Server.Transports.AspNetCore.SystemTextJson" Version="5.2.0" />
     <PackageReference Include="GraphQL.Server.Ui.GraphiQL" Version="5.0.1" />
     <PackageReference Include="GraphQL.Server.Ui.Playground" Version="5.0.1" />
     <PackageReference Include="GraphQL.Server.Transports.AspNetCore" Version="5.0.1" />
