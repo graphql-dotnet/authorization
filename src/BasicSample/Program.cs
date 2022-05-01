@@ -74,7 +74,7 @@ namespace BasicSample
         /// <summary>
         /// Resolver for 'Query.viewer' field.
         /// </summary>
-        [GraphQLAuthorize("AdminPolicy")]
+        [Authorize("AdminPolicy")]
         public User Viewer() => new() { Id = Guid.NewGuid().ToString(), Name = "Quinn" };
 
         /// <summary>
