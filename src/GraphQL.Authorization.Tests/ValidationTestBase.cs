@@ -5,7 +5,6 @@ using System.Security.Claims;
 using GraphQL.Execution;
 using GraphQL.Validation;
 using GraphQLParser;
-using GraphQLParser.AST;
 using Shouldly;
 
 namespace GraphQL.Authorization.Tests
