@@ -1,5 +1,7 @@
 using GraphQL;
+using GraphQL.MicrosoftDI;
 using GraphQL.Server;
+using GraphQL.SystemTextJson;
 using GraphQL.Types;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -35,7 +37,7 @@ namespace Harness
                   }
                 ";
                 var schema = Schema.For(definitions, builder => builder.Types.Include<Query>());
-                schema.AllTypes["User"]!.AuthorizeWith("AdminPolicy");
+                schema.AllTypes["User"]!.AuthorizeWithPolicy("AdminPolicy");
                 return schema;
             });
 
@@ -46,10 +48,9 @@ namespace Harness
             // claims principal must look something like this to allow access
             // var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Admin") }));
 
-            services
-                .AddGraphQL()
+            services.AddGraphQL(builder => builder
                 .AddSystemTextJson()
-                .AddUserContextBuilder(context => new GraphQLUserContext { User = context.User });
+                .AddUserContextBuilder(context => new GraphQLUserContext { User = context.User }));
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6;net5;netcoreapp3.1</TargetFrameworks>
-    <GraphQLTestVersion>5.0.0-preview-411</GraphQLTestVersion>
+    <GraphQLTestVersion>5.1.1</GraphQLTestVersion>
   </PropertyGroup>
 
   <ItemGroup>

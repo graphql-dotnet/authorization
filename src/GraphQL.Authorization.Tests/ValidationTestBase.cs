@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using GraphQL.Execution;
 using GraphQL.Validation;
+using GraphQLParser;
 using Shouldly;
 
 namespace GraphQL.Authorization.Tests
@@ -63,7 +64,15 @@ namespace GraphQL.Authorization.Tests
             var documentBuilder = new GraphQLDocumentBuilder();
             var document = documentBuilder.Build(config.Query);
             var validator = new DocumentValidator();
-            return validator.ValidateAsync(config.Schema, document, document.Operations.First().Variables, config.Rules, userContext, config.Variables, config.OperationName).GetAwaiter().GetResult().validationResult;
+            return validator.ValidateAsync(new ValidationOptions
+            {
+                Schema = config.Schema,
+                Document = document,
+                Operation = document.OperationWithName(config.OperationName),
+                Rules = config.Rules,
+                Variables = config.Variables ?? Inputs.Empty,
+                UserContext = userContext
+            }).GetAwaiter().GetResult().validationResult;
         }
 
         internal static ClaimsPrincipal CreatePrincipal(string? authenticationType = null, IDictionary<string, string>? claims = null)
