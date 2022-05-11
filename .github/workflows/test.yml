@@ -30,7 +30,11 @@ jobs:
           - ubuntu-latest
           - windows-latest
         graphqlversion:
+          - 4.6.0
           - 4.6.1
+          - 4.7.0
+          - 4.7.1
+          - 4.8.0
     steps:
       - name: Checkout source
         uses: actions/checkout@v2
