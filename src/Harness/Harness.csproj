@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="GraphQL.MicrosoftDI" Version="5.1.1" />
-    <PackageReference Include="GraphQL.Server.Ui.GraphiQL" Version="6.0.0" />
+    <PackageReference Include="GraphQL.Server.Ui.GraphiQL" Version="6.1.0" />
     <PackageReference Include="GraphQL.Server.Ui.Playground" Version="6.0.0" />
     <PackageReference Include="GraphQL.Server.Transports.AspNetCore" Version="6.0.0" />
     <PackageReference Include="GraphQL.SystemTextJson" Version="5.1.1" />
