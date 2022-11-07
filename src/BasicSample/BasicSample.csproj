@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="GraphQL.SystemTextJson" Version="5.1.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
   </ItemGroup>
 
 </Project>
