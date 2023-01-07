@@ -16,7 +16,10 @@
     <PackageReference Include="GraphQL.Server.Ui.Playground" Version="7.*" />
     <PackageReference Include="GraphQL.Server.Transports.AspNetCore" Version="7.*" />
     <PackageReference Include="GraphQL.SystemTextJson" Version="7.*" />
-	<Using Remove="System.Net.Http.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Remove="System.Net.Http.Json" />
   </ItemGroup>
 
 </Project>
