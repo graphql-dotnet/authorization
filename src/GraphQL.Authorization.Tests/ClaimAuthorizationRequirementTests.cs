@@ -1,104 +1,97 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Shouldly;
-using Xunit;
+namespace GraphQL.Authorization.Tests;
 
-namespace GraphQL.Authorization.Tests
+public class ClaimAuthorizationRequirementTests
 {
-    public class ClaimAuthorizationRequirementTests
+    [Fact]
+    public async Task produces_error_when_missing_claim_ignoring_value()
     {
-        [Fact]
-        public async Task produces_error_when_missing_claim_ignoring_value()
+        var req = new ClaimAuthorizationRequirement("Admin");
+
+        var context = new AuthorizationContext
         {
-            var req = new ClaimAuthorizationRequirement("Admin");
+            User = ValidationTestBase.CreatePrincipal()
+        };
 
-            var context = new AuthorizationContext
-            {
-                User = ValidationTestBase.CreatePrincipal()
-            };
+        await req.Authorize(context).ConfigureAwait(false);
 
-            await req.Authorize(context);
+        context.HasErrors.ShouldBeTrue();
+        context.Errors.Single().ShouldBe("Required claim 'Admin' is not present.");
+    }
 
-            context.HasErrors.ShouldBeTrue();
-            context.Errors.Single().ShouldBe("Required claim 'Admin' is not present.");
-        }
+    [Fact]
+    public async Task produces_error_when_missing_claim_with_single_value()
+    {
+        var req = new ClaimAuthorizationRequirement("Admin", "true");
 
-        [Fact]
-        public async Task produces_error_when_missing_claim_with_single_value()
+        var context = new AuthorizationContext
         {
-            var req = new ClaimAuthorizationRequirement("Admin", "true");
+            User = ValidationTestBase.CreatePrincipal()
+        };
 
-            var context = new AuthorizationContext
-            {
-                User = ValidationTestBase.CreatePrincipal()
-            };
+        await req.Authorize(context).ConfigureAwait(false);
 
-            await req.Authorize(context);
+        context.HasErrors.ShouldBeTrue();
+        context.Errors.Single().ShouldBe("Required claim 'Admin' with any value of 'true' is not present.");
+    }
 
-            context.HasErrors.ShouldBeTrue();
-            context.Errors.Single().ShouldBe("Required claim 'Admin' with any value of 'true' is not present.");
-        }
+    [Fact]
+    public async Task produces_error_when_missing_claim_with_multiple_values()
+    {
+        var req = new ClaimAuthorizationRequirement("Admin", "true", "maybe");
 
-        [Fact]
-        public async Task produces_error_when_missing_claim_with_multiple_values()
+        var context = new AuthorizationContext
         {
-            var req = new ClaimAuthorizationRequirement("Admin", "true", "maybe");
+            User = ValidationTestBase.CreatePrincipal()
+        };
 
-            var context = new AuthorizationContext
-            {
-                User = ValidationTestBase.CreatePrincipal()
-            };
+        await req.Authorize(context).ConfigureAwait(false);
 
-            await req.Authorize(context);
+        context.HasErrors.ShouldBeTrue();
+        context.Errors.Single().ShouldBe("Required claim 'Admin' with any value of 'true, maybe' is not present.");
+    }
 
-            context.HasErrors.ShouldBeTrue();
-            context.Errors.Single().ShouldBe("Required claim 'Admin' with any value of 'true, maybe' is not present.");
-        }
+    [Fact]
+    public async Task succeeds_when_claim_with_ignoring_value()
+    {
+        var req = new ClaimAuthorizationRequirement("Admin");
 
-        [Fact]
-        public async Task succeeds_when_claim_with_ignoring_value()
+        var context = new AuthorizationContext
         {
-            var req = new ClaimAuthorizationRequirement("Admin");
+            User = ValidationTestBase.CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "true" } })
+        };
 
-            var context = new AuthorizationContext
-            {
-                User = ValidationTestBase.CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "true" } })
-            };
+        await req.Authorize(context).ConfigureAwait(false);
 
-            await req.Authorize(context);
+        context.HasErrors.ShouldBeFalse();
+    }
 
-            context.HasErrors.ShouldBeFalse();
-        }
+    [Fact]
+    public async Task succeeds_when_claim_with_single_value()
+    {
+        var req = new ClaimAuthorizationRequirement("Admin", "true");
 
-        [Fact]
-        public async Task succeeds_when_claim_with_single_value()
+        var context = new AuthorizationContext
         {
-            var req = new ClaimAuthorizationRequirement("Admin", "true");
+            User = ValidationTestBase.CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "true" } })
+        };
 
-            var context = new AuthorizationContext
-            {
-                User = ValidationTestBase.CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "true" } })
-            };
+        await req.Authorize(context).ConfigureAwait(false);
 
-            await req.Authorize(context);
+        context.HasErrors.ShouldBeFalse();
+    }
 
-            context.HasErrors.ShouldBeFalse();
-        }
+    [Fact]
+    public async Task succeeds_when_claim_with_multiple_values()
+    {
+        var req = new ClaimAuthorizationRequirement("Admin", "true", "maybe");
 
-        [Fact]
-        public async Task succeeds_when_claim_with_multiple_values()
+        var context = new AuthorizationContext
         {
-            var req = new ClaimAuthorizationRequirement("Admin", "true", "maybe");
+            User = ValidationTestBase.CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "maybe" } })
+        };
 
-            var context = new AuthorizationContext
-            {
-                User = ValidationTestBase.CreatePrincipal(claims: new Dictionary<string, string> { { "Admin", "maybe" } })
-            };
+        await req.Authorize(context).ConfigureAwait(false);
 
-            await req.Authorize(context);
-
-            context.HasErrors.ShouldBeFalse();
-        }
+        context.HasErrors.ShouldBeFalse();
     }
 }

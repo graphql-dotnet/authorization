@@ -1,21 +1,17 @@
 # GraphQL Authorization
 
-[![Join the chat at https://gitter.im/graphql-dotnet/graphql-dotnet](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/graphql-dotnet/graphql-dotnet?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-[![Run code tests](https://github.com/graphql-dotnet/authorization/actions/workflows/test.yml/badge.svg)](https://github.com/graphql-dotnet/authorization/actions/workflows/test.yml)
-[![Build artifacts](https://github.com/graphql-dotnet/authorization/actions/workflows/build.yml/badge.svg)](https://github.com/graphql-dotnet/authorization/actions/workflows/build.yml)
-[![Publish release](https://github.com/graphql-dotnet/authorization/actions/workflows/publish.yml/badge.svg)](https://github.com/graphql-dotnet/authorization/actions/workflows/publish.yml)
-[![CodeQL analysis](https://github.com/graphql-dotnet/authorization/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/graphql-dotnet/authorization/actions/workflows/codeql-analysis.yml)
-
+[![License](https://img.shields.io/github/license/graphql-dotnet/authorization)](LICENSE.md)
 [![codecov](https://codecov.io/gh/graphql-dotnet/authorization/branch/master/graph/badge.svg?token=TODO)](https://codecov.io/gh/graphql-dotnet/authorization)
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/graphql-dotnet/authorization.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/graphql-dotnet/authorization/alerts/)
-[![Language grade: C#](https://img.shields.io/lgtm/grade/csharp/g/graphql-dotnet/authorization.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/graphql-dotnet/authorization/context:csharp)
+[![Nuget](https://img.shields.io/nuget/dt/GraphQL.Authorization)](https://www.nuget.org/packages/GraphQL.Authorization)
+[![Nuget](https://img.shields.io/nuget/v/GraphQL.Authorization)](https://www.nuget.org/packages/GraphQL.Authorization)
+[![GitHub Release Date](https://img.shields.io/github/release-date/graphql-dotnet/authorization?label=released)](https://github.com/graphql-dotnet/authorization/releases)
+[![GitHub commits since latest release (by date)](https://img.shields.io/github/commits-since/graphql-dotnet/authorization/latest?label=new+commits)](https://github.com/graphql-dotnet/authorization/commits/master)
+![Size](https://img.shields.io/github/repo-size/graphql-dotnet/authorization)
 
+[![GitHub contributors](https://img.shields.io/github/contributors/graphql-dotnet/authorization)](https://github.com/graphql-dotnet/authorization/graphs/contributors)
 ![Activity](https://img.shields.io/github/commit-activity/w/graphql-dotnet/authorization)
 ![Activity](https://img.shields.io/github/commit-activity/m/graphql-dotnet/authorization)
 ![Activity](https://img.shields.io/github/commit-activity/y/graphql-dotnet/authorization)
-
-![Size](https://img.shields.io/github/repo-size/graphql-dotnet/authorization)
 
 A toolset for authorizing access to graph types for [GraphQL.NET](https://github.com/graphql-dotnet/graphql-dotnet).
 
@@ -30,12 +26,12 @@ Note that GitHub requires authentication to consume the feed. See [here](https:/
 
 # Usage
 
-- Register the authorization classes in your DI container - `IAuthorizationEvaluator`, `AuthorizationSettings`, and the `AuthorizationValidationRule`.
+- Register the authorization classes in your DI container - call `AddAuthorization` on the provided `IGraphQLBuilder` inside `AddGraphQL` extension method.
 - Provide a custom `UserContext` class that implements `IProvideClaimsPrincipal`.
 - Add policies to the `AuthorizationSettings`.
-- Apply a policy to a GraphType or Field (both implement `IProvideMetadata`):
-  - using `AuthorizeWith(string policy)` extension method
-  - or with `GraphQLAuthorize` attribute if using Schema + Handler syntax.
+- Apply a policy to a GraphType or Field - both implement `IProvideMetadata`:
+  - using `AuthorizeWithPolicy(string policy)` extension method
+  - or with `AuthorizeAttribute` attribute if using Schema + Handler syntax.
 - The `AuthorizationValidationRule` will run and verify the policies based on the registered policies.
 - You can write your own `IAuthorizationRequirement`.
 
@@ -45,32 +41,32 @@ Note that GitHub requires authentication to consume the feed. See [here](https:/
 
 2. Fully functional [ASP.NET Core sample](src/Harness/Program.cs).
 
-3. GraphType first syntax - use `AuthorizeWith` extension method on `IGraphType` or `IFieldType`.
+3. GraphType first syntax - use `AuthorizeWithPolicy` extension method on `IGraphType` or `IFieldType`.
 
 ```csharp
 public class MyType : ObjectGraphType
 {
     public MyType()
     {
-        this.AuthorizeWith("AdminPolicy");
-        Field<StringGraphType>("name").AuthorizeWith("SomePolicy");
+        this.AuthorizeWithPolicy("AdminPolicy");
+        Field<StringGraphType>("name").AuthorizeWithPolicy("SomePolicy");
     }
 }
 ```
 
-4. Schema first syntax - use `GraphQLAuthorize` attribute on type, method or property.
+4. Schema first syntax - use `AuthorizeAttribute` attribute on type, method or property.
 
 ```csharp
-[GraphQLAuthorize("MyPolicy")]
+[Authorize("MyPolicy")]
 public class MutationType
 {
-    [GraphQLAuthorize("AnotherPolicy")]
+    [Authorize("AnotherPolicy")]
     public async Task<string> CreateSomething(MyInput input)
     {
         return await SomeMethodAsync(input);
     }
 
-    [GraphQLAuthorize("SuperPolicy")]
+    [Authorize("SuperPolicy")]
     public string SomeProperty => Guid.NewGuid().ToString();
 }
 ```

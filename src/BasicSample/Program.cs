@@ -1,101 +1,47 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using GraphQL;
-using GraphQL.Authorization;
 using GraphQL.SystemTextJson;
 using GraphQL.Types;
 using GraphQL.Validation;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BasicSample
+var services = new ServiceCollection().AddGraphQL(builder => builder
+    .AddAuthorization(settings => settings.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"))));
+
+using var serviceProvider = services.BuildServiceProvider();
+
+const string definitions = """
+    type User {
+        id: ID
+        name: String
+    }
+
+    type Query {
+        viewer: User
+        users: [User]
+    }
+    """;
+var schema = Schema.For(definitions, builder => builder.Types.Include<Query>());
+
+// Claims principal must look something like this to allow access.
+// GraphQLUserContext.User alternates below for demonstration purposes.
+int counter = 0;
+var authorizedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Admin") }));
+var nonAuthorizedUser = new ClaimsPrincipal(new ClaimsIdentity());
+
+while (true)
 {
-    internal class Program
+    string json = await schema.ExecuteAsync(options =>
     {
-        private static async Task Main()
-        {
-            using var serviceProvider = new ServiceCollection()
-                .AddSingleton<IAuthorizationEvaluator, AuthorizationEvaluator>()
-                .AddTransient<IValidationRule, AuthorizationValidationRule>()
-                .AddTransient(s =>
-                {
-                    var authSettings = new AuthorizationSettings();
-                    authSettings.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"));
-                    return authSettings;
-                })
-                .BuildServiceProvider();
+        options.Query = "{ viewer { id name } }";
+        options.Root = new Query();
+        options.ValidationRules = DocumentValidator.CoreRules.Concat(serviceProvider.GetServices<IValidationRule>());
+        options.RequestServices = serviceProvider;
+        options.UserContext = new GraphQLUserContext { User = counter++ % 2 == 0 ? authorizedUser : nonAuthorizedUser };
+    }).ConfigureAwait(false);
 
-            string definitions = @"
-                type User {
-                    id: ID
-                    name: String
-                }
-
-                type Query {
-                    viewer: User
-                    users: [User]
-                }
-            ";
-            var schema = Schema.For(definitions, builder => builder.Types.Include<Query>());
-
-            // remove claims to see the failure
-            var authorizedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Admin") }));
-
-            string json = await schema.ExecuteAsync(options =>
-            {
-                options.Query = "{ viewer { id name } }";
-                options.ValidationRules = serviceProvider
-                    .GetServices<IValidationRule>()
-                    .Concat(DocumentValidator.CoreRules);
-                options.RequestServices = serviceProvider;
-                options.UserContext = new GraphQLUserContext { User = authorizedUser };
-            });
-
-            Console.WriteLine(json);
-        }
-    }
-
-    /// <summary>
-    /// Custom context class that implements <see cref="IProvideClaimsPrincipal"/>.
-    /// </summary>
-    public class GraphQLUserContext : Dictionary<string, object?>, IProvideClaimsPrincipal
-    {
-        /// <inheritdoc />
-        public ClaimsPrincipal? User { get; set; }
-    }
-
-    /// <summary>
-    /// CLR type to map to the 'Query' graph type.
-    /// </summary>
-    public class Query
-    {
-        /// <summary>
-        /// Resolver for 'Query.viewer' field.
-        /// </summary>
-        [Authorize("AdminPolicy")]
-        public User Viewer() => new() { Id = Guid.NewGuid().ToString(), Name = "Quinn" };
-
-        /// <summary>
-        /// Resolver for 'Query.users' field.
-        /// </summary>
-        public List<User> Users() => new() { new User { Id = Guid.NewGuid().ToString(), Name = "Quinn" } };
-    }
-
-    /// <summary>
-    /// CLR type to map to the 'User' graph type.
-    /// </summary>
-    public class User
-    {
-        /// <summary>
-        /// Resolver for 'User.id' field. Just a simple property.
-        /// </summary>
-        public string? Id { get; set; }
-
-        /// <summary>
-        /// Resolver for 'User.name' field. Just a simple property.
-        /// </summary>
-        public string? Name { get; set; }
-    }
+    Console.WriteLine(json);
+    Console.WriteLine();
+    Console.WriteLine("Press ENTER to continue");
+    Console.ReadLine();
 }

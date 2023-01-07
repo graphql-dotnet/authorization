@@ -1,10 +1,8 @@
-using System.Collections.Generic;
 using System.Security.Claims;
 
-namespace GraphQL.Authorization.Tests
+namespace GraphQL.Authorization.Tests;
+
+internal class GraphQLUserContext : Dictionary<string, object?>, IProvideClaimsPrincipal
 {
-    internal class GraphQLUserContext : Dictionary<string, object?>, IProvideClaimsPrincipal
-    {
-        public ClaimsPrincipal? User { get; set; }
-    }
+    public ClaimsPrincipal? User { get; set; }
 }

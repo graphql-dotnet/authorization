@@ -1,66 +1,63 @@
-using System.Collections.Generic;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
-namespace GraphQL.Authorization
+namespace GraphQL.Authorization;
+
+/// <summary>
+/// Default implementation of <see cref="IAuthorizationEvaluator"/>.
+/// </summary>
+public class AuthorizationEvaluator : IAuthorizationEvaluator
 {
+    private readonly AuthorizationSettings _settings;
+
     /// <summary>
-    /// Default implementation of <see cref="IAuthorizationEvaluator"/>.
+    /// Creates an instance of <see cref="AuthorizationEvaluator"/> with the
+    /// specified authorization settings.
     /// </summary>
-    public class AuthorizationEvaluator : IAuthorizationEvaluator
+    public AuthorizationEvaluator(AuthorizationSettings settings)
     {
-        private readonly AuthorizationSettings _settings;
+        _settings = settings;
+    }
 
-        /// <summary>
-        /// Creates an instance of <see cref="AuthorizationEvaluator"/> with the
-        /// specified authorization settings.
-        /// </summary>
-        public AuthorizationEvaluator(AuthorizationSettings settings)
+    /// <inheritdoc />
+    public async Task<AuthorizationResult> Evaluate(
+        ClaimsPrincipal? principal,
+        IDictionary<string, object?>? userContext,
+        Inputs? variables,
+        IEnumerable<string>? requiredPolicies)
+    {
+        if (requiredPolicies == null)
+            return AuthorizationResult.Success();
+
+        var context = new AuthorizationContext
         {
-            _settings = settings;
-        }
+            User = principal ?? new ClaimsPrincipal(new ClaimsIdentity()),
+            UserContext = userContext,
+            Variables = variables
+        };
 
-        /// <inheritdoc />
-        public async Task<AuthorizationResult> Evaluate(
-            ClaimsPrincipal? principal,
-            IDictionary<string, object?>? userContext,
-            Inputs? variables,
-            IEnumerable<string>? requiredPolicies)
+        var tasks = new List<Task>();
+
+        foreach (string requiredPolicy in requiredPolicies)
         {
-            if (requiredPolicies == null)
-                return AuthorizationResult.Success();
-
-            var context = new AuthorizationContext
+            var authorizationPolicy = _settings.GetPolicy(requiredPolicy);
+            if (authorizationPolicy == null)
             {
-                User = principal ?? new ClaimsPrincipal(new ClaimsIdentity()),
-                UserContext = userContext,
-                Variables = variables
-            };
-
-            var tasks = new List<Task>();
-
-            foreach (string requiredPolicy in requiredPolicies)
+                context.ReportError($"Required policy '{requiredPolicy}' is not present.");
+            }
+            else
             {
-                var authorizationPolicy = _settings.GetPolicy(requiredPolicy);
-                if (authorizationPolicy == null)
+                foreach (var r in authorizationPolicy.Requirements)
                 {
-                    context.ReportError($"Required policy '{requiredPolicy}' is not present.");
-                }
-                else
-                {
-                    foreach (var r in authorizationPolicy.Requirements)
-                    {
-                        var task = r.Authorize(context);
-                        tasks.Add(task);
-                    }
+                    var task = r.Authorize(context);
+                    tasks.Add(task);
                 }
             }
-
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            return context.HasErrors
-                ? AuthorizationResult.Fail(context.Errors)
-                : AuthorizationResult.Success();
         }
+
+        await Task.WhenAll(tasks).ConfigureAwait(false);
+
+        return context.HasErrors
+            ? AuthorizationResult.Fail(context.Errors)
+            : AuthorizationResult.Success();
     }
 }

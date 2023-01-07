@@ -1,9 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="../Tests.props" />
 
+  <PropertyGroup Condition="'$(SingleTestPlatform)' == 'true'">
+    <TargetFramework>net7</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(SingleTestPlatform)' != 'true'">
+    <TargetFrameworks>net7;net6;net5;netcoreapp3.1</TargetFrameworks>
+  </PropertyGroup>
+
   <PropertyGroup>
-    <TargetFrameworks>net6;net5;netcoreapp3.1</TargetFrameworks>
-    <GraphQLTestVersion>5.1.1</GraphQLTestVersion>
+    <GraphQLTestVersion>7.0.0</GraphQLTestVersion>
   </PropertyGroup>
 
   <ItemGroup>
