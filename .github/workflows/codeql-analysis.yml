@@ -32,7 +32,7 @@ jobs:
 
     - name: Install dependencies
       working-directory: src
-      run: dotnet restore -p:GraphQLTestVersion=5.1.1
+      run: dotnet restore
 
     - name: Build CodeQL solution
       # https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/troubleshooting-the-codeql-workflow#reduce-the-amount-of-code-being-analyzed-in-a-single-workflow
