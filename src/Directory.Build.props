@@ -20,7 +20,7 @@
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <IsPackable>true</IsPackable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-	<CheckEolTargetFramework>false</CheckEolTargetFramework>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
