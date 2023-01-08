@@ -64,7 +64,7 @@ public class ValidationTestBase
         {
             Schema = config.Schema,
             Document = document,
-            Operation = document.OperationWithName(config.OperationName)!,
+            Operation = document.OperationWithName(config.OperationName) ?? throw new InvalidOperationException("Could not find specified operation"),
             Rules = config.Rules,
             Variables = config.Variables ?? Inputs.Empty,
             UserContext = userContext
