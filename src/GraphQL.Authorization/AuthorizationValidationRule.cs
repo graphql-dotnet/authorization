@@ -109,10 +109,10 @@ public class AuthorizationValidationRule : IValidationRule
 
         public async ValueTask EnterAsync(ASTNode node, ValidationContext context)
         {
-            if (node is GraphQLOperationDefinition && node == context.Operation)
+            if (node is GraphQLOperationDefinition astType && astType == context.Operation)
             {
                 var type = context.TypeInfo.GetLastType();
-                await AuthorizeAsync(node, type, context).ConfigureAwait(false);
+                await AuthorizeAsync(astType, type, context).ConfigureAwait(false);
             }
 
             if (node is GraphQLObjectField objectFieldAst &&
