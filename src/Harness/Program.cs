@@ -35,7 +35,7 @@ builder.Services.AddGraphQL(builder => builder
     .ConfigureExecutionOptions(opt =>
     {
         opt.Root = new Query();
-        opt.User = counter++ % 2 == 0 ? opt.RequestServices!.GetRequiredService<IHttpContextAccessor>().HttpContext!.User : user;
+        // opt.User = user;
     })
     .AddErrorInfoProvider(opt => opt.ExposeExceptionDetails = true)
     .AddAuthorization(settings => settings.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"))));
