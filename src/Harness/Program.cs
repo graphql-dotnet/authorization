@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using GraphQL;
 using GraphQL.Types;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -26,15 +25,15 @@ builder.Services.TryAddSingleton<ISchema>(_ =>
 });
 
 // Claims principal must look something like this to allow access.
-// GraphQLUserContext.User alternates below for demonstration purposes.
 // var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Admin") }));
 
 builder.Services.AddGraphQL(builder => builder
     .AddSystemTextJson()
     .ConfigureExecutionOptions(opt =>
     {
+        opt.ThrowOnUnhandledException = true;
         opt.Root = new Query();
-        // opt.User = user;
+        // opt.User = user; // User property has already been initialized. Uncomment to play with ClaimsPrincipal.
     })
     .AddErrorInfoProvider(opt => opt.ExposeExceptionDetails = true)
     .AddAuthorization(settings => settings.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"))));
