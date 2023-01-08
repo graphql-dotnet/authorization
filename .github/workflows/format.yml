@@ -1,4 +1,4 @@
-name: Run code tests
+name: Check formatting
 
 on:
   pull_request:
