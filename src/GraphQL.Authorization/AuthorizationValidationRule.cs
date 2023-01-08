@@ -23,6 +23,36 @@ public class AuthorizationValidationRule : IValidationRule
         _visitor = new(evaluator);
     }
 
+    private sealed class FragmentBelongsToOperationVisitorContext : IASTVisitorContext
+    {
+        public FragmentBelongsToOperationVisitorContext(GraphQLFragmentDefinition fragment)
+        {
+            Fragment = fragment;
+        }
+
+        public GraphQLFragmentDefinition Fragment { get; }
+
+        public bool Found { get; set; }
+
+        public CancellationToken CancellationToken => default;
+    }
+
+    private static readonly FragmentBelongsToOperationVisitor _fragmentBelongsToOperationVisitor = new();
+
+    private sealed class FragmentBelongsToOperationVisitor : ASTVisitor<FragmentBelongsToOperationVisitorContext>
+    {
+        protected override ValueTask VisitFragmentSpreadAsync(GraphQLFragmentSpread fragmentSpread, FragmentBelongsToOperationVisitorContext context)
+        {
+            context.Found = context.Fragment.FragmentName.Name == fragmentSpread.FragmentName.Name;
+            return default;
+        }
+
+        public override ValueTask VisitAsync(ASTNode? node, FragmentBelongsToOperationVisitorContext context)
+        {
+            return context.Found ? default : base.VisitAsync(node, context);
+        }
+    }
+
     /// <inheritdoc />
     public async ValueTask<INodeVisitor?> ValidateAsync(ValidationContext context)
     {
@@ -159,36 +189,6 @@ public class AuthorizationValidationRule : IValidationRule
                 "authorization",
                 $"You are not authorized to run this {operationType.ToString().ToLower()}.\n{errors}",
                 node == null ? Array.Empty<ASTNode>() : new ASTNode[] { node }));
-        }
-    }
-
-    private sealed class FragmentBelongsToOperationVisitorContext : IASTVisitorContext
-    {
-        public FragmentBelongsToOperationVisitorContext(GraphQLFragmentDefinition fragment)
-        {
-            Fragment = fragment;
-        }
-
-        public GraphQLFragmentDefinition Fragment { get; }
-
-        public bool Found { get; set; }
-
-        public CancellationToken CancellationToken => default;
-    }
-
-    private static readonly FragmentBelongsToOperationVisitor _fragmentBelongsToOperationVisitor = new();
-
-    private sealed class FragmentBelongsToOperationVisitor : ASTVisitor<FragmentBelongsToOperationVisitorContext>
-    {
-        protected override ValueTask VisitFragmentSpreadAsync(GraphQLFragmentSpread fragmentSpread, FragmentBelongsToOperationVisitorContext context)
-        {
-            context.Found = context.Fragment.FragmentName.Name == fragmentSpread.FragmentName.Name;
-            return default;
-        }
-
-        public override ValueTask VisitAsync(ASTNode? node, FragmentBelongsToOperationVisitorContext context)
-        {
-            return context.Found ? default : base.VisitAsync(node, context);
         }
     }
 }
