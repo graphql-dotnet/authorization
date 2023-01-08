@@ -31,7 +31,6 @@ builder.Services.AddGraphQL(builder => builder
     .AddSystemTextJson()
     .ConfigureExecutionOptions(opt =>
     {
-        opt.ThrowOnUnhandledException = true;
         opt.Root = new Query();
         // opt.User = user; // User property has already been initialized. Uncomment to play with ClaimsPrincipal.
     })
