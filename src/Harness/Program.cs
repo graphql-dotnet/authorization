@@ -27,7 +27,7 @@ builder.Services.TryAddSingleton<ISchema>(_ =>
 
 // Claims principal must look something like this to allow access.
 // GraphQLUserContext.User alternates below for demonstration purposes.
-var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Admin") }));
+// var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Admin") }));
 
 builder.Services.AddGraphQL(builder => builder
     .AddSystemTextJson()
