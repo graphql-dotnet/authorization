@@ -85,4 +85,4 @@ public class MutationType
 
 - It is currently not possible to add a policy to Input objects using Schema first approach.
 
-- Authorization checks are skipped on fragments that are referenced by other fragments
+- :warning: Authorization checks are skipped on fragments that are referenced by other fragments :warning:
