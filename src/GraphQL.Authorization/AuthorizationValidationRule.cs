@@ -23,6 +23,38 @@ public class AuthorizationValidationRule : IValidationRule
         _visitor = new(evaluator);
     }
 
+    private static async ValueTask<bool> ShouldBeSkipped(GraphQLOperationDefinition actualOperation, ValidationContext context)
+    {
+        if (context.Document.OperationsCount() <= 1)
+        {
+            return false;
+        }
+
+        int i = 0;
+        do
+        {
+            var ancestor = context.TypeInfo.GetAncestor(i++);
+
+            if (ancestor == actualOperation)
+            {
+                return false;
+            }
+
+            if (ancestor == context.Document)
+            {
+                return true;
+            }
+
+            if (ancestor is GraphQLFragmentDefinition fragment)
+            {
+                //TODO: may be rewritten completely later
+                var c = new FragmentBelongsToOperationVisitorContext(fragment);
+                await _fragmentBelongsToOperationVisitor.VisitAsync(actualOperation, c).ConfigureAwait(false);
+                return !c.Found;
+            }
+        } while (true);
+    }
+
     private sealed class FragmentBelongsToOperationVisitorContext : IASTVisitorContext
     {
         public FragmentBelongsToOperationVisitorContext(GraphQLFragmentDefinition fragment)
@@ -132,38 +164,6 @@ public class AuthorizationValidationRule : IValidationRule
         }
 
         public ValueTask LeaveAsync(ASTNode node, ValidationContext context) => default;
-
-        private async ValueTask<bool> ShouldBeSkipped(GraphQLOperationDefinition actualOperation, ValidationContext context)
-        {
-            if (context.Document.OperationsCount() <= 1)
-            {
-                return false;
-            }
-
-            int i = 0;
-            do
-            {
-                var ancestor = context.TypeInfo.GetAncestor(i++);
-
-                if (ancestor == actualOperation)
-                {
-                    return false;
-                }
-
-                if (ancestor == context.Document)
-                {
-                    return true;
-                }
-
-                if (ancestor is GraphQLFragmentDefinition fragment)
-                {
-                    //TODO: may be rewritten completely later
-                    var c = new FragmentBelongsToOperationVisitorContext(fragment);
-                    await _fragmentBelongsToOperationVisitor.VisitAsync(actualOperation, c).ConfigureAwait(false);
-                    return !c.Found;
-                }
-            } while (true);
-        }
 
         public async ValueTask AuthorizeAsync(
             ASTNode? node,
