@@ -148,6 +148,19 @@ public class AuthorizationValidationRuleTests : ValidationTestBase
         });
     }
 
+    [Fact(Skip = "This needs to be fixed")]
+    public void nested_fragment_should_fail()
+    {
+        Settings.AddPolicy("AdminPolicy", builder => builder.RequireClaim("admin"));
+
+        ShouldFailRule(config =>
+        {
+            config.Query = "query a { article { ...frag } } query b { article { ...frag } } fragment frag on Article { ...frag2 } fragment frag2 on Article { content }";
+            config.Schema = TypedSchema();
+            config.ValidateResult = result => _ = result.Errors.Single(x => x.Message == $"You are not authorized to run this query.\nRequired claim 'admin' is not present.");
+        });
+    }
+
     [Fact]
     public void nested_type_list_non_null_policy_fail()
     {

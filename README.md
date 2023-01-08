@@ -27,13 +27,23 @@ Note that GitHub requires authentication to consume the feed. See [here](https:/
 # Usage
 
 - Register the authorization classes in your DI container - call `AddAuthorization` on the provided `IGraphQLBuilder` inside `AddGraphQL` extension method.
-- Provide a custom `UserContext` class that implements `IProvideClaimsPrincipal`.
+- Provide a custom `UserContext` class that implements `IProvideClaimsPrincipal` or provide the `ClaimsPrincipal` through `ExecutionOptions.User`.
 - Add policies to the `AuthorizationSettings`.
 - Apply a policy to a GraphType or Field - both implement `IProvideMetadata`:
   - using `AuthorizeWithPolicy(string policy)` extension method
   - or with `AuthorizeAttribute` attribute if using Schema + Handler syntax.
 - The `AuthorizationValidationRule` will run and verify the policies based on the registered policies.
 - You can write your own `IAuthorizationRequirement`.
+
+# Limitations
+
+This authorization framework only supports policy-based authorization. It does not support role-based authorization, or the
+`[AllowAnonymous]` attribute/extension, or the `[Authorize]` attribute/extension indicating authorization is required
+but without specifying a policy. It also does not integrate with ASP.NET Core's authorization framework.
+
+The [GraphQL.Server](https://www.github.com/graphql-dotnet/server) repository contains an authorization rule which has the above
+missing features, intended for use with ASP.NET Core. It may also be tailored with custom authentication code if desired, rather than
+relying on ASP.NET Core's authentication framework.
 
 # Examples
 
@@ -74,3 +84,5 @@ public class MutationType
 # Known Issues
 
 - It is currently not possible to add a policy to Input objects using Schema first approach.
+
+- :warning: Authorization checks are skipped on fragments that are referenced by other fragments :warning:

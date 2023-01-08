@@ -12,7 +12,7 @@ namespace GraphQL.Authorization;
 /// </summary>
 public class AuthorizationValidationRule : IValidationRule
 {
-    private readonly IAuthorizationEvaluator _evaluator;
+    private readonly Visitor _visitor;
 
     /// <summary>
     /// Creates an instance of <see cref="AuthorizationValidationRule"/> with
@@ -20,10 +20,10 @@ public class AuthorizationValidationRule : IValidationRule
     /// </summary>
     public AuthorizationValidationRule(IAuthorizationEvaluator evaluator)
     {
-        _evaluator = evaluator;
+        _visitor = new(evaluator);
     }
 
-    private bool ShouldBeSkipped(GraphQLOperationDefinition actualOperation, ValidationContext context)
+    private static async ValueTask<bool> ShouldBeSkipped(GraphQLOperationDefinition actualOperation, ValidationContext context)
     {
         if (context.Document.OperationsCount() <= 1)
         {
@@ -49,7 +49,7 @@ public class AuthorizationValidationRule : IValidationRule
             {
                 //TODO: may be rewritten completely later
                 var c = new FragmentBelongsToOperationVisitorContext(fragment);
-                _visitor.VisitAsync(actualOperation, c).GetAwaiter().GetResult(); // TODO: need to think of something to avoid this
+                await _fragmentBelongsToOperationVisitor.VisitAsync(actualOperation, c).ConfigureAwait(false);
                 return !c.Found;
             }
         } while (true);
@@ -69,7 +69,7 @@ public class AuthorizationValidationRule : IValidationRule
         public CancellationToken CancellationToken => default;
     }
 
-    private static readonly FragmentBelongsToOperationVisitor _visitor = new();
+    private static readonly FragmentBelongsToOperationVisitor _fragmentBelongsToOperationVisitor = new();
 
     private sealed class FragmentBelongsToOperationVisitor : ASTVisitor<FragmentBelongsToOperationVisitorContext>
     {
@@ -88,57 +88,61 @@ public class AuthorizationValidationRule : IValidationRule
     /// <inheritdoc />
     public async ValueTask<INodeVisitor?> ValidateAsync(ValidationContext context)
     {
-        var userContext = context.UserContext as IProvideClaimsPrincipal;
-        await AuthorizeAsync(null, context.Schema, userContext, context, null).ConfigureAwait(false);
-        var operationType = OperationType.Query;
+        await _visitor.AuthorizeAsync(null, context.Schema, context).ConfigureAwait(false);
 
         // this could leak info about hidden fields or types in error messages
         // it would be better to implement a filter on the Schema so it
         // acts as if they just don't exist vs. an auth denied error
         // - filtering the Schema is not currently supported
         // TODO: apply ISchemaFilter - context.Schema.Filter.AllowXXX
-        return new NodeVisitors(
-            new MatchingNodeVisitor<GraphQLOperationDefinition>((astType, context) =>
+        return _visitor;
+    }
+
+    private class Visitor : INodeVisitor
+    {
+        private readonly IAuthorizationEvaluator _evaluator;
+
+        public Visitor(IAuthorizationEvaluator evaluator)
+        {
+            _evaluator = evaluator;
+        }
+
+        public async ValueTask EnterAsync(ASTNode node, ValidationContext context)
+        {
+            if (node is GraphQLOperationDefinition astType && astType == context.Operation)
             {
-                if (context.Document.OperationsCount() > 1 && astType.Name != context.Operation.Name)
-                {
-                    return;
-                }
-
-                operationType = astType.Operation;
-
                 var type = context.TypeInfo.GetLastType();
-                AuthorizeAsync(astType, type, userContext, context, operationType).GetAwaiter().GetResult(); // TODO: need to think of something to avoid this
-            }),
+                await AuthorizeAsync(astType, type, context).ConfigureAwait(false);
+            }
 
-            new MatchingNodeVisitor<GraphQLObjectField>((objectFieldAst, context) =>
+            if (node is GraphQLObjectField objectFieldAst &&
+                context.TypeInfo.GetArgument()?.ResolvedType?.GetNamedType() is IComplexGraphType argumentType &&
+                !await ShouldBeSkipped(context.Operation, context).ConfigureAwait(false))
             {
-                if (context.TypeInfo.GetArgument()?.ResolvedType?.GetNamedType() is IComplexGraphType argumentType && !ShouldBeSkipped(context.Operation, context))
-                {
-                    var fieldType = argumentType.GetField(objectFieldAst.Name);
-                    AuthorizeAsync(objectFieldAst, fieldType, userContext, context, operationType).GetAwaiter().GetResult(); // TODO: need to think of something to avoid this
-                }
-            }),
+                var fieldType = argumentType.GetField(objectFieldAst.Name);
+                await AuthorizeAsync(objectFieldAst, fieldType, context).ConfigureAwait(false);
+            }
 
-            new MatchingNodeVisitor<GraphQLField>((fieldAst, context) =>
+            if (node is GraphQLField fieldAst)
             {
                 var fieldDef = context.TypeInfo.GetFieldDef();
 
-                if (fieldDef == null || ShouldBeSkipped(context.Operation, context))
+                if (fieldDef == null || await ShouldBeSkipped(context.Operation, context).ConfigureAwait(false))
                     return;
 
                 // check target field
-                AuthorizeAsync(fieldAst, fieldDef, userContext, context, operationType).GetAwaiter().GetResult(); // TODO: need to think of something to avoid this
+                await AuthorizeAsync(fieldAst, fieldDef, context).ConfigureAwait(false);
                 // check returned graph type
-                AuthorizeAsync(fieldAst, fieldDef.ResolvedType?.GetNamedType(), userContext, context, operationType).GetAwaiter().GetResult(); // TODO: need to think of something to avoid this
-            }),
+                await AuthorizeAsync(fieldAst, fieldDef.ResolvedType?.GetNamedType(), context).ConfigureAwait(false);
+            }
 
-            new MatchingNodeVisitor<GraphQLVariable>((variableRef, context) =>
+            if (node is GraphQLVariable variableRef)
             {
-                if (context.TypeInfo.GetArgument()?.ResolvedType?.GetNamedType() is not IComplexGraphType variableType || ShouldBeSkipped(context.Operation, context))
+                if (context.TypeInfo.GetArgument()?.ResolvedType?.GetNamedType() is not IComplexGraphType variableType ||
+                    await ShouldBeSkipped(context.Operation, context).ConfigureAwait(false))
                     return;
 
-                AuthorizeAsync(variableRef, variableType, userContext, context, operationType).GetAwaiter().GetResult(); // TODO: need to think of something to avoid this
+                await AuthorizeAsync(variableRef, variableType, context).ConfigureAwait(false);
 
                 // Check each supplied field in the variable that exists in the variable type.
                 // If some supplied field does not exist in the variable type then some other
@@ -152,35 +156,39 @@ public class AuthorizationValidationRule : IValidationRule
                     {
                         if (fieldsValues.ContainsKey(field.Name))
                         {
-                            AuthorizeAsync(variableRef, field, userContext, context, operationType).GetAwaiter().GetResult(); // TODO: need to think of something to avoid this
+                            await AuthorizeAsync(variableRef, field, context).ConfigureAwait(false);
                         }
                     }
                 }
-            })
-        );
-    }
+            }
+        }
 
-    private async Task AuthorizeAsync(
-        ASTNode? node,
-        IProvideMetadata? provider,
-        IProvideClaimsPrincipal? userContext,
-        ValidationContext context,
-        OperationType? operationType)
-    {
-        if (provider == null || !provider.IsAuthorizationRequired())
-            return;
+        public ValueTask LeaveAsync(ASTNode node, ValidationContext context) => default;
 
-        var result = await _evaluator.Evaluate(userContext?.User, context.UserContext, context.Variables, provider.GetPolicies()).ConfigureAwait(false);
+        public async ValueTask AuthorizeAsync(
+            ASTNode? node,
+            IProvideMetadata? provider,
+            ValidationContext context)
+        {
+            var userContext = context.UserContext as IProvideClaimsPrincipal;
+            var user = userContext == null ? context.User : userContext.User;
+            var operationType = context.Operation.Operation;
 
-        if (result.Succeeded)
-            return;
+            if (provider == null || !provider.IsAuthorizationRequired())
+                return;
 
-        string errors = string.Join("\n", result.Errors);
+            var result = await _evaluator.Evaluate(user, context.UserContext, context.Variables, provider.GetPolicies()).ConfigureAwait(false);
 
-        context.ReportError(new ValidationError(
-            context.Document.Source,
-            "authorization",
-            $"You are not authorized to run this {operationType.ToString().ToLower()}.\n{errors}",
-            node == null ? Array.Empty<ASTNode>() : new ASTNode[] { node }));
+            if (result.Succeeded)
+                return;
+
+            string errors = string.Join("\n", result.Errors);
+
+            context.ReportError(new ValidationError(
+                context.Document.Source,
+                "authorization",
+                $"You are not authorized to run this {operationType.ToString().ToLower()}.\n{errors}",
+                node == null ? Array.Empty<ASTNode>() : new ASTNode[] { node }));
+        }
     }
 }
