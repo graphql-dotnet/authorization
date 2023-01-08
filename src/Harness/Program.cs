@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.TryAddSingleton<ISchema>(_ =>
 {
     const string definitions = """
@@ -31,10 +32,13 @@ var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("role", "Adm
 
 builder.Services.AddGraphQL(builder => builder
     .AddSystemTextJson()
-    .ConfigureExecutionOptions(opt => opt.Root = new Query())
+    .ConfigureExecutionOptions(opt =>
+    {
+        opt.Root = new Query();
+        opt.User = counter++ % 2 == 0 ? opt.RequestServices!.GetRequiredService<IHttpContextAccessor>().HttpContext!.User : user;
+    })
     .AddErrorInfoProvider(opt => opt.ExposeExceptionDetails = true)
-    .AddAuthorization(settings => settings.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin")))
-    .AddUserContextBuilder(context => new GraphQLUserContext { User = counter++ % 2 == 0 ? context.User : user }));
+    .AddAuthorization(settings => settings.AddPolicy("AdminPolicy", p => p.RequireClaim("role", "Admin"))));
 
 var app = builder.Build();
 

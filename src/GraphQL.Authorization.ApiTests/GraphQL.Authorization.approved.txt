@@ -80,10 +80,6 @@ namespace GraphQL.Authorization
     {
         System.Threading.Tasks.Task Authorize(GraphQL.Authorization.AuthorizationContext context);
     }
-    public interface IProvideClaimsPrincipal
-    {
-        System.Security.Claims.ClaimsPrincipal? User { get; }
-    }
 }
 namespace GraphQL
 {

@@ -23,7 +23,7 @@ public class AuthorizationValidationRule : IValidationRule
         _visitor = new(evaluator);
     }
 
-    private static async ValueTask<bool> ShouldBeSkipped(GraphQLOperationDefinition actualOperation, ValidationContext context)
+    private static async ValueTask<bool> ShouldBeSkippedAsync(GraphQLOperationDefinition actualOperation, ValidationContext context)
     {
         if (context.Document.OperationsCount() <= 1)
         {
@@ -117,7 +117,7 @@ public class AuthorizationValidationRule : IValidationRule
 
             if (node is GraphQLObjectField objectFieldAst &&
                 context.TypeInfo.GetArgument()?.ResolvedType?.GetNamedType() is IComplexGraphType argumentType &&
-                !await ShouldBeSkipped(context.Operation, context).ConfigureAwait(false))
+                !await ShouldBeSkippedAsync(context.Operation, context).ConfigureAwait(false))
             {
                 var fieldType = argumentType.GetField(objectFieldAst.Name);
                 await AuthorizeAsync(objectFieldAst, fieldType, context).ConfigureAwait(false);
@@ -127,7 +127,7 @@ public class AuthorizationValidationRule : IValidationRule
             {
                 var fieldDef = context.TypeInfo.GetFieldDef();
 
-                if (fieldDef == null || await ShouldBeSkipped(context.Operation, context).ConfigureAwait(false))
+                if (fieldDef == null || await ShouldBeSkippedAsync(context.Operation, context).ConfigureAwait(false))
                     return;
 
                 // check target field
@@ -139,7 +139,7 @@ public class AuthorizationValidationRule : IValidationRule
             if (node is GraphQLVariable variableRef)
             {
                 if (context.TypeInfo.GetArgument()?.ResolvedType?.GetNamedType() is not IComplexGraphType variableType ||
-                    await ShouldBeSkipped(context.Operation, context).ConfigureAwait(false))
+                    await ShouldBeSkippedAsync(context.Operation, context).ConfigureAwait(false))
                     return;
 
                 await AuthorizeAsync(variableRef, variableType, context).ConfigureAwait(false);
@@ -170,14 +170,10 @@ public class AuthorizationValidationRule : IValidationRule
             IProvideMetadata? provider,
             ValidationContext context)
         {
-            var userContext = context.UserContext as IProvideClaimsPrincipal;
-            var user = userContext == null ? context.User : userContext.User;
-            var operationType = context.Operation.Operation;
-
             if (provider == null || !provider.IsAuthorizationRequired())
                 return;
 
-            var result = await _evaluator.Evaluate(user, context.UserContext, context.Variables, provider.GetPolicies()).ConfigureAwait(false);
+            var result = await _evaluator.Evaluate(context.User, context.UserContext, context.Variables, provider.GetPolicies()).ConfigureAwait(false);
 
             if (result.Succeeded)
                 return;
@@ -187,7 +183,7 @@ public class AuthorizationValidationRule : IValidationRule
             context.ReportError(new ValidationError(
                 context.Document.Source,
                 "authorization",
-                $"You are not authorized to run this {operationType.ToString().ToLower()}.\n{errors}",
+                $"You are not authorized to run this {context.Operation.Operation.ToString().ToLower()}.\n{errors}",
                 node == null ? Array.Empty<ASTNode>() : new ASTNode[] { node }));
         }
     }

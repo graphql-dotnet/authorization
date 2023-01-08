@@ -56,7 +56,6 @@ public class ValidationTestBase
 
     private static IValidationResult Validate(ValidationTestConfig config)
     {
-        var userContext = new GraphQLUserContext { User = config.User };
         var documentBuilder = new GraphQLDocumentBuilder();
         var document = documentBuilder.Build(config.Query);
         var validator = new DocumentValidator();
@@ -67,7 +66,7 @@ public class ValidationTestBase
             Operation = document.OperationWithName(config.OperationName) ?? throw new InvalidOperationException("Could not find specified operation"),
             Rules = config.Rules,
             Variables = config.Variables ?? Inputs.Empty,
-            UserContext = userContext
+            User = config.User
         }).GetAwaiter().GetResult().validationResult;
     }
 

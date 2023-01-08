@@ -37,7 +37,7 @@ while (true)
         options.Root = new Query();
         options.ValidationRules = DocumentValidator.CoreRules.Concat(serviceProvider.GetServices<IValidationRule>());
         options.RequestServices = serviceProvider;
-        options.UserContext = new GraphQLUserContext { User = counter++ % 2 == 0 ? authorizedUser : nonAuthorizedUser };
+        options.User = counter++ % 2 == 0 ? authorizedUser : nonAuthorizedUser;
     }).ConfigureAwait(false);
 
     Console.WriteLine(json);

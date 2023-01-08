@@ -27,7 +27,7 @@ Note that GitHub requires authentication to consume the feed. See [here](https:/
 # Usage
 
 - Register the authorization classes in your DI container - call `AddAuthorization` on the provided `IGraphQLBuilder` inside `AddGraphQL` extension method.
-- Provide a custom `UserContext` class that implements `IProvideClaimsPrincipal` or provide the `ClaimsPrincipal` through `ExecutionOptions.User`.
+- Provide the `ClaimsPrincipal` through `ExecutionOptions.User`.
 - Add policies to the `AuthorizationSettings`.
 - Apply a policy to a GraphType or Field - both implement `IProvideMetadata`:
   - using `AuthorizeWithPolicy(string policy)` extension method
