@@ -31,7 +31,7 @@ public class AuthorizationValidationRule : IValidationRule
         }
 
         int i = 0;
-        do
+        while (true)
         {
             var ancestor = context.TypeInfo.GetAncestor(i++);
 
@@ -52,7 +52,7 @@ public class AuthorizationValidationRule : IValidationRule
                 await _fragmentBelongsToOperationVisitor.VisitAsync(actualOperation, c).ConfigureAwait(false);
                 return !c.Found;
             }
-        } while (true);
+        }
     }
 
     private sealed class FragmentBelongsToOperationVisitorContext : IASTVisitorContext
@@ -165,10 +165,7 @@ public class AuthorizationValidationRule : IValidationRule
 
         public ValueTask LeaveAsync(ASTNode node, ValidationContext context) => default;
 
-        public async ValueTask AuthorizeAsync(
-            ASTNode? node,
-            IProvideMetadata? provider,
-            ValidationContext context)
+        public async ValueTask AuthorizeAsync(ASTNode? node, IProvideMetadata? provider, ValidationContext context)
         {
             if (provider == null || !provider.IsAuthorizationRequired())
                 return;
