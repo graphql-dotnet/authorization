@@ -37,6 +37,10 @@ Note that GitHub requires authentication to consume the feed. See [here](https:/
 
 # Limitations
 
+`@skip` and `@include` directives are ignored; all selected fields of the selected operation will
+be checked for authentication requirements, including referenced fragments. However, other operations
+in the same document will not be checked.
+
 This authorization framework only supports policy-based authorization. It does not support role-based authorization, or the
 `[AllowAnonymous]` attribute/extension, or the `[Authorize]` attribute/extension indicating authorization is required
 but without specifying a policy. It also does not integrate with ASP.NET Core's authorization framework.
