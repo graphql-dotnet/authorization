@@ -11,6 +11,8 @@ public class BomTests
         string GetPath([CallerFilePath] string path = "") => path; // <GIT_ROOT>\src\GraphQL.ApiTests\BomTests.cs
 
         var gitRoot = new DirectoryInfo(GetPath()).Parent!.Parent!.Parent!;
+        if (!File.Exists(Path.Combine(gitRoot.FullName, "src", "GraphQL.Authorization.sln")))
+            throw new InvalidOperationException("Unable to find repository root");
 
         byte[] buffer = new byte[3];
         int counter = 0;
