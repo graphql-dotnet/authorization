@@ -148,7 +148,7 @@ public class AuthorizationValidationRuleTests : ValidationTestBase
         });
     }
 
-    [Fact(Skip = "This needs to be fixed")]
+    [Fact]
     public void nested_fragment_should_fail()
     {
         Settings.AddPolicy("AdminPolicy", builder => builder.RequireClaim("admin"));
