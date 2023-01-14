@@ -8,3 +8,5 @@
 
 [Oo]bj/
 [Bb]in/
+
+*.received.txt

@@ -2,17 +2,22 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6</TargetFramework>
+    <TargetFramework>net7</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Harness\GraphQL.cs" Link="GraphQL.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\GraphQL.Authorization\GraphQL.Authorization.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GraphQL.SystemTextJson" Version="5.1.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.1" />
+    <PackageReference Include="GraphQL.MicrosoftDI" Version="7.*" />
+    <PackageReference Include="GraphQL.SystemTextJson" Version="7.*" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.*" />
   </ItemGroup>
 
 </Project>

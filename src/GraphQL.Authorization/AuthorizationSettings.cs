@@ -1,72 +1,67 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+namespace GraphQL.Authorization;
 
-namespace GraphQL.Authorization
+/// <summary>
+/// Authorization settings are represented by a set of named policies
+/// where each policy has a set of authorization requirements.
+/// </summary>
+public class AuthorizationSettings
 {
+    private readonly IDictionary<string, IAuthorizationPolicy> _policies = new Dictionary<string, IAuthorizationPolicy>(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>
-    /// Authorization settings are represented by a set of named policies
-    /// where each policy has a set of authorization requirements.
+    /// Returns all policies.
     /// </summary>
-    public class AuthorizationSettings
+    public IEnumerable<IAuthorizationPolicy> Policies => _policies.Values;
+
+    /// <summary>
+    /// Returns policies with the specified names.
+    /// </summary>
+    /// <param name="policies">A set of policies names.</param>
+    /// <returns>Policies with matched names.</returns>
+    public IEnumerable<IAuthorizationPolicy> GetPolicies(IEnumerable<string> policies)
     {
-        private readonly IDictionary<string, IAuthorizationPolicy> _policies = new Dictionary<string, IAuthorizationPolicy>(StringComparer.OrdinalIgnoreCase);
+        List<IAuthorizationPolicy>? found = null;
 
-        /// <summary>
-        /// Returns all policies.
-        /// </summary>
-        public IEnumerable<IAuthorizationPolicy> Policies => _policies.Values;
-
-        /// <summary>
-        /// Returns policies with the specified names.
-        /// </summary>
-        /// <param name="policies">A set of policies names.</param>
-        /// <returns>Policies with matched names.</returns>
-        public IEnumerable<IAuthorizationPolicy> GetPolicies(IEnumerable<string> policies)
+        if (policies != null)
         {
-            List<IAuthorizationPolicy>? found = null;
-
-            if (policies != null)
+            foreach (string name in policies)
             {
-                foreach (string name in policies)
-                {
-                    var policy = GetPolicy(name);
-                    if (policy != null)
-                        (found ??= new List<IAuthorizationPolicy>()).Add(policy);
-                }
+                var policy = GetPolicy(name);
+                if (policy != null)
+                    (found ??= new()).Add(policy);
             }
-
-            return found ?? Enumerable.Empty<IAuthorizationPolicy>();
         }
 
-        /// <summary>
-        /// Returns one policy with the specified name.
-        /// </summary>
-        /// <param name="name">Name of the required policy.</param>
-        /// <returns>Required policy if exists, otherwise <see langword="null"/>.</returns>
-        public IAuthorizationPolicy? GetPolicy(string name) => _policies.TryGetValue(name, out var policy) ? policy : null;
+        return found ?? Enumerable.Empty<IAuthorizationPolicy>();
+    }
 
-        /// <summary>
-        /// Adds a policy with the specified name. If a policy with that name already exists then it will be replaced.
-        /// </summary>
-        /// <param name="name">Policy name.</param>
-        /// <param name="policy">Policy to add.</param>
-        public void AddPolicy(string name, IAuthorizationPolicy policy) => _policies[name] = policy;
+    /// <summary>
+    /// Returns one policy with the specified name.
+    /// </summary>
+    /// <param name="name">Name of the required policy.</param>
+    /// <returns>Required policy if exists, otherwise <see langword="null"/>.</returns>
+    public IAuthorizationPolicy? GetPolicy(string name) => _policies.TryGetValue(name, out var policy) ? policy : null;
 
-        /// <summary>
-        /// Adds a policy built from <see cref="AuthorizationPolicyBuilder"/> with the specified name.
-        /// </summary>
-        /// <param name="name">Policy name.</param>
-        /// <param name="configure">Delegate to configure provided policy builder.</param>
-        public void AddPolicy(string name, Action<AuthorizationPolicyBuilder> configure)
-        {
-            if (configure == null)
-                throw new ArgumentNullException(nameof(configure));
+    /// <summary>
+    /// Adds a policy with the specified name. If a policy with that name already exists then it will be replaced.
+    /// </summary>
+    /// <param name="name">Policy name.</param>
+    /// <param name="policy">Policy to add.</param>
+    public void AddPolicy(string name, IAuthorizationPolicy policy) => _policies[name] = policy;
 
-            var builder = new AuthorizationPolicyBuilder();
-            configure(builder);
+    /// <summary>
+    /// Adds a policy built from <see cref="AuthorizationPolicyBuilder"/> with the specified name.
+    /// </summary>
+    /// <param name="name">Policy name.</param>
+    /// <param name="configure">Delegate to configure provided policy builder.</param>
+    public void AddPolicy(string name, Action<AuthorizationPolicyBuilder> configure)
+    {
+        if (configure == null)
+            throw new ArgumentNullException(nameof(configure));
 
-            _policies[name] = builder.Build();
-        }
+        var builder = new AuthorizationPolicyBuilder();
+        configure(builder);
+
+        _policies[name] = builder.Build();
     }
 }

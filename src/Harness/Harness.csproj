@@ -1,7 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>net6;net5;netcoreapp3.1</TargetFrameworks>
+    <TargetFramework>net7</TargetFramework>
+    <Description>Example ASP.NET Core project to demonstrate GraphQL.NET Authorization setup</Description>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,11 +11,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GraphQL.MicrosoftDI" Version="5.1.1" />
-    <PackageReference Include="GraphQL.Server.Ui.GraphiQL" Version="6.0.0" />
-    <PackageReference Include="GraphQL.Server.Ui.Playground" Version="6.0.0" />
-    <PackageReference Include="GraphQL.Server.Transports.AspNetCore" Version="6.0.0" />
-    <PackageReference Include="GraphQL.SystemTextJson" Version="5.1.1" />
+    <PackageReference Include="GraphQL.MicrosoftDI" Version="7.*" />
+    <PackageReference Include="GraphQL.Server.Ui.GraphiQL" Version="7.*" />
+    <PackageReference Include="GraphQL.Server.Ui.Playground" Version="7.*" />
+    <PackageReference Include="GraphQL.Server.Transports.AspNetCore" Version="7.*" />
+    <PackageReference Include="GraphQL.SystemTextJson" Version="7.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Remove="System.Net.Http.Json" />
   </ItemGroup>
 
 </Project>
