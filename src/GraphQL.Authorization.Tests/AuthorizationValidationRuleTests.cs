@@ -424,27 +424,20 @@ public class AuthorizationValidationRuleTests : ValidationTestBase
     private static ISchema TypedSchema()
     {
         var query = new ObjectGraphType();
-        query.Field<StringGraphType>(
-            "author",
-            arguments: new QueryArguments(new QueryArgument<AuthorInputType> { Name = "input" }),
-            resolve: _ => "testing"
-        );
+        query.Field<StringGraphType>("author")
+            .Arguments(new QueryArguments(new QueryArgument<AuthorInputType> { Name = "input" }))
+            .Resolve(_ => "testing");
 
-        query.Connection<PostGraphType>()
-            .Name("posts")
+        query.Connection<PostGraphType>("posts")
             .AuthorizeWithPolicy("ConnectionPolicy")
             .Resolve(_ => new Connection<Post>());
 
-        query.Field<StringGraphType>(
-            "project",
-            arguments: new QueryArguments(new QueryArgument<AuthorInputType> { Name = "input" }),
-            resolve: _ => "testing"
-        ).AuthorizeWithPolicy("AdminPolicy").AuthorizeWithPolicy("ConfidentialPolicy");
+        query.Field<StringGraphType>("project")
+            .Arguments(new QueryArguments(new QueryArgument<AuthorInputType> { Name = "input" }))
+            .Resolve(_ => "testing").AuthorizeWithPolicy("AdminPolicy").AuthorizeWithPolicy("ConfidentialPolicy");
 
-        query.Field<ArticleGraphType>(
-            "article",
-            resolve: _ => null
-        );
+        query.Field<ArticleGraphType>("article")
+            .Resolve(_ => null);
 
         return new Schema { Query = query };
     }
@@ -453,6 +446,7 @@ public class AuthorizationValidationRuleTests : ValidationTestBase
     {
         public AuthorInputType()
         {
+            Name = "AuthorInputType";
             Field(x => x.Name).AuthorizeWithPolicy("FieldPolicy");
         }
     }

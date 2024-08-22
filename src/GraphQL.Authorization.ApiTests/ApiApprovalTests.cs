@@ -20,6 +20,6 @@ public class ApiApprovalTests
         // Note: If the AssemblyName.approved.txt file doesn't match the latest publicApi value,
         // this call will try to launch a diff tool to help you out but that can fail on
         // your machine if a diff tool isn't configured/setup.
-        publicApi.ShouldMatchApproved(options => options.WithFilenameGenerator((_, _, fileType, fileExtension) => $"{type.Assembly.GetName().Name}.{fileType}.{fileExtension}"));
+        publicApi.ShouldMatchApproved(options => options.NoDiff().WithFilenameGenerator((_, _, fileType, fileExtension) => $"{type.Assembly.GetName().Name}.{fileType}.{fileExtension}"));
     }
 }

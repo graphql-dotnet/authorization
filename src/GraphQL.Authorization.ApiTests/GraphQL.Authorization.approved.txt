@@ -52,10 +52,10 @@ namespace GraphQL.Authorization
         public System.Collections.Generic.IEnumerable<GraphQL.Authorization.IAuthorizationPolicy> GetPolicies(System.Collections.Generic.IEnumerable<string> policies) { }
         public GraphQL.Authorization.IAuthorizationPolicy? GetPolicy(string name) { }
     }
-    public class AuthorizationValidationRule : GraphQL.Validation.IValidationRule
+    public class AuthorizationValidationRule : GraphQL.Validation.ValidationRuleBase
     {
         public AuthorizationValidationRule(GraphQL.Authorization.IAuthorizationEvaluator evaluator) { }
-        public System.Threading.Tasks.ValueTask<GraphQL.Validation.INodeVisitor?> ValidateAsync(GraphQL.Validation.ValidationContext context) { }
+        public override System.Threading.Tasks.ValueTask<GraphQL.Validation.INodeVisitor?> GetPreNodeVisitorAsync(GraphQL.Validation.ValidationContext context) { }
     }
     public class ClaimAuthorizationRequirement : GraphQL.Authorization.IAuthorizationRequirement
     {
