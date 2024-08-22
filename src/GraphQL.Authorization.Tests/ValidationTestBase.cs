@@ -67,7 +67,7 @@ public class ValidationTestBase
             Rules = config.Rules,
             Variables = config.Variables ?? Inputs.Empty,
             User = config.User
-        }).GetAwaiter().GetResult().validationResult;
+        }).GetAwaiter().GetResult();
     }
 
     internal static ClaimsPrincipal CreatePrincipal(string? authenticationType = null, IDictionary<string, string>? claims = null)

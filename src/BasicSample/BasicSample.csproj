@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net7</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -15,9 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GraphQL.MicrosoftDI" Version="7.*" />
-    <PackageReference Include="GraphQL.SystemTextJson" Version="7.*" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.*" />
+    <PackageReference Include="GraphQL.MicrosoftDI" Version="8.*" />
+    <PackageReference Include="GraphQL.SystemTextJson" Version="8.*" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.*" />
   </ItemGroup>
 
 </Project>

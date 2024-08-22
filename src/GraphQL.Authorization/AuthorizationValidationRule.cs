@@ -8,7 +8,7 @@ namespace GraphQL.Authorization;
 /// GraphQL authorization validation rule which evaluates configured
 /// (via policies) requirements on schema elements: types, fields, etc.
 /// </summary>
-public class AuthorizationValidationRule : IValidationRule
+public class AuthorizationValidationRule : ValidationRuleBase
 {
     private readonly IAuthorizationEvaluator _evaluator;
 
@@ -22,7 +22,7 @@ public class AuthorizationValidationRule : IValidationRule
     }
 
     /// <inheritdoc />
-    public async ValueTask<INodeVisitor?> ValidateAsync(ValidationContext context)
+    public override async ValueTask<INodeVisitor?> GetPreNodeVisitorAsync(ValidationContext context)
     {
         var visitor = new Visitor(_evaluator);
 
@@ -113,7 +113,7 @@ public class AuthorizationValidationRule : IValidationRule
             return default;
         }
 
-        public async ValueTask AuthorizeAsync(ASTNode? node, IProvideMetadata? provider, ValidationContext context)
+        public async ValueTask AuthorizeAsync(ASTNode? node, IMetadataReader? provider, ValidationContext context)
         {
             if (provider == null || !provider.IsAuthorizationRequired())
                 return;
